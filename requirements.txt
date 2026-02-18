@@ -1,0 +1,6 @@
+streamlit
+pandas
+pulp
+plotly
+rdkit
+pillow
