@@ -17,3 +17,12 @@ git clone https://github.com/chemenova/intelliform.git
 cd intelliform
 pip install -r requirements.txt
 streamlit run app.py
+
+
+## 🤝 Contributing
+
+We love contributions! Whether you're a chemist improving ingredient data, an ML engineer adding new optimization agents, or a sustainability expert suggesting green metrics — **everyone is welcome**.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) (we'll create it in v0.7) for guidelines.
+
+**Good first issues** are labeled and waiting for you.
