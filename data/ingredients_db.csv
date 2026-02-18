@@ -1,0 +1,14 @@
+
+**data/ingredients_db.csv** (create folder + file — paste this exact CSV content)
+
+```csv
+Ingredient,SMILES,Cost_USD_kg,Bio_based_pct,Performance_Score,Stock_kg,REACH_Flag
+Coco-Glucoside,CCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,3.8,98,88,1850,Green
+Decyl Glucoside,CCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.5,95,82,920,Green
+Lauryl Glucoside,CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.1,97,85,640,Green
+Caprylyl Glucoside,CCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.2,96,80,310,Green
+Sucrose Cocoate,CCCCCCCCCCCC(=O)OC1OC(CO)C(O)C(O)C1O,5.8,100,78,180,Green
+Glycerol,OCC(O)CO,1.5,100,65,5200,Green
+Ethyl Lactate (bio),CCOC(=O)C(C)O,2.8,100,70,1450,Green
+D-Sorbitol,OC[C@H](O)[C@@H](O)[C@H](O)[C@H](O)CO,2.2,100,72,2100,Green
+Citric Acid,OC(=O)CC(O)(CC(=O)O)C(=O)O,1.6,100,68,3800,Green
