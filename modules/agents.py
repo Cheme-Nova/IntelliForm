@@ -50,7 +50,13 @@ Keep each comment to 1-2 sentences. Be specific and cite numbers."""
         if isinstance(data, list):
             comments = data
         else:
-            comments = data.get("comments") or data.get("agents") or list(data.values())[0]
+            # Try common wrapper keys
+            candidate = data.get("comments") or data.get("agents") or data.get("responses")
+            if candidate is None:
+                # Last resort — get first value but ensure it's a list not a string
+                first_val = list(data.values())[0]
+                candidate = first_val if isinstance(first_val, list) else list(data.values())
+            comments = candidate if isinstance(candidate, list) else [str(candidate)]
 
         labels = ["**💰 Cost Agent**", "**🌿 Green Agent**", "**⚗️ Performance Agent**", "**📋 Regulatory Agent**"]
         return [f"{label}: {comment}" for label, comment in zip(labels, comments)]
