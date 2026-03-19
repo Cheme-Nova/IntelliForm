@@ -69,12 +69,12 @@ if not st.session_state.projects and is_connected():
 h1,h2,h3,h4 = st.columns([3,1,1,1])
 with h1:
     st.title("🧪 IntelliForm™ v0.9")
-    st.caption("ChemeNova LLC × ChemRich Global — Agentic Green Chemistry Platform")
+    st.caption("AI-powered green chemistry formulation — describe what you need, get a certified, pilot-ready blend in seconds.")
 h2.metric("Ingredients", len(ingredients_db))
-h3.metric("Storage", "✅ Supabase" if is_connected() else "💾 Local")
+h3.metric("Certifications", "EU Ecolabel · EPA · COSMOS")
 mc = st.session_state.model_card
 qsar_ok = mc and mc.sklearn_version != "unavailable"
-h4.metric("QSAR", "ML Active" if qsar_ok else "Rule-based")
+h4.metric("Optimization", "NSGA-III Pareto + LP")
 
 if os.getenv("GROQ_API_KEY",""):
     st.success("🤖 Groq LLM active (llama-3.1-8b-instant)")
@@ -85,12 +85,12 @@ else:
 with st.sidebar:
     st.header("🗣️ Customer Request")
     nl_input = st.text_area("Describe your formulation need",
-        value="I need a mild foaming green surfactant for cosmetics under $4/kg, 98% bio-based, high skin compatibility",
+        value="I need a mild foaming green surfactant for personal care, under $4/kg, at least 95% bio-based, EPA Safer Choice compatible",
         height=110)
     st.divider()
     st.header("⚙️ Optimization")
-    use_pareto = st.radio("Mode",["Single-Objective (fast)","Multi-Objective Pareto"],index=1) == "Multi-Objective Pareto"
-    n_gen = st.slider("NSGA-III generations",50,300,150,25) if use_pareto else 150
+    use_pareto = st.radio("Mode",["Single-Objective (fast)","Multi-Objective Pareto"],index=0) == "Multi-Objective Pareto"
+    n_gen = st.slider("Optimization depth (higher = more solutions)",50,300,150,25) if use_pareto else 150
     st.divider()
     with st.expander("👤 Identity (optional)"):
         uname = st.text_input("Name", placeholder="Shehan Makani")
@@ -99,8 +99,7 @@ with st.sidebar:
         if st.button("Save identity"):
             identify_user(email=uemail or None,name=uname or None,company=uco or None)
             st.success("✅ Linked")
-    st.caption(f"Session `{get_session_id()[:8]}…`")
-    st.caption("IntelliForm™ v0.9 · [GitHub](https://github.com/chemenova/intelliform)")
+    st.caption("IntelliForm™ v0.9 · [GitHub](https://github.com/chemenova/intelliform) · ChemeNova × ChemRich")
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
 t1,t2,t3,t4,t5,t6,t7 = st.tabs([
