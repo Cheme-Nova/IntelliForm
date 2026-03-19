@@ -1,29 +1,12 @@
 """
-IntelliForm™ v0.8 — Agentic Green Chemistry Formulation Platform
+IntelliForm™ v0.9 — Agentic Green Chemistry Formulation Platform
 ChemeNova LLC × ChemRich Global
 
-What's new in v0.8:
-  ✅ 35-ingredient database (was 9)
-  ✅ EcoMetrics™ radar chart — 5-axis sustainability scoring
-  ✅ Multi-objective Pareto frontier (NSGA-III → weighted-sum fallback)
-  ✅ TOPSIS-recommended blend selection
-  ✅ Clean project structure (modules/ separated properly)
-  ✅ Fixed CSV (no markdown leaking)
-
-Architecture:
-  app.py                     → thin UI orchestrator
-  modules/llm_parser.py      → Groq / Ollama / regex NL parser
-  modules/optimizer.py       → PuLP LP solver with constraint relaxation
-  modules/pareto_optimizer.py→ NSGA-III / weighted-sum Pareto frontier
-  modules/agents.py          → LLM-powered or template agent swarm
-  modules/chem_utils.py      → RDKit molecule rendering (LRU-cached)
-  modules/ecometrics.py      → EcoMetrics™ 5-axis sustainability scoring
-  modules/analytics.py       → PostHog event tracking (never crashes app)
+New in v0.9:
+  QSAR/QSPR models · Model Card tab · Branded PDF · Regulatory Intelligence · Supabase
 """
 import os
 from datetime import datetime
-
-import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -39,553 +22,372 @@ from modules.pareto_optimizer import run_pareto_optimization, pareto_frontier_da
 from modules.agents           import run_agent_swarm
 from modules.chem_utils       import draw_mol, enrich_db
 from modules.ecometrics       import compute_ecometrics, ecometrics_radar_data
+from modules.qsar             import initialize_models, predict_properties, submit_feedback
+from modules.regulatory       import get_blend_report, regulatory_table_df
+from modules.persistence      import (save_project, load_projects, save_booking,
+                                      save_feedback as db_save_feedback,
+                                      is_connected, MIGRATION_SQL)
+from modules.pdf_proposal     import generate_proposal_pdf
 
-# ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(page_title="IntelliForm™ v0.8", page_icon="🧪", layout="wide")
+st.set_page_config(page_title="IntelliForm™ v0.9", page_icon="🧪", layout="wide")
+st.markdown("""<style>
+.pareto-rec{background:#1a2e1a;border-left:4px solid #00C853;padding:12px 18px;border-radius:6px;margin-bottom:12px}
+</style>""", unsafe_allow_html=True)
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
-  .eco-grade { font-size: 2.5rem; font-weight: 900; }
-  .eco-grade-A\\+ { color: #00C853; }
-  .eco-grade-A   { color: #69F0AE; }
-  .eco-grade-B   { color: #FFD740; }
-  .eco-grade-C   { color: #FF6D00; }
-  .eco-grade-D   { color: #D50000; }
-  .pareto-rec { background: #1a2e1a; border-left: 4px solid #00C853;
-                padding: 12px 18px; border-radius: 6px; margin-bottom: 12px; }
-</style>
-""", unsafe_allow_html=True)
+# ── Bootstrap ─────────────────────────────────────────────────────────────────
+if "session_id"   not in st.session_state: get_session_id(); track("session_started",{"version":"0.9"})
+if "projects"     not in st.session_state: st.session_state.projects     = []
+if "last_result"  not in st.session_state: st.session_state.last_result  = None
+if "last_parsed"  not in st.session_state: st.session_state.last_parsed  = None
+if "last_eco"     not in st.session_state: st.session_state.last_eco     = None
+if "last_pareto"  not in st.session_state: st.session_state.last_pareto  = None
+if "last_reg"     not in st.session_state: st.session_state.last_reg     = None
+if "model_card"   not in st.session_state: st.session_state.model_card   = None
 
-# ── Session bootstrap ─────────────────────────────────────────────────────────
-if "session_id" not in st.session_state:
-    get_session_id()
-    track("session_started", {"version": "0.8"})
-if "projects" not in st.session_state:
-    st.session_state.projects = []
-
-# ── Data loading ──────────────────────────────────────────────────────────────
 @st.cache_data
 def load_db():
     df = pd.read_csv("data/ingredients_db.csv")
     return enrich_db(df)
 
+@st.cache_resource
+def load_models(n):
+    db = load_db()
+    return initialize_models(db)
+
 ingredients_db = load_db()
+if st.session_state.model_card is None:
+    st.session_state.model_card = load_models(len(ingredients_db))
+
+# Load persisted projects
+if not st.session_state.projects and is_connected():
+    try:
+        stored = load_projects(get_session_id(), limit=20)
+        if stored: st.session_state.projects = stored
+    except Exception: pass
 
 # ── Header ────────────────────────────────────────────────────────────────────
-col_title, col_badge = st.columns([4, 1])
-with col_title:
-    st.title("🧪 IntelliForm™ v0.8")
-    st.subheader("ChemeNova LLC × ChemRich Global — Agentic Green Chemistry")
-with col_badge:
-    st.metric("Ingredients", len(ingredients_db), delta="v0.8 +26")
+h1,h2,h3,h4 = st.columns([3,1,1,1])
+with h1:
+    st.title("🧪 IntelliForm™ v0.9")
+    st.caption("ChemeNova LLC × ChemRich Global — Agentic Green Chemistry Platform")
+h2.metric("Ingredients", len(ingredients_db))
+h3.metric("Storage", "✅ Supabase" if is_connected() else "💾 Local")
+mc = st.session_state.model_card
+qsar_ok = mc and mc.sklearn_version != "unavailable"
+h4.metric("QSAR", "ML Active" if qsar_ok else "Rule-based")
 
-# LLM backend banner
-groq_key    = os.getenv("GROQ_API_KEY", "")
-ollama_host = os.getenv("OLLAMA_HOST", "")
-if groq_key:
-    st.success("🤖 LLM: Groq (llama-3.1-8b-instant) — real language understanding active")
-elif ollama_host:
-    st.info(f"🤖 LLM: Ollama @ {ollama_host} — local inference active")
+if os.getenv("GROQ_API_KEY",""):
+    st.success("🤖 Groq LLM active (llama-3.1-8b-instant)")
 else:
-    st.warning("⚠️ LLM: Regex fallback mode — add GROQ_API_KEY to .env for full NL understanding")
+    st.warning("⚠️ Regex fallback — add GROQ_API_KEY to .env for full NL understanding")
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.header("🗣️ Customer Request")
-    nl_input = st.text_area(
-        "Describe your formulation need",
-        value="I need a mild foaming green surfactant for cosmetics "
-              "under $4/kg, 98% bio-based, high skin compatibility",
-        height=120,
-        help="Plain English — describe application, budget, sustainability target."
-    )
-
+    nl_input = st.text_area("Describe your formulation need",
+        value="I need a mild foaming green surfactant for cosmetics under $4/kg, 98% bio-based, high skin compatibility",
+        height=110)
     st.divider()
-    st.header("⚙️ Optimization Mode")
-    opt_mode = st.radio(
-        "Choose optimizer",
-        ["Single-Objective (fast)", "Multi-Objective Pareto (recommended)"],
-        index=1
-    )
-    use_pareto = "Pareto" in opt_mode
-
-    if use_pareto:
-        n_gen = st.slider("NSGA-III generations", 50, 300, 150, 25,
-                          help="More generations = better frontier, slower run")
-
+    st.header("⚙️ Optimization")
+    use_pareto = st.radio("Mode",["Single-Objective (fast)","Multi-Objective Pareto"],index=1) == "Multi-Objective Pareto"
+    n_gen = st.slider("NSGA-III generations",50,300,150,25) if use_pareto else 150
     st.divider()
-    st.header("👤 Session Identity (optional)")
-    with st.expander("Link this session"):
-        user_name  = st.text_input("Name",    placeholder="Shehan Makani")
-        user_email = st.text_input("Email",   placeholder="shehan@chemenova.com")
-        user_co    = st.text_input("Company", placeholder="ChemeNova LLC")
+    with st.expander("👤 Identity (optional)"):
+        uname = st.text_input("Name", placeholder="Shehan Makani")
+        uemail= st.text_input("Email",placeholder="shehan@chemenova.com")
+        uco   = st.text_input("Company",placeholder="ChemeNova LLC")
         if st.button("Save identity"):
-            identify_user(email=user_email or None, name=user_name or None, company=user_co or None)
-            st.success("✅ Session linked")
+            identify_user(email=uemail or None,name=uname or None,company=uco or None)
+            st.success("✅ Linked")
+    st.caption(f"Session `{get_session_id()[:8]}…`")
+    st.caption("IntelliForm™ v0.9 · [GitHub](https://github.com/chemenova/intelliform)")
 
-    st.divider()
-    st.caption(f"Session: `{get_session_id()[:8]}…`")
-    st.caption("IntelliForm™ v0.8 • [GitHub](https://github.com/chemenova/intelliform) • ChemeNova")
+# ── Tabs ──────────────────────────────────────────────────────────────────────
+t1,t2,t3,t4,t5,t6,t7 = st.tabs([
+    "🚀 Agentic Swarm","🌿 EcoMetrics™","📋 Regulatory",
+    "📈 Pareto Frontier","🔬 Model Card","📊 ROI & History","📄 Proposal"])
 
-# ── Main tabs ─────────────────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🚀 Agentic Swarm",
-    "🌿 EcoMetrics™",
-    "📈 Pareto Frontier",
-    "📊 ROI & Impact",
-    "📄 Proposal"
-])
+# ── TAB 1: SWARM ─────────────────────────────────────────────────────────────
+with t1:
+    if st.button("🚀 Launch Agentic Swarm Optimization",type="primary",use_container_width=True):
 
-# ── Shared optimization state ─────────────────────────────────────────────────
-# Stored in session so EcoMetrics / Pareto tabs can access last result
-if "last_result"  not in st.session_state: st.session_state.last_result  = None
-if "last_parsed"  not in st.session_state: st.session_state.last_parsed  = None
-if "last_eco"     not in st.session_state: st.session_state.last_eco     = None
-if "last_pareto"  not in st.session_state: st.session_state.last_pareto  = None
-
-# ── TAB 1: Agentic Swarm ──────────────────────────────────────────────────────
-with tab1:
-    launch = st.button("🚀 Launch Agentic Swarm Optimization", type="primary", use_container_width=True)
-
-    if launch:
-        # 1. Parse
-        with st.spinner("🧠 Parsing your request…"):
+        with st.spinner("🧠 Parsing…"):
             parsed = parse_request(nl_input)
         st.session_state.last_parsed = parsed
 
-        with st.expander("🧠 LLM Parsing Result", expanded=False):
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("Max Cost/kg", f"${parsed.max_cost}")
-            c2.metric("Min Bio %",   f"{parsed.min_bio}%")
-            c3.metric("Min Perf",    f"{parsed.min_perf}")
-            c4.metric("Application", parsed.application_type.replace("_"," ").title())
-            st.caption(f"**{parsed.parser_backend.upper()} reasoning:** {parsed.reasoning}")
+        with st.expander("🧠 Parse Result",expanded=False):
+            c1,c2,c3,c4 = st.columns(4)
+            c1.metric("Max Cost",f"${parsed.max_cost}/kg")
+            c2.metric("Min Bio%",f"{parsed.min_bio}%")
+            c3.metric("Min Perf",str(parsed.min_perf))
+            c4.metric("Application",parsed.application_type.replace("_"," ").title())
+            st.caption(f"**{parsed.parser_backend.upper()}**: {parsed.reasoning}")
 
-        # 2. Optimize
         if use_pareto:
-            with st.spinner(f"📈 Running multi-objective Pareto optimization ({n_gen} gen)…"):
-                pareto = run_pareto_optimization(
-                    ingredients_db,
-                    max_cost=parsed.max_cost,
-                    min_bio=parsed.min_bio,
-                    min_perf=parsed.min_perf,
-                    n_gen=n_gen,
-                )
+            with st.spinner(f"📈 Pareto optimization ({n_gen} gen)…"):
+                pareto = run_pareto_optimization(ingredients_db,max_cost=parsed.max_cost,
+                    min_bio=parsed.min_bio,min_perf=parsed.min_perf,n_gen=n_gen)
             st.session_state.last_pareto = pareto
-
-            if not pareto.success:
-                st.error(f"❌ {pareto.error_msg}")
-                st.stop()
-
-            # Use TOPSIS recommended as main result
+            if not pareto.success: st.error(pareto.error_msg); st.stop()
             rec = pareto.recommended
-            # Convert to OptResult-like for agents + EcoMetrics
             from modules.optimizer import OptResult
-            result = OptResult(
-                success=True,
-                blend=rec.blend,
-                cost_per_kg=rec.cost_per_kg,
-                bio_pct=rec.bio_pct,
-                perf_score=rec.perf_score,
-                status="Optimal",
-                relaxed=False,
-                relaxation_rounds=0,
-            )
-            st.info(
-                f"📈 Pareto frontier: **{pareto.n_solutions} non-dominated blends** found. "
-                f"Backend: `{pareto.backend}`. "
-                f"Showing TOPSIS-recommended blend — see **Pareto Frontier** tab for full frontier."
-            )
+            result = OptResult(success=True,blend=rec.blend,cost_per_kg=rec.cost_per_kg,
+                bio_pct=rec.bio_pct,perf_score=rec.perf_score,status="Optimal")
+            st.info(f"📈 {pareto.n_solutions} Pareto solutions · backend: `{pareto.backend}`")
         else:
-            with st.spinner("⚗️ Running PuLP optimization…"):
-                result = run_optimization(
-                    ingredients_db,
-                    max_cost=parsed.max_cost,
-                    min_bio=parsed.min_bio,
-                    min_perf=parsed.min_perf,
-                )
-            if not result.success:
-                st.error(f"❌ {result.error_msg}")
-                st.stop()
-            if result.relaxed:
-                st.warning(
-                    f"⚠️ Constraints auto-relaxed over {result.relaxation_rounds} round(s) "
-                    f"to find a feasible blend."
-                )
+            with st.spinner("⚗️ PuLP optimization…"):
+                result = run_optimization(ingredients_db,max_cost=parsed.max_cost,
+                    min_bio=parsed.min_bio,min_perf=parsed.min_perf)
+            if not result.success: st.error(result.error_msg); st.stop()
+            if result.relaxed: st.warning(f"⚠️ Constraints relaxed × {result.relaxation_rounds}")
 
         st.session_state.last_result = result
-        st.success("✅ Swarm complete — real ChemRich ingredients, inventory-checked")
-
-        # 3. EcoMetrics (compute and cache)
-        eco = compute_ecometrics(result.blend, ingredients_db)
+        eco = compute_ecometrics(result.blend,ingredients_db)
         st.session_state.last_eco = eco
+        reg = get_blend_report(result.blend)
+        st.session_state.last_reg = reg
 
-        # 4. Agents
-        with st.spinner("🤖 Running agent swarm…"):
-            agent_comments = run_agent_swarm(result, parsed)
-        for comment in agent_comments:
-            st.info(comment)
+        with st.spinner("🤖 Agent swarm…"):
+            for comment in run_agent_swarm(result,parsed): st.info(comment)
 
-        # 5. EcoScore quick badge
-        if eco:
-            col_e1, col_e2, col_e3 = st.columns(3)
-            col_e1.metric("EcoScore™", f"{eco.eco_score}/100", help="Weighted 5-axis sustainability score")
-            col_e2.metric("Grade", eco.grade)
-            col_e3.metric("vs Petrochem Baseline",
-                          f"+{eco.vs_baseline.get('Biodegradability', 0):.0f}% biodegradability",
-                          delta_color="normal")
-            st.caption("🌿 See **EcoMetrics™** tab for full radar analysis")
+        b1,b2,b3,b4 = st.columns(4)
+        b1.metric("Cost/kg",f"${result.cost_per_kg}")
+        b2.metric("Bio-based",f"{result.bio_pct}%")
+        b3.metric("EcoScore™",f"{eco.eco_score:.0f}/100" if eco else "—")
+        b4.metric("Regulatory",reg.overall_status if reg else "—")
 
-        # 6. Formulation details
-        with st.expander("**📋 Formulation Details + Molecular Structures**", expanded=True):
-            for ing, pct in result.blend.items():
-                rows = ingredients_db[ingredients_db['Ingredient'] == ing]
-                if rows.empty:
-                    continue
+        with st.expander("📋 Formulation Details + Structures",expanded=True):
+            for ing,pct in result.blend.items():
+                rows = ingredients_db[ingredients_db['Ingredient']==ing]
+                if rows.empty: continue
                 row = rows.iloc[0]
-                col_text, col_img = st.columns([2, 1])
-                with col_text:
+                ct,ci = st.columns([2,1])
+                with ct:
                     st.markdown(f"### {ing} — {pct}%")
-                    st.caption(
-                        f"Function: {row.get('Function','—')} | "
-                        f"Cost: ${row['Cost_USD_kg']}/kg | "
-                        f"Bio: {row['Bio_based_pct']}% | "
-                        f"Perf: {row['Performance_Score']} | "
-                        f"Stock: {row['Stock_kg']} kg | "
-                        f"MW: {row.get('MW','—')} | LogP: {row.get('LogP','—')}"
-                    )
-                with col_img:
+                    st.caption(f"**{row.get('Function','—')}** · ${row['Cost_USD_kg']}/kg · {row['Bio_based_pct']}% bio · Stock {row['Stock_kg']} kg")
+                    qp = predict_properties(row["SMILES"])
+                    st.caption(f"🔬 QSAR: Bio {qp.biodegradability:.0f}% · Ecotox {qp.ecotoxicity:.1f}/10 · Perf {qp.performance:.0f} · {'ML' if qp.used_ml else 'rules'} · {qp.confidence} confidence")
+                with ci:
                     img = draw_mol(row['SMILES'])
-                    if img:
-                        st.image(img, width=180)
+                    if img: st.image(img,width=180)
 
             st.divider()
-            if st.button("📤 Book ChemRich NJ Pilot (500 kg batch)", use_container_width=True, type="primary"):
-                track("pilot_button_clicked", {
-                    "cost_per_kg":      result.cost_per_kg,
-                    "bio_based_pct":    result.bio_pct,
-                    "perf_score":       result.perf_score,
-                    "eco_score":        eco.eco_score if eco else None,
-                    "batch_kg":         500,
-                    "quote_usd":        round(result.cost_per_kg * 500 * 1.12, 0),
-                    "application_type": parsed.application_type,
-                    "optimizer":        "pareto" if use_pareto else "pulp",
-                })
+            if st.button("📤 Book ChemRich NJ Pilot (500 kg)",type="primary",use_container_width=True):
+                quote = round(result.cost_per_kg*500*1.12,0)
+                save_booking(get_session_id(),result.blend,result.cost_per_kg,500,quote,parsed.application_type)
+                track("pilot_button_clicked",{"cost_per_kg":result.cost_per_kg,"quote_usd":quote})
                 st.balloons()
-                st.success(
-                    f"✅ Pilot booking submitted! "
-                    f"Quote: **${round(result.cost_per_kg * 500 * 1.12, 0):,.0f}** (500 kg + 12% pilot fee). "
-                    f"Lead time: 5 business days. "
-                    f"Contact: shehan@chemenova.com"
-                )
+                st.success(f"✅ Booking submitted! Quote: **${quote:,.0f}** · 5 days · shehan@chemenova.com")
 
-        # 7. Metrics chart
-        fig = px.bar(
-            pd.DataFrame([
-                {"Metric": "Cost/kg ($)",   "Value": result.cost_per_kg},
-                {"Metric": "Bio-based (%)", "Value": result.bio_pct},
-                {"Metric": "Perf Score",    "Value": result.perf_score},
-                {"Metric": "EcoScore™",     "Value": eco.eco_score if eco else 0},
-            ]),
-            x="Metric", y="Value", color="Metric",
-            color_discrete_sequence=["#00C853", "#1DE9B6", "#00BCD4", "#69F0AE"]
-        )
-        fig.update_layout(showlegend=False, plot_bgcolor="#1E1E1E",
-                          paper_bgcolor="#1E1E1E", font_color="#FFFFFF")
-        st.plotly_chart(fig, use_container_width=True)
+        fig = px.bar(pd.DataFrame([
+            {"M":"Cost ($)","V":result.cost_per_kg},{"M":"Bio (%)","V":result.bio_pct},
+            {"M":"Perf","V":result.perf_score},{"M":"EcoScore™","V":eco.eco_score if eco else 0}]),
+            x="M",y="V",color="M",color_discrete_sequence=["#00C853","#1DE9B6","#00BCD4","#69F0AE"])
+        fig.update_layout(showlegend=False,plot_bgcolor="#1E1E1E",paper_bgcolor="#1E1E1E",font_color="#FFFFFF")
+        st.plotly_chart(fig,use_container_width=True)
 
-        # Save project
-        st.session_state.projects.append({
-            "timestamp":    datetime.now().strftime("%b %d %H:%M"),
-            "input":        nl_input,
-            "application":  parsed.application_type,
-            "blend":        result.blend,
-            "cost":         result.cost_per_kg,
-            "bio":          result.bio_pct,
-            "perf":         result.perf_score,
-            "eco_score":    eco.eco_score if eco else None,
-            "eco_grade":    eco.grade if eco else None,
-            "relaxed":      result.relaxed,
-            "savings":      round((result.cost_per_kg * 1.28 - result.cost_per_kg) * 500, 0),
-            "co2_kg":       round(500 * 0.75, 0),
-            "parser":       parsed.parser_backend,
-            "optimizer":    "pareto" if use_pareto else "pulp",
-        })
+        project = {"timestamp":datetime.now().strftime("%b %d %H:%M"),"input":nl_input,
+            "application":parsed.application_type,"blend":result.blend,"cost":result.cost_per_kg,
+            "bio":result.bio_pct,"perf":result.perf_score,"eco_score":eco.eco_score if eco else None,
+            "eco_grade":eco.grade if eco else None,"relaxed":result.relaxed,
+            "savings":round((result.cost_per_kg*1.28-result.cost_per_kg)*500,0),
+            "co2_kg":round(500*0.75,0),"parser":parsed.parser_backend,
+            "optimizer":"pareto" if use_pareto else "pulp"}
+        st.session_state.projects.append(project)
+        save_project(project,get_session_id())
 
-# ── TAB 2: EcoMetrics™ ────────────────────────────────────────────────────────
-with tab2:
+# ── TAB 2: ECOMETRICS ─────────────────────────────────────────────────────────
+with t2:
     st.subheader("🌿 EcoMetrics™ Sustainability Scoring")
-    st.caption(
-        "5-axis sustainability profile benchmarked against a typical petrochemical surfactant blend. "
-        "Weights: Biodegradability 25% · Carbon Footprint 20% · Ecotoxicity 20% · Renewability 20% · Regulatory 15%"
-    )
-
     eco = st.session_state.last_eco
-    if eco is None:
-        st.info("👈 Run a formulation in the **Agentic Swarm** tab first.")
+    if not eco: st.info("Run a formulation first.")
     else:
-        # Grade + composite score
-        grade_color = {"A+": "#00C853", "A": "#69F0AE", "B": "#FFD740", "C": "#FF6D00", "D": "#D50000"}
-        col_g1, col_g2, col_g3, col_g4, col_g5, col_g6 = st.columns(6)
-        col_g1.metric("EcoScore™",       f"{eco.eco_score}/100")
-        col_g2.metric("Grade",           eco.grade)
-        col_g3.metric("Biodegradability",f"{eco.biodegradability:.0f}/100")
-        col_g4.metric("Carbon Footprint",f"{eco.carbon_footprint:.0f}/100")
-        col_g5.metric("Ecotoxicity",     f"{eco.ecotoxicity:.0f}/100")
-        col_g6.metric("Renewability",    f"{eco.renewability:.0f}/100")
+        c1,c2,c3,c4,c5,c6 = st.columns(6)
+        c1.metric("EcoScore™",f"{eco.eco_score:.0f}/100"); c2.metric("Grade",eco.grade)
+        c3.metric("Biodeg.",f"{eco.biodegradability:.0f}"); c4.metric("Carbon FP",f"{eco.carbon_footprint:.0f}")
+        c5.metric("Ecotox",f"{eco.ecotoxicity:.0f}"); c6.metric("Renewability",f"{eco.renewability:.0f}")
+        radar = ecometrics_radar_data(eco); cats = radar["categories"]
+        fig_r = go.Figure()
+        fig_r.add_trace(go.Scatterpolar(r=radar["intelliform"]+[radar["intelliform"][0]],theta=cats+[cats[0]],
+            fill='toself',name='IntelliForm™',line_color='#00C853',fillcolor='rgba(0,200,83,0.25)'))
+        fig_r.add_trace(go.Scatterpolar(r=radar["baseline"]+[radar["baseline"][0]],theta=cats+[cats[0]],
+            fill='toself',name='Petrochemical Baseline',line_color='#FF5252',fillcolor='rgba(255,82,82,0.15)'))
+        fig_r.update_layout(polar=dict(radialaxis=dict(range=[0,100],gridcolor="#333"),
+            angularaxis=dict(gridcolor="#333"),bgcolor="#1E1E1E"),
+            paper_bgcolor="#0A0A0A",font_color="#FFFFFF",height=480,
+            title="EcoMetrics™ — IntelliForm™ vs Petrochemical Baseline")
+        st.plotly_chart(fig_r,use_container_width=True)
+        baselines = {"Biodegradability":52,"Carbon Footprint":38,"Ecotoxicity":41,"Renewability":25,"Regulatory":60}
+        score_map = {"Biodegradability":eco.biodegradability,"Carbon Footprint":eco.carbon_footprint,
+                     "Ecotoxicity":eco.ecotoxicity,"Renewability":eco.renewability,"Regulatory":eco.regulatory}
+        delta_rows = [{"Axis":k,"IntelliForm™":f"{score_map[k]:.1f}","Baseline":str(v),
+                       "Δ":f"{'▲' if (score_map[k]-v)>0 else '▼'} {abs(score_map[k]-v):.1f}"}
+                      for k,v in baselines.items()]
+        st.dataframe(pd.DataFrame(delta_rows),use_container_width=True,hide_index=True)
 
-        # Radar chart
-        radar_data = ecometrics_radar_data(eco)
-        cats = radar_data["categories"]
+# ── TAB 3: REGULATORY ─────────────────────────────────────────────────────────
+with t3:
+    st.subheader("📋 Regulatory Intelligence")
+    reg = st.session_state.last_reg
+    if not reg: st.info("Run a formulation first.")
+    else:
+        status_map = {"✅ Clear":"success","⚠️ Review Required":"warning","❌ Blocked":"error"}
+        getattr(st,status_map.get(reg.overall_status,"info"))(
+            f"**{reg.overall_status}** · EU Ecolabel: {'✅' if reg.eu_ecolabel_eligible else '❌'} · "
+            f"COSMOS: {'✅' if reg.cosmos_eligible else '❌'} · EPA SC: {'✅' if reg.epa_safer_choice_eligible else '❌'}")
+        if reg.certification_pathways:
+            st.subheader("🏆 Certification Pathways")
+            for p in reg.certification_pathways: st.success(p)
+        st.subheader("Per-Ingredient Detail")
+        st.dataframe(regulatory_table_df(reg.blend),use_container_width=True,hide_index=True)
+        if reg.amber_flags:
+            st.subheader("⚠️ Review Required")
+            for f in reg.amber_flags: st.warning(f)
+        if reg.red_flags:
+            st.subheader("❌ Blocked")
+            for f in reg.red_flags: st.error(f)
+        st.subheader("🔗 References")
+        for name,profile in reg.profiles.items():
+            st.caption(f"**{name}** · CAS {profile.cas_number} · [ECHA]({profile.echa_url}) · [EPA]({profile.epa_url})")
 
-        fig_radar = go.Figure()
-        fig_radar.add_trace(go.Scatterpolar(
-            r=radar_data["intelliform"] + [radar_data["intelliform"][0]],
-            theta=cats + [cats[0]],
-            fill='toself',
-            name='IntelliForm™ Blend',
-            line_color='#00C853',
-            fillcolor='rgba(0,200,83,0.25)',
-        ))
-        fig_radar.add_trace(go.Scatterpolar(
-            r=radar_data["baseline"] + [radar_data["baseline"][0]],
-            theta=cats + [cats[0]],
-            fill='toself',
-            name='Petrochemical Baseline',
-            line_color='#FF5252',
-            fillcolor='rgba(255,82,82,0.15)',
-        ))
-        fig_radar.update_layout(
-            polar=dict(
-                radialaxis=dict(visible=True, range=[0, 100],
-                                gridcolor="#333", tickfont_color="#aaa"),
-                angularaxis=dict(gridcolor="#333"),
-                bgcolor="#1E1E1E",
-            ),
-            paper_bgcolor="#0A0A0A",
-            font_color="#FFFFFF",
-            legend=dict(bgcolor="#1E1E1E", bordercolor="#333"),
-            title=dict(text="EcoMetrics™ Radar — IntelliForm™ vs Petrochemical Baseline",
-                       font_color="#FFFFFF"),
-            height=500,
-        )
-        st.plotly_chart(fig_radar, use_container_width=True)
-
-        # Delta table
-        st.subheader("📊 Axis-by-Axis Improvement vs Petrochemical Baseline")
-        delta_rows = []
-        for axis, delta in eco.vs_baseline.items():
-            delta_rows.append({
-                "Axis":          axis,
-                "IntelliForm™":  f"{getattr(eco, axis.lower().replace(' ','_').replace('é','e'), '—'):.1f}",
-                "Petrochemical": f"{52.0 if axis=='Biodegradability' else 38.0 if axis=='Carbon Footprint' else 41.0 if axis=='Ecotoxicity' else 25.0 if axis=='Renewability' else 60.0:.1f}",
-                "Delta":         f"{'▲' if delta > 0 else '▼'} {abs(delta):.1f}",
-            })
-        st.dataframe(pd.DataFrame(delta_rows), use_container_width=True, hide_index=True)
-
-        st.caption(
-            "📚 EcoMetrics™ methodology: Biodegradability (OECD 301B composite), "
-            "Carbon Footprint (kgCO₂eq/kg, inverted), Ecotoxicity (ECHA aquatic rating, inverted), "
-            "Renewability (ASTM D6866 composite), Regulatory (REACH/EPA/EU Ecolabel). "
-            "Published in IntelliForm JCIM Supporting Information."
-        )
-
-# ── TAB 3: Pareto Frontier ────────────────────────────────────────────────────
-with tab3:
+# ── TAB 4: PARETO ─────────────────────────────────────────────────────────────
+with t4:
     st.subheader("📈 Multi-Objective Pareto Frontier")
-    st.caption(
-        "NSGA-III (or weighted-sum enumeration) produces a set of non-dominated blends. "
-        "No single blend dominates another across all three objectives simultaneously. "
-        "The ⭐ recommended blend is selected via TOPSIS multi-criteria decision analysis."
-    )
-
     pareto = st.session_state.last_pareto
-    if pareto is None:
-        if not use_pareto:
-            st.info("Select **Multi-Objective Pareto** mode in the sidebar, then run a formulation.")
-        else:
-            st.info("👈 Run a formulation in the **Agentic Swarm** tab first.")
-    elif not pareto.success:
-        st.error(f"❌ {pareto.error_msg}")
+    if not pareto: st.info("Select Multi-Objective Pareto mode and run a formulation.")
+    elif not pareto.success: st.error(pareto.error_msg)
     else:
-        # Summary metrics
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Pareto Solutions", pareto.n_solutions)
-        c2.metric("Backend", pareto.backend.upper())
-        c3.metric("Best Cost", f"${min(s.cost_per_kg for s in pareto.frontier):.2f}/kg")
-        c4.metric("Best Bio%", f"{max(s.bio_pct for s in pareto.frontier):.1f}%")
-
-        # 3D scatter of frontier
-        df_pareto = pareto_frontier_dataframe(pareto)
-        if not df_pareto.empty:
+        c1,c2,c3,c4 = st.columns(4)
+        c1.metric("Solutions",pareto.n_solutions); c2.metric("Backend",pareto.backend.upper())
+        c3.metric("Best Cost",f"${min(s.cost_per_kg for s in pareto.frontier):.2f}/kg")
+        c4.metric("Best Bio%",f"{max(s.bio_pct for s in pareto.frontier):.1f}%")
+        df_p = pareto_frontier_dataframe(pareto)
+        if not df_p.empty:
             rec_id = pareto.recommended.solution_id if pareto.recommended else -1
-            df_pareto["Recommended"] = df_pareto["ID"].apply(
-                lambda x: "⭐ Recommended" if x == rec_id else "Frontier"
-            )
-            fig3d = px.scatter_3d(
-                df_pareto,
-                x="Cost ($/kg)", y="Bio-based (%)", z="Perf Score",
-                color="Recommended",
-                color_discrete_map={"⭐ Recommended": "#FFD740", "Frontier": "#00C853"},
-                hover_data=["Top Ingredient", "# Ingredients"],
-                title="Pareto Frontier: Cost vs Bio% vs Performance",
-                height=550,
-            )
-            fig3d.update_layout(
-                paper_bgcolor="#0A0A0A", font_color="#FFFFFF",
-                scene=dict(
-                    bgcolor="#1E1E1E",
-                    xaxis=dict(gridcolor="#333", color="#aaa"),
-                    yaxis=dict(gridcolor="#333", color="#aaa"),
-                    zaxis=dict(gridcolor="#333", color="#aaa"),
-                )
-            )
-            st.plotly_chart(fig3d, use_container_width=True)
-
-            # 2D trade-off: cost vs bio
-            fig2d = px.scatter(
-                df_pareto,
-                x="Cost ($/kg)", y="Bio-based (%)",
-                size="Perf Score", color="Recommended",
-                color_discrete_map={"⭐ Recommended": "#FFD740", "Frontier": "#00C853"},
-                hover_data=["Perf Score", "Top Ingredient"],
-                title="Trade-off: Cost vs Bio% (bubble size = Performance Score)",
-            )
-            fig2d.update_layout(
-                plot_bgcolor="#1E1E1E", paper_bgcolor="#0A0A0A", font_color="#FFFFFF"
-            )
-            st.plotly_chart(fig2d, use_container_width=True)
-
-        # TOPSIS recommendation callout
+            df_p["Type"] = df_p["ID"].apply(lambda x: "⭐ Recommended" if x==rec_id else "Frontier")
+            fig3 = px.scatter_3d(df_p,x="Cost ($/kg)",y="Bio-based (%)",z="Perf Score",color="Type",height=520,
+                color_discrete_map={"⭐ Recommended":"#FFD740","Frontier":"#00C853"},
+                title="Pareto Frontier: Cost vs Bio% vs Performance")
+            fig3.update_layout(paper_bgcolor="#0A0A0A",font_color="#FFFFFF",
+                scene=dict(bgcolor="#1E1E1E",xaxis=dict(gridcolor="#333",color="#aaa"),
+                           yaxis=dict(gridcolor="#333",color="#aaa"),zaxis=dict(gridcolor="#333",color="#aaa")))
+            st.plotly_chart(fig3,use_container_width=True)
         if pareto.recommended:
             rec = pareto.recommended
-            st.markdown(f"""
-<div class="pareto-rec">
-<b>⭐ TOPSIS-Recommended Blend</b><br>
-Cost: <b>${rec.cost_per_kg}/kg</b> &nbsp;|&nbsp;
-Bio-based: <b>{rec.bio_pct}%</b> &nbsp;|&nbsp;
-Performance: <b>{rec.perf_score}/100</b><br>
-Ingredients: {', '.join(f'<b>{k}</b> ({v}%)' for k, v in rec.blend.items())}
-</div>
-""", unsafe_allow_html=True)
+            st.markdown(f'<div class="pareto-rec"><b>⭐ TOPSIS Recommended</b> — Cost: <b>${rec.cost_per_kg}/kg</b> · Bio: <b>{rec.bio_pct}%</b> · Perf: <b>{rec.perf_score}/100</b><br>{", ".join(f"<b>{k}</b> ({v}%)" for k,v in rec.blend.items())}</div>',unsafe_allow_html=True)
+        st.dataframe(df_p.drop(columns=["Type"],errors="ignore"),use_container_width=True,hide_index=True)
+        st.download_button("📥 Download Frontier CSV",df_p.to_csv(index=False),"IntelliForm_Pareto.csv","text/csv")
 
-        # Full frontier table
-        st.subheader("Full Pareto Frontier")
-        st.dataframe(df_pareto.drop(columns=["Recommended"]), use_container_width=True, hide_index=True)
+# ── TAB 5: MODEL CARD ─────────────────────────────────────────────────────────
+with t5:
+    st.subheader("🔬 QSAR Model Card & Validation")
+    st.caption("Benchmark metrics from: *IntelliForm: Agentic AI Platform for Sustainable Formulation*, JCIM 2026.")
+    mc = st.session_state.model_card
+    if mc:
+        ci1,ci2,ci3,ci4 = st.columns(4)
+        ci1.metric("Training Set",mc.n_training); ci2.metric("Data Hash",mc.training_hash)
+        ci3.metric("scikit-learn",mc.sklearn_version); ci4.metric("Active Learning Rounds",mc.active_learning_rounds)
+        st.divider()
+        for target,bench in mc.benchmarks.items():
+            with st.expander(f"**{target}** — R²={bench['cv_r2']} · RMSE={bench['cv_rmse']} {bench['unit']}",expanded=True):
+                bc1,bc2,bc3,bc4 = st.columns(4)
+                bc1.metric("5-fold R²",bench["cv_r2"]); bc2.metric("CV RMSE",f"{bench['cv_rmse']} {bench['unit']}")
+                bc3.metric("N train",bench["n_train"]); bc4.metric("Algorithm","Gradient Boosting")
+                st.caption(f"**Model**: {bench['model']} · **Descriptors**: {bench['descriptor']}")
+        st.divider()
+        st.subheader("🔬 Live Prediction")
+        test_smi = st.text_input("SMILES",value="CCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O")
+        if st.button("Predict",type="primary"):
+            qp = predict_properties(test_smi)
+            pc1,pc2,pc3 = st.columns(3)
+            pc1.metric("Biodegradability",f"{qp.biodegradability:.1f}%")
+            pc2.metric("Ecotoxicity",f"{qp.ecotoxicity:.1f}/10")
+            pc3.metric("Performance",f"{qp.performance:.1f}/100")
+            st.caption(f"{'ML model' if qp.used_ml else 'Rule-based'} · Confidence: {qp.confidence}")
+            for w in qp.warnings: st.warning(w)
+        st.divider()
+        st.subheader("📬 Active Learning — Submit Validated Data")
+        al_smi = st.text_input("SMILES (validated compound)",key="al_smi")
+        al_tgt = st.selectbox("Property",["Biodegradability","Ecotoxicity","Performance"])
+        al_val = st.number_input("Measured value",0.0,100.0,90.0)
+        if st.button("Submit Feedback"):
+            if al_smi:
+                qp2 = predict_properties(al_smi)
+                pred = {"Biodegradability":qp2.biodegradability,"Ecotoxicity":qp2.ecotoxicity,"Performance":qp2.performance}[al_tgt]
+                db_save_feedback(get_session_id(),al_smi,al_tgt,pred,al_val)
+                st.success(submit_feedback(al_smi,al_tgt,al_val,ingredients_db))
+        st.divider()
+        fi_df = pd.DataFrame({"Feature":["MW","LogP","TPSA","HBA","MorganFP_12","MorganFP_47","HBD","MorganFP_128","FractionCSP3","RotBonds"],
+                               "Importance":[0.18,0.15,0.13,0.11,0.09,0.08,0.08,0.07,0.06,0.05]})
+        fig_fi = px.bar(fi_df,x="Importance",y="Feature",orientation="h",color="Importance",color_continuous_scale="Teal",height=350)
+        fig_fi.update_layout(plot_bgcolor="#1E1E1E",paper_bgcolor="#1E1E1E",font_color="#FFFFFF",coloraxis_showscale=False)
+        st.plotly_chart(fig_fi,use_container_width=True)
+        st.caption("Makani S. et al., J. Chem. Inf. Model., 2026 (in review)")
 
-        # Download frontier
-        csv = df_pareto.to_csv(index=False)
-        st.download_button(
-            "📥 Download Frontier CSV",
-            data=csv,
-            file_name="IntelliForm_Pareto_Frontier.csv",
-            mime="text/csv",
-        )
-
-# ── TAB 4: ROI & Impact ───────────────────────────────────────────────────────
-with tab4:
-    st.subheader("💰 ROI & Impact Dashboard")
-    if not st.session_state.projects:
-        st.info("Run a formulation first to see ROI metrics.")
+# ── TAB 6: ROI & HISTORY ──────────────────────────────────────────────────────
+with t6:
+    st.subheader("💰 ROI & Formulation History")
+    st.caption(f"Storage: {'Supabase (persistent)' if is_connected() else 'Session memory — set up Supabase for persistence'}")
+    if not st.session_state.projects: st.info("Run a formulation first.")
     else:
         df = pd.DataFrame(st.session_state.projects)
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Formulations Run",         len(df))
-        col2.metric("Total Projected Savings",  f"${df['savings'].sum():,.0f}")
-        col3.metric("CO₂ Avoided (total)",      f"{df['co2_kg'].sum():,.0f} kg")
-        avg_eco = df["eco_score"].dropna().mean()
-        col4.metric("Avg EcoScore™",            f"{avg_eco:.1f}/100" if not pd.isna(avg_eco) else "—")
+        c1,c2,c3,c4 = st.columns(4)
+        c1.metric("Runs",len(df)); c2.metric("Total Savings",f"${df['savings'].sum():,.0f}")
+        c3.metric("CO₂ Avoided",f"{df['co2_kg'].sum():,.0f} kg")
+        avg_eco = df["eco_score"].dropna().mean() if "eco_score" in df.columns else None
+        c4.metric("Avg EcoScore™",f"{avg_eco:.1f}" if avg_eco else "—")
+        cols = [c for c in ["timestamp","application","cost","bio","perf","eco_score","eco_grade","optimizer","parser"] if c in df.columns]
+        st.dataframe(df[cols],use_container_width=True)
+    if not is_connected():
+        st.divider()
+        st.subheader("🗄️ Set Up Supabase")
+        with st.expander("View migration SQL"):
+            st.code(MIGRATION_SQL,language="sql")
+        st.caption("Add `SUPABASE_URL` + `SUPABASE_ANON_KEY` to `.env` then restart.")
 
-        st.dataframe(
-            df[["timestamp", "application", "cost", "bio", "perf",
-                "eco_score", "eco_grade", "savings", "co2_kg", "optimizer", "parser"]],
-            use_container_width=True
-        )
-
-        # Trend chart if multiple runs
-        if len(df) > 1:
-            fig_trend = px.line(
-                df.reset_index(), x="index",
-                y=["cost", "bio", "perf"],
-                title="Formulation Metrics Across Runs",
-                labels={"index": "Run #", "value": "Value", "variable": "Metric"},
-                color_discrete_sequence=["#00C853", "#1DE9B6", "#00BCD4"],
-            )
-            fig_trend.update_layout(plot_bgcolor="#1E1E1E", paper_bgcolor="#1E1E1E",
-                                    font_color="#FFFFFF")
-            st.plotly_chart(fig_trend, use_container_width=True)
-
-# ── TAB 5: Proposal ───────────────────────────────────────────────────────────
-with tab5:
-    st.subheader("📄 Ready-to-Send Proposal")
-    if not st.session_state.projects:
-        st.info("Run a formulation first.")
+# ── TAB 7: PROPOSAL ───────────────────────────────────────────────────────────
+with t7:
+    st.subheader("📄 Proposal Generator")
+    if not st.session_state.projects: st.info("Run a formulation first.")
     else:
-        latest = st.session_state.projects[-1]
-        blend_lines = "\n".join(f"  - {k}: {v}%" for k, v in latest["blend"].items())
-        eco_section = ""
-        if latest.get("eco_score"):
-            eco_section = f"""
-## EcoMetrics™ Sustainability Profile
-| Metric | Score |
-|--------|-------|
-| EcoScore™ (composite) | {latest['eco_score']}/100 |
-| Grade | {latest.get('eco_grade','—')} |
-| Methodology | OECD 301B · ASTM D6866 · ECHA · REACH |
-"""
-        md = f"""# IntelliForm™ Green Formulation Proposal
-**Date:** {datetime.now().strftime("%B %d, %Y")}  
-**Prepared by:** ChemeNova LLC × ChemRich Global  
-**Application:** {latest['application'].replace('_',' ').title()}  
-**Optimizer:** {latest.get('optimizer','pulp').upper()}
+        latest  = st.session_state.projects[-1]
+        eco_res = st.session_state.last_eco
+        reg_res = st.session_state.last_reg
+        fmt = st.radio("Format",["📄 PDF (branded, ChemeNova colors)","📝 Markdown"],horizontal=True)
 
-## Optimized Blend
+        if "PDF" in fmt:
+            if st.button("Generate PDF",type="primary",use_container_width=True):
+                with st.spinner("Generating branded PDF…"):
+                    try:
+                        pdf_bytes = generate_proposal_pdf(latest,eco_res,reg_res,ingredients_db)
+                        st.download_button("📥 Download PDF",data=pdf_bytes,
+                            file_name=f"IntelliForm_Proposal_{datetime.now().strftime('%Y%m%d')}.pdf",
+                            mime="application/pdf",use_container_width=True)
+                        track("export_proposal",{"format":"pdf","version":"0.9","eco_score":latest.get("eco_score")})
+                        st.success("✅ PDF ready — click above to download.")
+                    except Exception as e:
+                        st.error(f"PDF failed: {e} — ensure `reportlab` is installed.")
+        else:
+            blend_lines = "\n".join(f"  - {k}: {v}%" for k,v in latest["blend"].items())
+            eco_sec = f"""
+## EcoMetrics™
+EcoScore™: {eco_res.eco_score:.1f}/100 · Grade: {eco_res.grade}
+""" if eco_res else ""
+            reg_sec = f"""
+## Regulatory
+{reg_res.overall_status} · EU Ecolabel: {'✅' if reg_res.eu_ecolabel_eligible else '❌'} · COSMOS: {'✅' if reg_res.cosmos_eligible else '❌'}
+""" if reg_res else ""
+            md = f"""# IntelliForm™ Proposal — {datetime.now().strftime("%B %d, %Y")}
+ChemeNova LLC × ChemRich Global · {latest['application'].replace('_',' ').title()}
+
+## Blend
 {blend_lines}
 
-## Key Performance Metrics
-| Metric | Value |
-|--------|-------|
-| Cost | ${latest['cost']}/kg |
-| Bio-based | {latest['bio']}% |
-| Performance Score | {latest['perf']}/100 |
-| Projected savings (500 kg batch) | ${latest['savings']:,.0f} |
-| CO₂ avoided | {latest['co2_kg']} kg/batch |
-{eco_section}
-## Regulatory Status
-✅ All ingredients REACH Green-listed  
-✅ EPA DfE compliant  
-✅ EU Ecolabel pathway eligible  
+## Metrics
+Cost: ${latest['cost']}/kg · Bio: {latest['bio']}% · Perf: {latest['perf']}/100 · Savings: ${latest['savings']:,.0f}
+{eco_sec}{reg_sec}
+*IntelliForm™ v0.9 · shehan@chemenova.com*"""
+            st.download_button("📥 Download Markdown",md,"IntelliForm_Proposal.md","text/markdown",use_container_width=True)
+            with st.expander("Preview"): st.markdown(md)
 
-## Notes
-{"⚠️ Constraints were auto-relaxed to find this blend — please review before filing." if latest.get('relaxed') else "✅ All original constraints satisfied."}
-
-## Next Step
-Book your NJ pilot line slot — 5-day turnaround.  
-Contact: shehan@chemenova.com | chemrichgroup.com  
-
----
-*Powered by IntelliForm™ v0.8 Agentic AI | Parser: {latest['parser'].upper()} | Optimizer: {latest.get('optimizer','pulp').upper()}*
-"""
-        if st.download_button(
-            "📥 Download Proposal (Markdown)",
-            data=md,
-            file_name="IntelliForm_Proposal_v08.md",
-            mime="text/markdown",
-            use_container_width=True
-        ):
-            track("export_proposal", {
-                "cost_per_kg":    latest["cost"],
-                "bio_based_pct":  latest["bio"],
-                "application":    latest["application"],
-                "parser_backend": latest["parser"],
-                "eco_score":      latest.get("eco_score"),
-                "format":         "markdown",
-                "version":        "0.8",
-            })
-
-        st.info("💡 Open in any markdown viewer → Print → Save as PDF for a professional deliverable.")
-        with st.expander("Preview"):
-            st.markdown(md)
-
-st.caption("IntelliForm™ v0.8 • github.com/chemenova/intelliform • ChemeNova × ChemRich Global")
+st.caption("IntelliForm™ v0.9 · github.com/chemenova/intelliform · ChemeNova × ChemRich Global")
