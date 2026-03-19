@@ -1,14 +1,36 @@
-
-**data/ingredients_db.csv** (create folder + file — paste this exact CSV content)
-
-```csv
-Ingredient,SMILES,Cost_USD_kg,Bio_based_pct,Performance_Score,Stock_kg,REACH_Flag
-Coco-Glucoside,CCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,3.8,98,88,1850,Green
-Decyl Glucoside,CCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.5,95,82,920,Green
-Lauryl Glucoside,CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.1,97,85,640,Green
-Caprylyl Glucoside,CCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.2,96,80,310,Green
-Sucrose Cocoate,CCCCCCCCCCCC(=O)OC1OC(CO)C(O)C(O)C1O,5.8,100,78,180,Green
-Glycerol,OCC(O)CO,1.5,100,65,5200,Green
-Ethyl Lactate (bio),CCOC(=O)C(C)O,2.8,100,70,1450,Green
-D-Sorbitol,OC[C@H](O)[C@@H](O)[C@H](O)[C@H](O)CO,2.2,100,72,2100,Green
-Citric Acid,OC(=O)CC(O)(CC(=O)O)C(=O)O,1.6,100,68,3800,Green
+Ingredient,SMILES,Cost_USD_kg,Bio_based_pct,Performance_Score,Stock_kg,REACH_Flag,Function,Biodegradability,CarbonFootprint_kgCO2eq,Ecotoxicity_Score,Renewability_Score
+Coco-Glucoside,CCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,3.8,98,88,1850,Green,Primary Surfactant,95,1.2,8,96
+Decyl Glucoside,CCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.5,95,82,920,Green,Primary Surfactant,94,1.4,9,94
+Lauryl Glucoside,CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.1,97,85,640,Green,Primary Surfactant,93,1.3,8,95
+Caprylyl Glucoside,CCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.2,96,80,310,Green,Primary Surfactant,96,1.1,9,95
+Sucrose Cocoate,CCCCCCCCCCCC(=O)OC1OC(CO)C(O)C(O)C1O,5.8,100,78,180,Green,Emulsifier,92,1.5,8,99
+Glycerol,OCC(O)CO,1.5,100,65,5200,Green,Humectant,98,0.8,9,99
+Ethyl Lactate (bio),CCOC(=O)C(C)O,2.8,100,70,1450,Green,Solvent,97,0.9,9,99
+D-Sorbitol,OC[C@H](O)[C@@H](O)[C@H](O)[C@H](O)CO,2.2,100,72,2100,Green,Humectant,99,0.7,9,99
+Citric Acid,OC(=O)CC(O)(CC(=O)O)C(=O)O,1.6,100,68,3800,Green,pH Adjuster,99,0.6,9,99
+Cocamidopropyl Betaine,CCCCCCCCCCCC(=O)NCCC[N+](C)(C)CC([O-])=O,5.1,82,90,760,Green,Amphoteric Surfactant,88,2.1,7,80
+Sodium Cocoyl Glutamate,CCCCCCCCCCCC(=O)N[C@@H](CCC(=O)[O-])C(=O)[O-],6.2,90,87,420,Green,Mild Surfactant,91,1.8,8,89
+Lauryl Betaine,CCCCCCCCCCCC[N+](C)(C)CC([O-])=O,4.9,80,86,380,Green,Amphoteric Surfactant,87,2.2,7,78
+Sodium Lauroyl Sarcosinate,CCCCCCCCCCCC(=O)N(C)CC(=O)[O-],5.5,85,84,290,Green,Mild Surfactant,89,1.9,8,83
+Rhamnolipid (biosurfactant),OC(=O)CCCCCCCC/C=C/CCCCCC,8.5,100,79,95,Green,Biosurfactant,99,0.4,10,100
+Sophorolipid,OC1OC(CO)C(O)C(O)C1OC1OC(CO)C(O)C(O)C1OC(=O)CCCCCCCCC=C,9.2,100,76,60,Green,Biosurfactant,98,0.5,10,100
+Methyl Ester Ethoxylate,CCCCCCCCCCCC(=O)OCC,4.3,88,81,510,Green,Nonionic Surfactant,90,1.6,8,86
+Alkyl Polyglycoside C8-10,CCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.8,94,83,430,Green,Nonionic Surfactant,95,1.2,9,93
+Sodium Coco-Sulfate,CCCCCCCCCCCCCCCOS(=O)(=O)[O-],3.2,75,85,1200,Green,Anionic Surfactant,82,2.5,6,73
+Disodium Cocoyl Glutamate,CCCCCCCCCCCC(=O)N[C@@H](CCC([O-])=O)C([O-])=O,6.5,92,86,310,Green,Mild Surfactant,92,1.7,8,90
+Lauryl Glucoside (and) Glycerol,CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.4,96,86,520,Green,Primary Surfactant,94,1.2,9,95
+Sorbitan Oleate,CCCCCCCC/C=C\CCCCCCCC(=O)OC1CCOC(CO)C1O,5.3,90,74,340,Green,Emulsifier,88,1.9,7,88
+Polyglyceryl-4 Oleate,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)COCC(O)CO,6.1,92,72,215,Green,Emulsifier,90,1.7,8,90
+Xanthan Gum,OCC1OC(OC2C(OC(C2O)OCC3OC(OCC4OC(O)C(O)C(O)C4O)C(O)C(O)C3O)CO)C(O)C(O)C1O,7.2,100,68,480,Green,Thickener,97,1.0,9,99
+Hydroxyethyl Cellulose,OCC1OC(O)C(O)C(O)C1OCC(O)CO,4.6,100,66,720,Green,Thickener,95,1.1,9,99
+Guar Gum (bio),OCC1OC(OC2C(CO)OC(OCC3OC(O)C(CO)C(O)C3O)C(O)C2O)C(O)C(O)C1O,3.8,100,64,890,Green,Thickener,96,0.9,9,99
+Panthenol,OCC(C)(CO)CCC(=O)NCCC(O)=O,12.5,100,75,140,Green,Conditioner,99,1.3,9,99
+Allantoin,NC(=O)NC1NC(=O)NC1=O,8.8,100,73,180,Green,Skin Conditioning,99,1.2,9,99
+Lactic Acid (bio),CC(O)C(=O)O,1.4,100,67,4200,Green,pH Adjuster,99,0.5,9,99
+Sodium Phytate,OC(CO)(CO)C(O)(CO)CO,3.5,100,70,660,Green,Chelating Agent,98,0.8,9,99
+Benzyl Alcohol (NF),OCc1ccccc1,2.9,85,69,880,Green,Preservative,92,1.6,7,83
+Sodium Benzoate,OC(=O)c1ccccc1,1.8,80,65,1950,Green,Preservative,85,1.4,7,78
+Potassium Sorbate,CC=CC(=O)[O-],2.1,90,66,1620,Green,Preservative,93,1.2,8,88
+Sodium Gluconate,OC[C@@H](O)[C@@H](O)[C@H](O)[C@@H](O)C(=O)[O-],2.4,100,67,2300,Green,Chelating Agent,99,0.7,9,99
+Tocopheryl Acetate,CC(=O)OC1=C(C)C=C2OC(CCC[C@H](C)CCC[C@H](C)CCCC(C)C)(C)CCC2=C1C,18.5,90,71,85,Green,Antioxidant,88,2.8,7,88
+Ascorbic Acid,OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,4.2,100,69,520,Green,Antioxidant,99,0.8,9,99
