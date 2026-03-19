@@ -90,7 +90,7 @@ with st.sidebar:
     st.divider()
     st.header("⚙️ Optimization")
     use_pareto = st.radio("Mode",["Single-Objective (fast)","Multi-Objective Pareto"],index=0) == "Multi-Objective Pareto"
-    n_gen = st.slider("Optimization depth (higher = more solutions)",50,300,150,25) if use_pareto else 150
+    n_gen = st.slider("Optimization depth (higher = more solutions)",50,200,100,25) if use_pareto else 100
     st.divider()
     with st.expander("👤 Identity (optional)"):
         uname = st.text_input("Name", placeholder="Shehan Makani")

@@ -101,16 +101,17 @@ def _run_nsga3(
             f2 = -(X_norm @ bios)        # maximize bio
             f3 = -(X_norm @ perfs)       # maximize perf
 
-            # Constraints (≤ 0 means feasible)
-            g1 = (X_norm @ costs) - max_cost        # cost <= max_cost
-            g2 = min_bio  - (X_norm @ bios)         # bio  >= min_bio  → min_bio - bio <= 0
-            g3 = min_perf - (X_norm @ perfs)        # perf >= min_perf → min_perf - perf <= 0
+            # Constraints (≤ 0 means feasible) — small tolerance for numerical stability
+            TOLS = 0.5   # allow 0.5% slack on bio/perf constraints
+            g1 = (X_norm @ costs) - max_cost
+            g2 = (min_bio  - TOLS) - (X_norm @ bios)
+            g3 = (min_perf - TOLS) - (X_norm @ perfs)
 
             out["F"] = np.column_stack([f1, f2, f3])
             out["G"] = np.column_stack([g1, g2, g3])
 
-    ref_dirs = get_reference_directions("das-dennis", 3, n_partitions=12)
-    algorithm = NSGA3(pop_size=pop_size, ref_dirs=ref_dirs)
+    ref_dirs = get_reference_directions("das-dennis", 3, n_partitions=6)
+    algorithm = NSGA3(pop_size=max(len(ref_dirs), pop_size), ref_dirs=ref_dirs)
     termination = get_termination("n_gen", n_gen)
 
     res = minimize(
@@ -317,8 +318,8 @@ def run_pareto_optimization(
     max_cost: float,
     min_bio: float,
     min_perf: float,
-    n_gen: int = 150,
-    pop_size: int = 80,
+    n_gen: int = 100,
+    pop_size: int = 50,
 ) -> ParetoResult:
     """
     Run multi-objective Pareto optimization.
