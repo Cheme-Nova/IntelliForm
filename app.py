@@ -69,17 +69,33 @@ if not st.session_state.projects and is_connected():
 h1,h2,h3,h4 = st.columns([3,1,1,1])
 with h1:
     st.title("🧪 IntelliForm™ v0.9")
-    st.caption("AI-powered green chemistry formulation — describe what you need, get a certified, pilot-ready blend in seconds.")
+    st.caption("ChemeNova LLC × ChemRich Global — Agentic Green Chemistry Platform")
 h2.metric("Ingredients", len(ingredients_db))
-h3.metric("Certifications", "EU Ecolabel · EPA · COSMOS")
+h3.metric("Storage", "✅ Supabase" if is_connected() else "💾 Local")
 mc = st.session_state.model_card
 qsar_ok = mc and mc.sklearn_version != "unavailable"
-h4.metric("Optimization", "NSGA-III Pareto + LP")
+h4.metric("QSAR", "ML Active" if qsar_ok else "Rule-based")
 
-if os.getenv("GROQ_API_KEY",""):
-    st.success("🤖 Groq LLM active (llama-3.1-8b-instant)")
+# ── LLM availability detection ────────────────────────────────────────────────
+_available_llms = []
+if os.getenv("GROQ_API_KEY",""):      _available_llms.append("Groq (llama-3.1-8b-instant) — Free")
+if os.getenv("ANTHROPIC_API_KEY",""): _available_llms.append("Anthropic (claude-sonnet) — Best reasoning")
+if os.getenv("OPENAI_API_KEY",""):    _available_llms.append("OpenAI (gpt-4o-mini) — General")
+if os.getenv("OLLAMA_HOST",""):       _available_llms.append("Ollama (local) — Private")
+_available_llms.append("Regex fallback — No API needed")
+
+_llm_to_provider = {
+    "Groq (llama-3.1-8b-instant) — Free": "groq",
+    "Anthropic (claude-sonnet) — Best reasoning": "anthropic",
+    "OpenAI (gpt-4o-mini) — General": "openai",
+    "Ollama (local) — Private": "ollama",
+    "Regex fallback — No API needed": "regex",
+}
+
+if len(_available_llms) > 1:
+    st.success(f"🤖 {len(_available_llms)-1} LLM(s) available — select in sidebar")
 else:
-    st.warning("⚠️ Regex fallback — add GROQ_API_KEY to .env for full NL understanding")
+    st.warning("⚠️ No LLM API keys found — using regex fallback. Add GROQ_API_KEY for best results.")
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
@@ -88,9 +104,30 @@ with st.sidebar:
         value="I need a mild foaming green surfactant for personal care, under $4/kg, at least 95% bio-based, EPA Safer Choice compatible",
         height=110)
     st.divider()
+
+    st.header("🤖 LLM Provider")
+    selected_llm = st.selectbox(
+        "Active model",
+        options=_available_llms,
+        index=0,
+        help="Select which AI model parses your formulation request. All produce the same output format."
+    )
+    # Set env var so llm_parser picks it up
+    os.environ["LLM_PROVIDER"] = _llm_to_provider.get(selected_llm, "auto")
+
+    _provider_info = {
+        "groq":      "⚡ Fast · Free · Best for most requests",
+        "anthropic": "🧠 Best reasoning · Great for complex multi-constraint requests",
+        "openai":    "🔄 General purpose · Reliable fallback",
+        "ollama":    "🔒 Local · Private · No data leaves your machine",
+        "regex":     "🔧 Rule-based · Always works · No AI needed",
+    }
+    st.caption(_provider_info.get(_llm_to_provider.get(selected_llm, "auto"), ""))
+
+    st.divider()
     st.header("⚙️ Optimization")
     use_pareto = st.radio("Mode",["Single-Objective (fast)","Multi-Objective Pareto"],index=0) == "Multi-Objective Pareto"
-    n_gen = st.slider("Optimization depth (higher = more solutions)",50,200,100,25) if use_pareto else 100
+    n_gen = st.slider("Optimization depth",50,200,100,25) if use_pareto else 100
     st.divider()
     with st.expander("👤 Identity (optional)"):
         uname = st.text_input("Name", placeholder="Shehan Makani")
@@ -99,7 +136,7 @@ with st.sidebar:
         if st.button("Save identity"):
             identify_user(email=uemail or None,name=uname or None,company=uco or None)
             st.success("✅ Linked")
-    st.caption("IntelliForm™ v0.9 · [GitHub](https://github.com/chemenova/intelliform) · ChemeNova × ChemRich")
+    st.caption("IntelliForm v0.9 · [GitHub](https://github.com/chemenova/intelliform) · ChemeNova x ChemRich")
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
 t1,t2,t3,t4,t5,t6,t7 = st.tabs([
