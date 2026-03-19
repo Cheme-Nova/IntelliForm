@@ -45,7 +45,7 @@ GRAY   = colors.HexColor("#64748B")
 GREEN  = colors.HexColor("#00C853")
 RED_C  = colors.HexColor("#EF4444")
 
-W, H   = letter   # 8.5 × 11 inches
+W, H   = letter   # 8.5 x 11 inches
 
 
 # ── Style definitions ─────────────────────────────────────────────────────────
@@ -116,11 +116,11 @@ def _make_header_footer(title: str, date_str: str):
         # Header text
         canvas.setFillColor(WHITE)
         canvas.setFont("Helvetica-Bold", 10)
-        canvas.drawString(0.5 * inch, page_h - 0.35 * inch, "IntelliForm™ Green Formulation Proposal")
+        canvas.drawString(0.5 * inch, page_h - 0.35 * inch, "IntelliForm(TM) Green Formulation Proposal")
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(TEAL)
         canvas.drawRightString(page_w - 0.5 * inch, page_h - 0.35 * inch,
-                               f"ChemeNova LLC × ChemRich Global  |  {date_str}")
+                               f"ChemeNova LLC x ChemRich Global  |  {date_str}")
 
         # Teal accent line
         canvas.setStrokeColor(TEAL)
@@ -132,7 +132,7 @@ def _make_header_footer(title: str, date_str: str):
         canvas.setFont("Helvetica", 7)
         canvas.drawCentredString(
             page_w / 2, 0.35 * inch,
-            f"IntelliForm™ v0.9  |  Powered by ChemeNova LLC  |  shehan@chemenova.com  |  Page {doc.page}"
+            f"IntelliForm(TM) v0.9  |  Powered by ChemeNova LLC  |  shehan@chemenova.com  |  Page {doc.page}"
         )
         canvas.setStrokeColor(colors.HexColor("#E2E8F0"))
         canvas.setLineWidth(0.5)
@@ -217,9 +217,9 @@ def _radar_drawing(eco_result) -> Optional[Drawing]:
 def _ingredient_row(name: str, pct: float, db_row) -> Table:
     s = _styles()
     pct_str = f"{pct:.1f}%"
-    func    = str(db_row.get("Function", "—")) if hasattr(db_row, "get") else "—"
-    cost    = str(db_row.get("Cost_USD_kg", "—")) if hasattr(db_row, "get") else "—"
-    bio     = str(db_row.get("Bio_based_pct", "—")) if hasattr(db_row, "get") else "—"
+    func    = str(db_row.get("Function", "-")) if hasattr(db_row, "get") else "-"
+    cost    = str(db_row.get("Cost_USD_kg", "-")) if hasattr(db_row, "get") else "-"
+    bio     = str(db_row.get("Bio_based_pct", "-")) if hasattr(db_row, "get") else "-"
 
     data = [[
         Paragraph(f"<b>{name}</b>", s["body"]),
@@ -261,8 +261,8 @@ def _reg_table(reg_report) -> Table:
             name,
             profile.reach_status,
             profile.epa_safer_choice,
-            "✅" if profile.eu_ecolabel else "❌",
-            "✅" if profile.cosmos_approved else "❌",
+            "Yes" if profile.eu_ecolabel else "No",
+            "Yes" if profile.cosmos_approved else "No",
             profile.restrictions[0][:55] + "…" if profile.restrictions else "None",
         ]
         rows.append(row)
@@ -326,8 +326,8 @@ def generate_proposal_pdf(
     # ── Cover section ──────────────────────────────────────────────────────────
     # Navy cover band
     cover_band = Table(
-        [[Paragraph("IntelliForm™ Green Formulation Proposal", s["cover_title"]),
-          Paragraph(f"<b>ChemeNova LLC × ChemRich Global</b><br/>{date_str}", s["cover_sub"])]],
+        [[Paragraph("IntelliForm(TM) Green Formulation Proposal", s["cover_title"]),
+          Paragraph(f"<b>ChemeNova LLC x ChemRich Global</b><br/>{date_str}", s["cover_sub"])]],
         colWidths=[4.5*inch, 3*inch],
     )
     cover_band.setStyle(TableStyle([
@@ -351,13 +351,13 @@ def generate_proposal_pdf(
     story.append(Spacer(1, 0.1*inch))
 
     # Key metrics band
-    eco_score_val = f"{eco_result.eco_score:.0f}" if eco_result else "—"
-    eco_grade_val = eco_result.grade if eco_result else "—"
+    eco_score_val = f"{eco_result.eco_score:.0f}" if eco_result else "-"
+    eco_grade_val = eco_result.grade if eco_result else "-"
     story.append(_metric_table([
         ("Cost / kg",        f"${project.get('cost', 0):.2f}",  "USD"),
         ("Bio-based",        f"{project.get('bio', 0):.1f}",    "%"),
         ("Performance",      f"{project.get('perf', 0):.0f}",   "/ 100"),
-        ("EcoScore™",        eco_score_val,                      f"Grade {eco_grade_val}"),
+        ("EcoScore(TM)",        eco_score_val,                      f"Grade {eco_grade_val}"),
     ]))
     story.append(Spacer(1, 0.15*inch))
 
@@ -375,13 +375,13 @@ def generate_proposal_pdf(
             story.append(Spacer(1, 3))
     else:
         for ing, pct in blend.items():
-            story.append(Paragraph(f"• <b>{ing}</b> — {pct:.1f}%", s["body"]))
+            story.append(Paragraph(f"- <b>{ing}</b> - {pct:.1f}%", s["body"]))
 
     # Relaxation note
     if project.get("relaxed"):
         story.append(Spacer(1, 6))
         story.append(Paragraph(
-            "⚠️ Note: Original constraints were auto-relaxed to find this blend. "
+            "NOTE: Original constraints were auto-relaxed to find this blend. "
             "Review metrics against your specification before filing.",
             ParagraphStyle("warn", parent=s["body"], textColor=AMBER, fontName="Helvetica-Bold")
         ))
@@ -389,11 +389,11 @@ def generate_proposal_pdf(
     # ── EcoMetrics page ────────────────────────────────────────────────────────
     if eco_result:
         story.append(PageBreak())
-        story.append(Paragraph("EcoMetrics™ Sustainability Profile", s["section_head"]))
+        story.append(Paragraph("EcoMetrics(TM) Sustainability Profile", s["section_head"]))
         story.append(Paragraph(
             "Five-axis sustainability scoring benchmarked against a representative "
             "petrochemical surfactant blend. Methodology: OECD 301B (biodegradability), "
-            "kgCO₂eq/kg inverted (carbon footprint), ECHA aquatic rating inverted (ecotoxicity), "
+            "kgCO2eq/kg inverted (carbon footprint), ECHA aquatic rating inverted (ecotoxicity), "
             "ASTM D6866 composite (renewability), REACH/EPA/EU Ecolabel composite (regulatory). "
             "Published in IntelliForm JCIM Supporting Information.",
             s["small"]
@@ -408,13 +408,13 @@ def generate_proposal_pdf(
 
         # Axis table
         axis_data = [
-            ["Axis", "IntelliForm™ Score", "Petrochemical Baseline", "Δ Improvement", "Weight"],
+            ["Axis", "IntelliForm(TM) Score", "Petrochemical Baseline", "Δ Improvement", "Weight"],
             ["Biodegradability",  f"{eco_result.biodegradability:.1f}",  "52.0", f"+{eco_result.vs_baseline.get('Biodegradability',0):.1f}", "25%"],
             ["Carbon Footprint",  f"{eco_result.carbon_footprint:.1f}",  "38.0", f"+{eco_result.vs_baseline.get('Carbon Footprint',0):.1f}", "20%"],
             ["Ecotoxicity",       f"{eco_result.ecotoxicity:.1f}",       "41.0", f"+{eco_result.vs_baseline.get('Ecotoxicity',0):.1f}",    "20%"],
             ["Renewability",      f"{eco_result.renewability:.1f}",      "25.0", f"+{eco_result.vs_baseline.get('Renewability',0):.1f}",   "20%"],
             ["Regulatory",        f"{eco_result.regulatory:.1f}",        "60.0", f"+{eco_result.vs_baseline.get('Regulatory',0):.1f}",     "15%"],
-            ["EcoScore™ (composite)", f"{eco_result.eco_score:.1f}", "43.2", f"+{eco_result.eco_score - 43.2:.1f}", "—"],
+            ["EcoScore(TM) (composite)", f"{eco_result.eco_score:.1f}", "43.2", f"+{eco_result.eco_score - 43.2:.1f}", "-"],
         ]
         eco_t = Table(axis_data, colWidths=[1.7*inch, 1.3*inch, 1.6*inch, 1.3*inch, 0.6*inch], repeatRows=1)
         eco_t.setStyle(TableStyle([
@@ -438,10 +438,10 @@ def generate_proposal_pdf(
         story.append(Paragraph("Regulatory Intelligence", s["section_head"]))
         story.append(Paragraph(
             f"Overall status: <b>{reg_report.overall_status}</b>  |  "
-            f"REACH: {'✅ All Green' if reg_report.all_green else '⚠️ Review'}  |  "
-            f"EU Ecolabel eligible: {'✅' if reg_report.eu_ecolabel_eligible else '❌'}  |  "
-            f"COSMOS eligible: {'✅' if reg_report.cosmos_eligible else '❌'}  |  "
-            f"EPA Safer Choice: {'✅' if reg_report.epa_safer_choice_eligible else '❌'}",
+            f"REACH: {'All Green' if reg_report.all_green else 'Review Required'}  |  "
+            f"EU Ecolabel eligible: {'Yes' if reg_report.eu_ecolabel_eligible else 'No'}  |  "
+            f"COSMOS eligible: {'Yes' if reg_report.cosmos_eligible else 'No'}  |  "
+            f"EPA Safer Choice: {'Yes' if reg_report.epa_safer_choice_eligible else 'No'}",
             s["body"]
         ))
         story.append(Spacer(1, 8))
@@ -451,13 +451,13 @@ def generate_proposal_pdf(
         if reg_report.certification_pathways:
             story.append(Paragraph("Eligible Certification Pathways", s["section_head"]))
             for p in reg_report.certification_pathways:
-                story.append(Paragraph(f"• {p}", s["body"]))
+                story.append(Paragraph(f"- {p}", s["body"]))
 
         if reg_report.amber_flags:
             story.append(Spacer(1, 8))
             story.append(Paragraph("Items Requiring Review", s["section_head"]))
             for flag in reg_report.amber_flags:
-                story.append(Paragraph(f"⚠️ {flag}", s["body"]))
+                story.append(Paragraph(f"WARNING: {flag}", s["body"]))
 
     # ── Next steps page ────────────────────────────────────────────────────────
     story.append(PageBreak())
@@ -470,10 +470,10 @@ def generate_proposal_pdf(
     next_data = [
         ["Step", "Action", "Timeline"],
         ["1", "Review this proposal with your formulation team", "This week"],
-        ["2", "Confirm ingredient stock availability with ChemRich NJ", "2–3 days"],
+        ["2", "Confirm ingredient stock availability with ChemRich NJ", "2-3 days"],
         ["3", "Book 500 kg pilot batch", "5 business days turnaround"],
         ["4", "Receive pilot sample + QC report", "Day 10"],
-        ["5", "Scale to commercial production", "30–60 days"],
+        ["5", "Scale to commercial production", "30-60 days"],
     ]
     ns_t = Table(next_data, colWidths=[0.5*inch, 4*inch, 1.5*inch], repeatRows=1)
     ns_t.setStyle(TableStyle([
@@ -496,7 +496,7 @@ def generate_proposal_pdf(
         ["Financial Summary",              ""],
         ["Pilot quote (500 kg + 12% fee)", f"${quote:,.0f}"],
         ["Projected savings vs. market",   f"${savings:,.0f} per 500 kg batch"],
-        ["CO₂ avoided",                    f"{co2:,.0f} kg per batch"],
+        ["CO2 avoided",                    f"{co2:,.0f} kg per batch"],
         ["Payback period (est.)",          "< 1 production run"],
     ]
     fin_t = Table(fin_data, colWidths=[3.5*inch, 2.5*inch])
@@ -526,7 +526,7 @@ def generate_proposal_pdf(
     ))
     story.append(Spacer(1, 4))
     story.append(Paragraph(
-        "<i>This proposal was generated by IntelliForm™ v0.9 Agentic AI Platform. "
+        "<i>This proposal was generated by IntelliForm(TM) v0.9 Agentic AI Platform. "
         "All formulation metrics are computed using validated QSAR models (JCIM, 2026) "
         "and real-time ChemRich inventory data. Regulatory information sourced from "
         "ECHA, EPA Safer Choice, and COSMOS-standard databases as of January 2026.</i>",
