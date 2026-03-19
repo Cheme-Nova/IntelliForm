@@ -389,13 +389,13 @@ def get_blend_report(blend: Dict[str, float]) -> BlendRegulatoryReport:
 
     pathways = []
     if eu_ecolabel:
-        pathways.append("🇪🇺 EU Ecolabel (Detergents / Cleaning Products)")
+        pathways.append("EU Ecolabel (Detergents / Cleaning Products)")
     if cosmos:
-        pathways.append("🌿 COSMOS-standard (Organic & Natural Cosmetics)")
+        pathways.append("COSMOS-standard (Organic & Natural Cosmetics)")
     if epa_sc:
-        pathways.append("🇺🇸 EPA Safer Choice Certified Product")
+        pathways.append("EPA Safer Choice Certified Product")
     if all_green and eu_ecolabel:
-        pathways.append("♻️ REACH Green — full circular economy compliance")
+        pathways.append("REACH Green - full circular economy compliance")
 
     return BlendRegulatoryReport(
         blend=blend,
