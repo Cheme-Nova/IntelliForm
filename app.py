@@ -34,6 +34,7 @@ from modules.stability        import predict_stability
 from modules.carbon_credits   import calculate_carbon_credits
 from modules.notifications    import send_pilot_booking_confirmation, send_proposal_email
 # Tiers: all features free — upsell via pilot batch booking
+from modules.verticals import VERTICAL_OPTIONS, get_profile, filter_db_by_vertical, get_vertical_constraints
 
 st.set_page_config(page_title="IntelliForm v1.0", page_icon="🧪", layout="wide")
 st.markdown("""<style>
@@ -81,7 +82,7 @@ if not st.session_state.projects and is_connected():
 h1,h2,h3,h4 = st.columns([3,1,1,1])
 with h1:
     st.title("🧪 IntelliForm v1.0")
-    st.caption("AI-powered green chemistry formulation — describe what you need, get a certified, pilot-ready blend in seconds.")
+    st.caption("AI-powered formulation intelligence — describe what you need, get a certified, pilot-ready blend in seconds.")
 h2.metric("Ingredients", len(ingredients_db))
 h3.metric("Certifications", "EU Ecolabel · EPA · COSMOS")
 mc = st.session_state.model_card
@@ -111,9 +112,9 @@ else:
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.header("🗣️ Customer Request")
-    nl_input = st.text_area("Describe your formulation need",
-        value="I need a mild foaming green surfactant for personal care, under $4/kg, at least 95% bio-based, EPA Safer Choice compatible",
-        height=110)
+    default_prompt = st.session_state.get("example_prompt",
+        "I need a mild foaming green surfactant for personal care, under $4/kg, at least 95% bio-based, EPA Safer Choice compatible")
+    nl_input = st.text_area("Describe your formulation need", value=default_prompt, height=110)
     st.divider()
 
     st.header("🤖 LLM Provider")
@@ -128,6 +129,25 @@ with st.sidebar:
         "regex": "🔧 Rule-based · Always works · No AI needed",
     }
     st.caption(_provider_info.get(_llm_to_provider.get(selected_llm, "auto"), ""))
+    st.divider()
+
+    st.header("🎯 Application Vertical")
+    selected_vertical = st.selectbox(
+        "Select your industry",
+        options=list(VERTICAL_OPTIONS.keys()),
+        format_func=lambda x: VERTICAL_OPTIONS[x],
+        index=0,
+        help="Filters ingredients and constraints for your specific industry."
+    )
+    vprofile = get_profile(selected_vertical)
+    if vprofile:
+        st.caption(vprofile.description)
+        with st.expander("📋 Regulatory frameworks"):
+            st.caption(" · ".join(vprofile.regulatory_frameworks))
+        with st.expander("💡 Example prompts"):
+            for ep in vprofile.example_prompts:
+                if st.button(f"📋 {ep[:50]}…" if len(ep)>50 else f"📋 {ep}", key=ep[:30]):
+                    st.session_state["example_prompt"] = ep
     st.divider()
 
     st.header("⚙️ Optimization")
@@ -198,9 +218,13 @@ with t1:
                 bio_pct=rec.bio_pct,perf_score=rec.perf_score,status="Optimal")
             st.info(f"📈 {pareto.n_solutions} Pareto solutions · backend: `{pareto.backend}`")
         else:
+            # Apply vertical filter and constraints
+            v_db = filter_db_by_vertical(ingredients_db, selected_vertical)
+            v_cost, v_bio, v_perf = get_vertical_constraints(
+                selected_vertical, parsed.max_cost, parsed.min_bio, parsed.min_perf)
             with st.spinner("⚗️ PuLP optimization…"):
-                result = run_optimization(ingredients_db,max_cost=parsed.max_cost,
-                    min_bio=parsed.min_bio,min_perf=parsed.min_perf,
+                result = run_optimization(v_db,max_cost=v_cost,
+                    min_bio=v_bio,min_perf=v_perf,
                     max_concentration=max_conc/100)
             if not result.success: st.error(result.error_msg); st.stop()
             if result.relaxed: st.warning(f"⚠️ Constraints relaxed × {result.relaxation_rounds}")
