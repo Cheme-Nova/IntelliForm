@@ -158,10 +158,10 @@ with st.sidebar:
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-t1,t2,t3,t4,t5,t6,t7,t8,t9 = st.tabs([
+t1,t2,t3,t4,t5,t6,t7,t8,t9,t10 = st.tabs([
     "🚀 Agentic Swarm","🌿 EcoMetrics","📋 Regulatory",
     "📈 Pareto Frontier","🔬 Model Card","🧪 Stability & Viscosity",
-    "🌍 Carbon Credits","🔄 Blend Comparison","📊 ROI & History"])
+    "🌍 Carbon Credits","🔄 Blend Comparison","📊 ROI & History","📄 Proposal"])
 
 # ── TAB 1: SWARM ─────────────────────────────────────────────────────────────
 with t1:
@@ -384,7 +384,7 @@ with t4:
 # ── TAB 5: MODEL CARD ─────────────────────────────────────────────────────────
 with t5:
     st.subheader("🔬 QSAR Model Card & Validation")
-    st.caption("Benchmark metrics from: *IntelliForm: Agentic AI Platform for Sustainable Formulation*, JCIM 2026.")
+    st.caption("Benchmark metrics from: Makani S.S., ChemRxiv 2026. DOI: 10.26434/chemrxiv.15000857 · NJIT Showcase 2025 · UIC Indigo 2025")
     mc = st.session_state.model_card
     if mc:
         ci1,ci2,ci3,ci4 = st.columns(4)
@@ -425,7 +425,7 @@ with t5:
         fig_fi = px.bar(fi_df,x="Importance",y="Feature",orientation="h",color="Importance",color_continuous_scale="Teal",height=350)
         fig_fi.update_layout(plot_bgcolor="#1E1E1E",paper_bgcolor="#1E1E1E",font_color="#FFFFFF",coloraxis_showscale=False)
         st.plotly_chart(fig_fi,use_container_width=True)
-        st.caption("Makani S. et al., J. Chem. Inf. Model., 2026 (in review)")
+        st.caption("Makani S.S., ChemRxiv 2026 · DOI: 10.26434/chemrxiv.15000857 · NJIT Showcase 2025 · UIC Indigo 2025")
 
 # ── TAB 6: STABILITY & VISCOSITY ─────────────────────────────────────────────
 with t6:
@@ -564,5 +564,57 @@ with t9:
         st.divider()
         with st.expander("Set Up Supabase — View migration SQL"):
             st.code(MIGRATION_SQL, language="sql")
+
+# ── TAB 10: PROPOSAL ─────────────────────────────────────────────────────────
+with t10:
+    st.subheader("📄 Proposal Generator")
+    st.caption("Generate a branded PDF proposal or Markdown export for your customer.")
+    if not st.session_state.projects:
+        st.info("Run a formulation first.")
+    else:
+        latest  = st.session_state.projects[-1]
+        eco_res = st.session_state.last_eco
+        reg_res = st.session_state.last_reg
+        fmt = st.radio("Format",["📄 PDF (branded, ChemeNova colors)","📝 Markdown"],horizontal=True)
+
+        if "PDF" in fmt:
+            if st.button("Generate PDF", type="primary", use_container_width=True):
+                with st.spinner("Generating branded PDF…"):
+                    try:
+                        pdf_bytes = generate_proposal_pdf(latest, eco_res, reg_res, ingredients_db)
+                        st.download_button("📥 Download PDF", data=pdf_bytes,
+                            file_name=f"IntelliForm_Proposal_{datetime.now().strftime('%Y%m%d')}.pdf",
+                            mime="application/pdf", use_container_width=True)
+                        track("export_proposal", {"format":"pdf","version":"1.0","eco_score":latest.get("eco_score")})
+                        st.success("✅ PDF ready — click above to download.")
+                        # Send email if customer provided address
+                        if uemail:
+                            send_proposal_email(
+                                customer_email=uemail,
+                                customer_name=uname or "Valued Customer",
+                                application=latest.get("application","unknown"),
+                                cost_per_kg=latest.get("cost",0),
+                                eco_score=latest.get("eco_score",0) or 0,
+                            )
+                    except Exception as e:
+                        st.error(f"PDF failed: {e} — ensure `reportlab` is installed.")
+        else:
+            blend_lines = "\n".join(f"  - {k}: {v}%" for k,v in latest["blend"].items())
+            eco_sec = f"\n## EcoMetrics\nEcoScore: {eco_res.eco_score:.1f}/100 · Grade: {eco_res.grade}\n" if eco_res else ""
+            reg_sec = f"\n## Regulatory\n{reg_res.overall_status}\n" if reg_res else ""
+            md = f"""# IntelliForm Proposal — {datetime.now().strftime("%B %d, %Y")}
+ChemeNova LLC x ChemRich Global · {latest['application'].replace('_',' ').title()}
+
+## Blend
+{blend_lines}
+
+## Metrics
+Cost: ${latest['cost']}/kg · Bio: {latest['bio']}% · Perf: {latest['perf']}/100
+{eco_sec}{reg_sec}
+*Makani S.S., ChemRxiv 2026 · NJIT & UIC · shehan@chemenova.com*"""
+            st.download_button("📥 Download Markdown", md,
+                "IntelliForm_Proposal.md", "text/markdown", use_container_width=True)
+            with st.expander("Preview"):
+                st.markdown(md)
 
 st.caption("IntelliForm v1.0 · github.com/chemenova/intelliform · ChemeNova x ChemRich · Makani S.S., ChemRxiv 2026 · NJIT & UIC")
