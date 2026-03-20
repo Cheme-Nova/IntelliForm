@@ -1,188 +1,1035 @@
-Ingredient,SMILES,Cost_USD_kg,Bio_based_pct,Performance_Score,Stock_kg,REACH_Flag,Function,Biodegradability,CarbonFootprint_kgCO2eq,Ecotoxicity_Score,Renewability_Score
-Coco-Glucoside,CCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,3.8,98,88,1850,Green,Primary Surfactant,95,1.2,8,96
-Decyl Glucoside,CCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.5,95,82,920,Green,Primary Surfactant,94,1.4,9,94
-Lauryl Glucoside,CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.1,97,85,640,Green,Primary Surfactant,93,1.3,8,95
-Caprylyl Glucoside,CCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.2,96,80,310,Green,Primary Surfactant,96,1.1,9,95
-Sucrose Cocoate,CCCCCCCCCCCC(=O)OC1OC(CO)C(O)C(O)C1O,5.8,100,78,180,Green,Emulsifier,92,1.5,8,99
-Glycerol,OCC(O)CO,1.5,100,65,5200,Green,Humectant,98,0.8,9,99
-Ethyl Lactate (bio),CCOC(=O)C(C)O,2.8,100,70,1450,Green,Solvent,97,0.9,9,99
-D-Sorbitol,OC[C@H](O)[C@@H](O)[C@H](O)[C@H](O)CO,2.2,100,72,2100,Green,Humectant,99,0.7,9,99
-Citric Acid,OC(=O)CC(O)(CC(=O)O)C(=O)O,1.6,100,68,3800,Green,pH Adjuster,99,0.6,9,99
-Cocamidopropyl Betaine,CCCCCCCCCCCC(=O)NCCC[N+](C)(C)CC([O-])=O,5.1,82,90,760,Green,Amphoteric Surfactant,88,2.1,7,80
-Sodium Cocoyl Glutamate,CCCCCCCCCCCC(=O)N[C@@H](CCC(=O)[O-])C(=O)[O-],6.2,90,87,420,Green,Mild Surfactant,91,1.8,8,89
-Lauryl Betaine,CCCCCCCCCCCC[N+](C)(C)CC([O-])=O,4.9,80,86,380,Green,Amphoteric Surfactant,87,2.2,7,78
-Sodium Lauroyl Sarcosinate,CCCCCCCCCCCC(=O)N(C)CC(=O)[O-],5.5,85,84,290,Green,Mild Surfactant,89,1.9,8,83
-Rhamnolipid (biosurfactant),OC(=O)CCCCCCCC/C=C/CCCCCC,8.5,100,79,95,Green,Biosurfactant,99,0.4,10,100
-Sophorolipid,OC1OC(CO)C(O)C(O)C1OC1OC(CO)C(O)C(O)C1OC(=O)CCCCCCCCC=C,9.2,100,76,60,Green,Biosurfactant,98,0.5,10,100
-Methyl Ester Ethoxylate,CCCCCCCCCCCC(=O)OCC,4.3,88,81,510,Green,Nonionic Surfactant,90,1.6,8,86
-Alkyl Polyglycoside C8-10,CCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.8,94,83,430,Green,Nonionic Surfactant,95,1.2,9,93
-Sodium Coco-Sulfate,CCCCCCCCCCCCCCCOS(=O)(=O)[O-],3.2,75,85,1200,Green,Anionic Surfactant,82,2.5,6,73
-Disodium Cocoyl Glutamate,CCCCCCCCCCCC(=O)N[C@@H](CCC([O-])=O)C([O-])=O,6.5,92,86,310,Green,Mild Surfactant,92,1.7,8,90
-Lauryl Glucoside (and) Glycerol,CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.4,96,86,520,Green,Primary Surfactant,94,1.2,9,95
-Sorbitan Oleate,CCCCCCCC/C=C\CCCCCCCC(=O)OC1CCOC(CO)C1O,5.3,90,74,340,Green,Emulsifier,88,1.9,7,88
-Polyglyceryl-4 Oleate,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)COCC(O)CO,6.1,92,72,215,Green,Emulsifier,90,1.7,8,90
-Xanthan Gum,OCC1OC(OC2C(OC(C2O)OCC3OC(OCC4OC(O)C(O)C(O)C4O)C(O)C(O)C3O)CO)C(O)C(O)C1O,7.2,100,68,480,Green,Thickener,97,1.0,9,99
-Hydroxyethyl Cellulose,OCC1OC(O)C(O)C(O)C1OCC(O)CO,4.6,100,66,720,Green,Thickener,95,1.1,9,99
-Guar Gum (bio),OCC1OC(OC2C(CO)OC(OCC3OC(O)C(CO)C(O)C3O)C(O)C2O)C(O)C(O)C1O,3.8,100,64,890,Green,Thickener,96,0.9,9,99
-Panthenol,OCC(C)(CO)CCC(=O)NCCC(O)=O,12.5,100,75,140,Green,Conditioner,99,1.3,9,99
-Allantoin,NC(=O)NC1NC(=O)NC1=O,8.8,100,73,180,Green,Skin Conditioning,99,1.2,9,99
-Lactic Acid (bio),CC(O)C(=O)O,1.4,100,67,4200,Green,pH Adjuster,99,0.5,9,99
-Sodium Phytate,OC(CO)(CO)C(O)(CO)CO,3.5,100,70,660,Green,Chelating Agent,98,0.8,9,99
-Benzyl Alcohol (NF),OCc1ccccc1,2.9,85,69,880,Green,Preservative,92,1.6,7,83
-Sodium Benzoate,OC(=O)c1ccccc1,1.8,80,65,1950,Green,Preservative,85,1.4,7,78
-Potassium Sorbate,CC=CC(=O)[O-],2.1,90,66,1620,Green,Preservative,93,1.2,8,88
-Sodium Gluconate,OC[C@@H](O)[C@@H](O)[C@H](O)[C@@H](O)C(=O)[O-],2.4,100,67,2300,Green,Chelating Agent,99,0.7,9,99
-Tocopheryl Acetate,CC(=O)OC1=C(C)C=C2OC(CCC[C@H](C)CCC[C@H](C)CCCC(C)C)(C)CCC2=C1C,18.5,90,71,85,Green,Antioxidant,88,2.8,7,88
-Ascorbic Acid,OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,4.2,100,69,520,Green,Antioxidant,99,0.8,9,99
-D-Limonene,CC1=CCC(CC1)C(C)=C,2.4,100,92,2800,Green,Industrial Solvent,98,0.6,7,100
-Methyl Soyate,CCCCCCCC/C=C\CCCCCCCC(=O)OC,2.1,95,88,3200,Green,Industrial Solvent,96,0.8,8,94
-Ethyl Acetate (bio),CCOC(C)=O,1.8,85,80,4500,Green,Industrial Solvent,99,0.7,9,83
-n-Butyl Lactate,CCCCOC(=O)C(C)O,3.2,100,82,1200,Green,Industrial Solvent,97,0.9,9,99
-Isopropyl Alcohol (bio),CC(C)O,1.2,80,78,8000,Green,Industrial Solvent,99,0.6,9,78
-Propylene Glycol (bio),CC(O)CO,1.9,80,71,6500,Green,Solvent/Humectant,99,0.7,9,78
-Dibasic Ester (bio),COC(=O)CCCC(=O)OC,3.8,85,85,980,Green,Industrial Solvent,94,1.1,8,83
-Soy Methyl Ester,CCCCCCCCCCCCCCCCCC(=O)OC,2.3,97,87,2600,Green,Industrial Solvent,95,0.8,8,96
-Corn-derived Ethanol,CCO,1.1,95,75,9500,Green,Industrial Solvent,99,0.5,9,93
-Lauryl Dimethyl Amine Oxide,CCCCCCCCCCCCN(C)(C)=O,5.8,78,89,420,Green,Foam Booster,85,2.3,7,76
-Cocoamine Oxide,CCCCCCCCCCCC(=O)N(C)C,6.1,82,87,310,Green,Foam Booster,87,2.1,7,80
-Sodium Lauryl Sulfoacetate,CCCCCCCCCCCCOC(=O)CS(=O)(=O)[O-],4.8,76,83,580,Green,Mild Anionic Surfactant,84,2.2,7,74
-Disodium Laureth Sulfosuccinate,CCCCCCCCCCCCOC(=O)CC(S(=O)(=O)[O-])C(=O)[O-],6.8,78,85,290,Green,Mild Anionic Surfactant,83,2.3,7,76
-Sodium Lauroyl Lactylate,CCCCCCCCCCCC(=O)OC(C)C(=O)[O-],5.5,88,83,380,Green,Mild Anionic Surfactant,90,1.7,8,86
-Polyglyceryl-3 Cocoate,CCCCCCCCCCCC(=O)OCC(O)COCC(O)CO,7.2,94,77,210,Green,Emulsifier,91,1.6,8,92
-Glyceryl Stearate (bio),CCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,4.9,92,74,480,Green,Emulsifier,89,1.8,8,90
-Lecithin (sunflower),CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,8.5,100,76,320,Green,Emulsifier,93,1.4,9,99
-Sodium Stearoyl Lactylate,CCCCCCCCCCCCCCCCCC(=O)OC(C)C(=O)[O-],4.2,88,75,640,Green,Emulsifier,88,1.9,8,86
-Hydroxypropyl Methylcellulose,COC1OC(CO)C(OC)C(O)C1OC1OC(CO)C(O)C(OC)C1O,6.8,100,70,380,Green,Thickener/Film Former,94,1.2,9,99
-Carrageenan,OCC1OC(OC2C(O)C(OS(=O)(=O)[O-])C(O)C(CO)O2)C(O)C(OS(=O)(=O)[O-])C1O,5.5,100,68,420,Green,Thickener,96,1.0,9,99
-Cellulose Gum (CMC),OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,3.9,100,67,780,Green,Thickener,95,1.1,9,99
-Pectin,OC1C(O)C(OC(=O)c2cc(O)c(O)c(O)c2)C(O)C(O)C1O,6.2,100,65,290,Green,Thickener/Stabilizer,97,0.9,9,99
-Inulin,OCC1OC(OC2C(CO)OC(OCC3OC(O)C(O)C3O)C2O)C(O)C1O,5.8,100,66,350,Green,Thickener/Prebiotic,98,0.8,9,99
-Sodium Hyaluronate,OCC1OC(OC2C(O)C(NC(C)=O)C(O)OC2C(=O)[O-])C(O)C(O)C1O,85.0,95,79,25,Green,Humectant/Film Former,96,1.5,9,93
-Betaine (natural),C[N+](C)(C)CC(=O)[O-],4.8,95,74,680,Green,Humectant/Osmoprotectant,98,0.8,9,93
-Trehalose,OCC1OC(OC2OC(CO)C(O)C(O)C2O)C(O)C(O)C1O,12.0,100,72,180,Green,Humectant/Stabilizer,99,0.9,9,99
-Erythritol,OCC(O)C(O)CO,4.5,100,68,420,Green,Humectant,99,0.7,9,99
-Maltitol,OCC(O)C(O)C(O)C(O)CO,3.8,100,69,560,Green,Humectant,99,0.7,9,99
-Mannitol,OCC(O)C(O)C(O)C(O)CO,3.5,100,70,640,Green,Humectant,99,0.7,9,99
-Sodium PCA (bio),N1CCC(=O)C1C(=O)[O-],8.5,90,76,180,Green,Humectant,96,1.2,8,88
-Gluconolactone,OC1OC(=O)C(O)C(O)C1O,4.2,100,70,380,Green,pH Adjuster/Chelator,99,0.6,9,99
-Malic Acid (bio),OC(CC(=O)O)C(=O)O,2.8,100,68,920,Green,pH Adjuster,99,0.5,9,99
-Tartaric Acid (bio),OC(C(O)C(=O)O)C(=O)O,3.2,100,67,780,Green,pH Adjuster,99,0.5,9,99
-Succinic Acid (bio),OC(=O)CCC(=O)O,2.5,95,68,1100,Green,pH Adjuster/Chelator,99,0.6,9,93
-Gluconic Acid,OCC(O)C(O)C(O)C(O)C(=O)O,3.0,100,69,840,Green,Chelating Agent,99,0.6,9,99
-Phytic Acid,OC1C(OP(=O)(O)O)C(OP(=O)(O)O)C(OP(=O)(O)O)C(OP(=O)(O)O)C1OP(=O)(O)O,5.5,100,72,320,Green,Chelating Agent,97,0.9,9,99
-GLDA (Glutamic acid diacetic acid),OC(=O)CN(CC(=O)O)C(CCC(=O)O)C(=O)O,6.8,95,78,280,Green,Chelating Agent,96,1.1,9,93
-MGDA (Methylglycinediacetic acid),OC(=O)CN(C)C(C(=O)O)CC(=O)O,5.9,90,76,340,Green,Chelating Agent,95,1.2,9,88
-Sodium Citrate,OCC(O)(CC([O-])=O)C([O-])=O,1.8,100,70,2800,Green,Chelating Agent/Buffer,99,0.6,9,99
-Potassium Citrate,[K+].[K+].[K+].OC(CC([O-])=O)(CC([O-])=O)C([O-])=O,2.2,100,69,2200,Green,Buffer/Chelating Agent,99,0.6,9,99
-Sodium Bicarbonate,OC([O-])=O,0.8,0,65,12000,Green,pH Adjuster,99,0.3,10,20
-Sodium Carbonate,O=C([O-])[O-],0.6,0,67,15000,Green,pH Adjuster/Builder,99,0.3,10,10
-Sodium Metasilicate,O=[Si]([O-])[O-],0.9,0,88,8500,Green,Industrial Cleaner/Builder,99,0.4,8,5
-Sodium Sesquicarbonate,OC([O-])=O,1.1,0,82,6200,Green,Industrial Cleaner/Builder,99,0.3,9,8
-Trisodium Phosphate,OP(=O)([O-])[O-],1.2,0,85,5800,Amber,Industrial Builder,99,0.4,7,5
-Borax (sodium tetraborate),OB(O)O,1.5,0,80,4200,Amber,Industrial Cleaner,98,0.5,6,5
-Sodium Percarbonate,OOC(=O)[O-],2.1,0,87,3800,Green,Oxidizing Agent/Bleach,99,0.6,8,5
-Hydrogen Peroxide,OO,1.8,0,85,4500,Green,Oxidizing Agent,99,0.4,8,0
-Peracetic Acid,CC(=O)OO,3.5,80,90,1200,Amber,Disinfectant,98,0.8,6,78
-Caprylhydroxamic Acid,CCCCCCCC(=O)NO,9.5,85,78,180,Green,Preservative/Chelator,90,1.8,8,83
-Ethylhexylglycerin,CCCCC(CC)COC(CO)CO,7.8,75,75,240,Green,Preservative Booster,88,2.0,7,73
-Phenoxyethanol,OCCOc1ccccc1,4.5,60,77,680,Green,Preservative,82,2.2,7,58
-Hexylene Glycol,CCCCCC(O)CO,6.2,70,74,380,Green,Preservative Booster,85,1.9,7,68
-Levulinic Acid (bio),CC(=O)CCC(=O)O,3.8,95,72,480,Green,Preservative/Solvent,96,0.8,8,93
-Caprylic Acid (bio),CCCCCCCC(=O)O,4.2,95,74,560,Green,Preservative,94,1.1,8,93
-Undecylenic Acid,OC(=O)CCCCCCCCC=C,6.8,100,76,220,Green,Antifungal Preservative,93,1.3,8,99
-Rosemary Extract (antioxidant),CC1(C)CCCC2(C)C1CC=C(C2=O)C(C)C,22.0,100,74,85,Green,Antioxidant/Preservative,91,1.8,8,99
-Green Tea Extract,OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,28.0,100,73,60,Green,Antioxidant,93,1.6,9,99
-Vitamin E (mixed tocopherols),CC1=C(C)C2=C(OC(C)(CCC(C)CCC(C)CCCC(C)C)C2)C=C1O,32.0,100,72,45,Green,Antioxidant,89,2.1,8,99
-Niacinamide,NC(=O)c1cccnc1,8.5,80,75,220,Green,Skin Active,95,1.4,8,78
-Bakuchiol,CC(C)=CCc1ccc(cc1)C(O)c1cccc(c1)C=C,45.0,100,76,30,Green,Natural Retinol Alternative,92,2.2,8,99
-Bisabolol,CC(C)=CCC(O)C1(C)CCCC(C)=C1,18.5,100,74,95,Green,Skin Soothing,93,1.8,9,99
-Ceramide NP (bio),CCCCCCCCCCCCCCCCCC(=O)N[C@@H](CO)[C@H](O)CCCCCCCCCCCCC,95.0,88,78,15,Green,Skin Barrier,88,2.8,8,86
-Neem Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(COC(=O)CCCCCCC/C=C\CCCCCCCC)OC(=O)CCCCCCC/C=C\CCCCCCCC,6.5,100,74,280,Green,Agricultural Adjuvant,91,1.5,7,99
-Canola Methyl Ester,CCCCCCCC/C=C\CCCCCCCC(=O)OC,2.0,97,82,3800,Green,Agricultural Solvent,95,0.7,8,95
-Alkyl Polyglycoside C12-16,CCCCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.2,96,84,520,Green,Agricultural Surfactant,94,1.3,9,94
-Lecithin (soy),CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,4.8,100,77,680,Green,Agricultural Emulsifier,93,1.3,9,99
-Castor Oil Ethoxylate,CCCCCCCCCC(O)CCCCCCCC(=O)OCC(COC(C)=O)OC(=O)CCCCCCCC(O)CCCCCCCC,6.9,88,78,340,Green,Agricultural Surfactant,87,2.0,7,86
-Tall Oil Fatty Acid,CCCCCCCC/C=C/C=C/CCCCCCCC(=O)O,2.8,92,80,1800,Green,Agricultural Surfactant,91,1.4,8,90
-Oleic Acid (bio),CCCCCCCC/C=C\CCCCCCCC(=O)O,2.5,95,76,2200,Green,Emollient/Emulsifier,93,1.2,8,93
-Linoleic Acid (bio),CCCCCC/C=C\C/C=C\CCCCCCCC(=O)O,4.8,100,74,560,Green,Emollient,92,1.3,8,99
-Stearic Acid (bio),CCCCCCCCCCCCCCCCCC(=O)O,2.2,90,73,2800,Green,Emollient/Thickener,90,1.5,9,88
-Lauric Acid (bio),CCCCCCCCCCCC(=O)O,2.4,95,75,2400,Green,Emollient/Antimicrobial,92,1.2,8,93
-Capric Acid (bio),CCCCCCCCCC(=O)O,3.8,95,73,780,Green,Emollient,93,1.1,8,93
-Myristic Acid (bio),CCCCCCCCCCCCCC(=O)O,2.6,92,74,1800,Green,Emollient,91,1.3,9,90
-Isostearic Acid,CC(CCCCCCCCCCCCCC)C(=O)O,5.2,88,75,480,Green,Emollient,88,1.8,8,86
-Jojoba Esters,CCCCCCCCCC/C=C/CCCCCCCCCC(=O)OC/C=C/CCCCCCCCCC,12.5,100,77,180,Green,Emollient/Wax,89,1.9,9,99
-Shea Butter (refined),CCCCCCCCCCCCCCCCCC(=O)OCC(COC(=O)CCCCCCCCCCCCCCCCCC)OC(=O)CCCCCCCCCCCCCCCCCC,8.5,100,74,320,Green,Emollient,88,2.0,9,99
-Coconut Oil (fractionated),CCCCCCCCCCCC(=O)OCC(COC(=O)CCCCCCCCCCCC)OC(=O)CCCCCCCCCCCC,5.5,100,76,480,Green,Emollient/Carrier,91,1.4,9,99
-Argan Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(COC(=O)CCCCCCCC/C=C\CCCCCCCC)OC(=O)CCCCCCC/C=C\CCCCCCCC,28.0,100,75,95,Green,Emollient/Antioxidant,90,1.9,9,99
-Calendula Extract,CC1=CC(=O)c2c(cc(O)cc2O)C1,18.0,100,73,85,Green,Skin Soothing/Anti-inflammatory,92,1.7,9,99
-Chamomile Extract,COc1cc(C=CC(=O)O)ccc1O,16.5,100,72,90,Green,Skin Soothing,93,1.6,9,99
-Aloe Vera Extract,OCC1OC(O)C(O)C(O)C1O,9.5,100,74,240,Green,Skin Soothing/Humectant,97,1.1,9,99
-Witch Hazel Extract,OCC(O)c1ccc(O)cc1,7.8,100,72,320,Green,Astringent/Antioxidant,94,1.3,8,99
-Salicylic Acid (bio),OC(=O)c1ccccc1O,4.5,80,75,480,Green,Exfoliant/Preservative,88,1.6,7,78
-Mandelic Acid,OC(C(=O)O)c1ccccc1,8.5,70,73,220,Green,Exfoliant,86,1.8,7,68
-Glycolic Acid (bio),OCC(=O)O,3.8,80,74,680,Green,Exfoliant/pH Adjuster,97,0.8,8,78
-Azelaic Acid,OC(=O)CCCCCCCC(=O)O,6.5,85,73,280,Green,Exfoliant/Antimicrobial,92,1.4,8,83
-Pyruvic Acid,CC(=O)C(=O)O,5.2,90,71,380,Green,Exfoliant,96,0.9,8,88
-Sodium PCA,N1CCC(=O)C1C(=O)[O-],8.5,90,74,200,Green,Humectant,96,1.2,8,88
-Hydroxyacetophenone,CC(=O)c1ccc(O)cc1,9.2,75,74,180,Green,Antioxidant/Preservative Booster,88,1.7,7,73
-Piroctone Olamine,CCCCCCCC/C=C/CC1=CC(=O)N(CCO)C(C)(C)C1,12.5,72,78,140,Green,Antidandruff Active,83,2.4,6,70
-Zinc Pyrithione,C1=CC(=NC(=C1)S[Zn]SC2=CC=CN=C2)[O-],8.8,0,82,180,Amber,Antidandruff Preservative,72,2.8,5,0
-Piroctone,CCCCCCCC/C=C/CC1=CC(=O)N(O)C(C)(C)C1,11.5,72,77,160,Green,Antifungal Active,84,2.3,7,70
-Polyquaternium-10,OCC1OC(OCC[N+](C)(C)C)C(O)C(O)C1O,12.5,85,78,220,Green,Conditioning Polymer,88,1.9,7,83
-Polyquaternium-7,C=C[N+](C)(C)C.C=CC(=O)[O-],9.8,65,76,280,Green,Conditioning Polymer,80,2.3,6,63
-Guar Hydroxypropyltrimonium Chloride,OCC1OC(OC2C(CO)OC(OCC3OC(O)C(CO)C(O)C3O)C(O)C2O)C(O)C(O)C1O,14.5,95,79,160,Green,Conditioning Agent,93,1.5,8,93
-Cetrimonium Chloride,CCCCCCCCCCCCCCCC[N+](C)(C)C,6.8,65,80,380,Amber,Conditioning Agent/Preservative,78,2.6,5,63
-Behentrimonium Chloride,CCCCCCCCCCCCCCCCCCCCCC[N+](C)(C)C,7.5,68,81,310,Amber,Conditioning Agent,76,2.8,5,66
-Stearamidopropyl Dimethylamine,CCCCCCCCCCCCCCCCCC(=O)NCCCN(C)C,8.2,80,79,240,Green,Conditioning Agent,82,2.2,7,78
-Amino Silicone (bio-compatible),C[Si](C)(O)CCCNCCN,9.5,40,82,180,Green,Hair Conditioning,75,3.1,6,38
-Dimethicone (low MW),C[Si](C)(C)O[Si](C)(C)O[Si](C)(C)C,5.8,0,80,580,Green,Emollient/Conditioning,70,3.5,8,0
-Cyclomethicone,C[Si]1(C)O[Si](C)(C)O[Si](C)(C)O[Si](C)(C)O1,6.2,0,78,480,Amber,Volatile Emollient,68,3.8,6,0
-Ethylene Glycol Distearate,CCCCCCCCCCCCCCCCCC(=O)OCCOC(=O)CCCCCCCCCCCCCCCCCC,5.5,80,74,340,Green,Opacifier/Pearl Agent,85,2.0,8,78
-Glycol Distearate,CCCCCCCCCCCCCCCCCC(=O)OCCO,4.8,82,73,420,Green,Opacifier,86,1.9,8,80
-Mica (cosmetic grade),O=S(=O)([O-])[O-],3.2,0,72,680,Green,Opacifier/Pearlizer,99,0.5,10,0
-Titanium Dioxide (nano-free),O=[Ti]=O,3.8,0,75,520,Green,Opacifier/UV Filter,99,0.4,9,0
-Zinc Oxide (non-nano),O=[Zn],4.5,0,77,420,Green,UV Filter/Antimicrobial,99,0.5,9,0
-Kaolin Clay,O=[Al]O[Si](=O)O,1.2,0,68,1800,Green,Absorbent/Opacifier,99,0.3,10,0
-Bentonite,O=[Al]O[Si](=O)O,1.5,0,70,1600,Green,Thickener/Absorbent,99,0.3,10,0
-Magnesium Aluminum Silicate,O=[Al]O[Si](=O)O,2.8,0,69,980,Green,Thickener/Stabilizer,99,0.4,10,0
-Microcrystalline Cellulose,OCC1OC(O)C(O)C(O)C1O,3.5,100,68,720,Green,Thickener/Stabilizer,95,1.0,9,99
-Methyl Cellulose,COC1OC(OC)C(OC)C(O)C1O,5.2,100,69,480,Green,Thickener/Film Former,94,1.2,9,99
-Sodium Alginate,OCC1OC(OC(C(=O)[O-])C(O)C(O)C=O)C(O)C(O)C1O,6.8,100,70,340,Green,Thickener/Stabilizer,96,1.0,9,99
-Carob Bean Gum,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,4.5,100,67,580,Green,Thickener,96,0.9,9,99
-Tara Gum,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,5.8,100,68,380,Green,Thickener,96,0.9,9,99
-Cassia Gum,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,4.8,100,67,460,Green,Thickener,97,0.8,9,99
-Pullulan,OCC1OC(OC2C(CO)OC(OC3C(CO)OC(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,12.5,100,71,180,Green,Film Former,97,1.1,9,99
-Hydroxypropyl Starch,OCC1OC(OCC(O)CO)C(O)C(O)C1O,3.8,100,68,680,Green,Thickener/Stabilizer,96,0.9,9,99
-Sodium Starch Octenylsuccinate,OCC1OC(OC(=O)CC=C)C(O)C(O)C1O,4.5,95,70,520,Green,Emulsifier/Thickener,94,1.1,9,93
-Polyglutamic Acid (bio),OC(=O)CNC(=O)CNC(=O)CNC(=O)CN,18.0,100,74,120,Green,Humectant/Film Former,96,1.4,9,99
-Fermentation Hyaluronic Acid,OCC1OC(OC2C(O)C(NC(C)=O)C(O)OC2C(=O)[O-])C(O)C(O)C1O,75.0,100,78,28,Green,Humectant,97,1.3,9,99
-Collagen Peptides (hydrolyzed),NC(=O)CNC(=O)CNC(=O)CN,22.0,95,76,85,Green,Film Former/Skin Conditioning,94,1.7,9,93
-Keratin (hydrolyzed),NC(=O)CNC(=O)C(CC1=CNC2=CC=CC=C12)NC(=O)CN,28.0,90,77,65,Green,Hair Conditioning,91,2.0,8,88
-Silk Amino Acids,NC(=O)C(N)CC1=CC=CC=C1,32.0,100,75,45,Green,Skin Conditioning,93,1.8,9,99
-Oat Beta-Glucan,OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,16.5,100,74,130,Green,Skin Soothing/Thickener,96,1.2,9,99
-Quinoa Protein,NC(=O)C(N)CCCNC(=N)N,18.5,100,75,110,Green,Hair/Skin Conditioning,93,1.6,9,99
-Pea Protein (hydrolyzed),NC(=O)CNC(=O)C(N)CCCCN,12.0,100,74,165,Green,Film Former,94,1.4,9,99
-Glucoamylase (enzyme),OCC1OC(O)C(O)C(O)C1O,25.0,100,72,60,Green,Stain Removal Enzyme,96,1.5,9,99
-Protease (subtilisin),NC(=O)CNC(=O)CNC(=O)CN,18.0,100,74,85,Green,Stain Removal Enzyme,95,1.6,9,99
-Lipase (bio),CCCCCCCCCCCCCCCC(=O)O,22.0,100,75,70,Green,Stain Removal Enzyme,94,1.7,9,99
-Cellulase (bio),OCC1OC(O)C(O)C(O)C1O,20.0,100,73,78,Green,Fabric Care Enzyme,95,1.5,9,99
-Amylase (bio),OCC1OC(O)C(O)C(O)C1O,16.5,100,72,90,Green,Starch Stain Enzyme,96,1.4,9,99
-Mannanase (bio),OCC1OC(OC2OC(CO)C(O)C(O)C2O)C(O)C(O)C1O,19.0,100,73,72,Green,Stain Removal Enzyme,95,1.5,9,99
-Sodium Percarbonate (coated),OOC(=O)[O-],2.8,0,88,2800,Green,Oxidizing Agent/Bleach,99,0.6,8,0
-Tetrasodium EDDS,OC(=O)CN(CCN(CC(=O)O)CC(=O)O)CC(=O)O,6.5,85,78,380,Green,Chelating Agent (biodeg),96,1.3,8,83
-Sodium Iminodisuccinate,OC(=O)CN(CC(=O)O)CC(=O)O,7.2,90,76,280,Green,Chelating Agent,97,1.1,9,88
-Hydroxyethyl Iminodiacetic Acid,OCC(N(CC(=O)O)CC(=O)O),6.8,85,75,320,Green,Chelating Agent,95,1.3,8,83
-Ethanol (bio),CCO,1.1,95,76,9500,Green,Solvent/Antimicrobial,99,0.5,9,93
-Isosorbide,C1CO[C@@H]2CO[C@@H]1O2,4.8,100,72,480,Green,Bio-solvent,98,0.7,9,99
-2-Methyltetrahydrofuran (bio),C1CCOC1C,3.5,95,80,980,Green,Bio-solvent,97,0.8,8,93
-Cyrene (dihydrolevoglucosenone),O=C1CC2OCC1O2,6.2,100,81,380,Green,Bio-solvent,97,0.9,8,99
-Gamma-Valerolactone (bio),CC1CCCO1=O,4.2,95,79,580,Green,Bio-solvent,97,0.8,9,93
-Furfuryl Alcohol (bio),OCC1=CC=CO1,3.8,95,77,720,Green,Bio-solvent,96,0.9,8,93
-Polyglycerol-3,OCC(O)COCC(O)COCC(O)CO,5.5,100,71,380,Green,Humectant/Emulsifier,98,0.8,9,99
-Polyglyceryl-6 Distearate,CCCCCCCCCCCCCCCCCC(=O)OCC(O)COCC(O)COCC(O)CO,9.5,92,75,180,Green,Emulsifier,89,1.8,8,90
-Cetyl Alcohol (bio),CCCCCCCCCCCCCCCCO,4.2,90,73,580,Green,Emollient/Thickener,88,1.8,9,88
-Stearyl Alcohol (bio),CCCCCCCCCCCCCCCCCCO,4.5,90,73,520,Green,Emollient/Thickener,87,1.9,9,88
-Behenyl Alcohol (bio),CCCCCCCCCCCCCCCCCCCCCCO,5.8,90,74,320,Green,Emollient/Wax,86,2.1,9,88
-Beeswax (refined),CCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OCCCCCCCCCCCCCCCCCCCCCCCCCCC,12.5,100,73,240,Green,Wax/Emulsifier,85,2.2,9,99
-Carnauba Wax,CCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC,8.5,100,72,320,Green,Wax,84,2.4,9,99
-Candelilla Wax,CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC,7.8,100,71,380,Green,Wax,85,2.3,9,99
+Ingredient,SMILES,Cost_USD_kg,Bio_based_pct,Performance_Score,Stock_kg,REACH_Flag,Function,Biodegradability,CarbonFootprint_kgCO2eq,Ecotoxicity_Score,Renewability_Score,Vertical
+Coco-Glucoside,CCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,3.8,98,88,1850,Green,Primary Surfactant,95,1.2,8,96,personal_care
+Decyl Glucoside,CCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.5,95,82,920,Green,Primary Surfactant,94,1.4,9,94,personal_care
+Lauryl Glucoside,CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.1,97,85,640,Green,Primary Surfactant,93,1.3,8,95,personal_care
+Caprylyl Glucoside,CCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.2,96,80,310,Green,Primary Surfactant,96,1.1,9,95,personal_care
+Sucrose Cocoate,CCCCCCCCCCCC(=O)OC1OC(CO)C(O)C(O)C1O,5.8,100,78,180,Green,Emulsifier,92,1.5,8,99,food
+Glycerol,OCC(O)CO,1.5,100,65,5200,Green,Humectant,98,0.8,9,99,personal_care
+Ethyl Lactate (bio),CCOC(=O)C(C)O,2.8,100,70,1450,Green,Solvent,97,0.9,9,99,personal_care
+D-Sorbitol,OC[C@H](O)[C@@H](O)[C@H](O)[C@H](O)CO,2.2,100,72,2100,Green,Humectant,99,0.7,9,99,personal_care
+Citric Acid,OC(=O)CC(O)(CC(=O)O)C(=O)O,1.6,100,68,3800,Green,pH Adjuster,99,0.6,9,99,personal_care
+Cocamidopropyl Betaine,CCCCCCCCCCCC(=O)NCCC[N+](C)(C)CC([O-])=O,5.1,82,90,760,Green,Amphoteric Surfactant,88,2.1,7,80,personal_care
+Sodium Cocoyl Glutamate,CCCCCCCCCCCC(=O)N[C@@H](CCC(=O)[O-])C(=O)[O-],6.2,90,87,420,Green,Mild Surfactant,91,1.8,8,89,personal_care
+Lauryl Betaine,CCCCCCCCCCCC[N+](C)(C)CC([O-])=O,4.9,80,86,380,Green,Amphoteric Surfactant,87,2.2,7,78,personal_care
+Sodium Lauroyl Sarcosinate,CCCCCCCCCCCC(=O)N(C)CC(=O)[O-],5.5,85,84,290,Green,Mild Surfactant,89,1.9,8,83,personal_care
+Rhamnolipid (biosurfactant),OC(=O)CCCCCCCC/C=C/CCCCCC,8.5,100,79,95,Green,Biosurfactant,99,0.4,10,100,personal_care
+Sophorolipid,OC1OC(CO)C(O)C(O)C1OC1OC(CO)C(O)C(O)C1OC(=O)CCCCCCCCC=C,9.2,100,76,60,Green,Biosurfactant,98,0.5,10,100,personal_care
+Methyl Ester Ethoxylate,CCCCCCCCCCCC(=O)OCC,4.3,88,81,510,Green,Nonionic Surfactant,90,1.6,8,86,personal_care
+Alkyl Polyglycoside C8-10,CCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.8,94,83,430,Green,Nonionic Surfactant,95,1.2,9,93,personal_care
+Sodium Coco-Sulfate,CCCCCCCCCCCCCCCOS(=O)(=O)[O-],3.2,75,85,1200,Green,Anionic Surfactant,82,2.5,6,73,personal_care
+Disodium Cocoyl Glutamate,CCCCCCCCCCCC(=O)N[C@@H](CCC([O-])=O)C([O-])=O,6.5,92,86,310,Green,Mild Surfactant,92,1.7,8,90,personal_care
+Lauryl Glucoside (and) Glycerol,CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,4.4,96,86,520,Green,Primary Surfactant,94,1.2,9,95,personal_care
+Sorbitan Oleate,CCCCCCCC/C=C\CCCCCCCC(=O)OC1CCOC(CO)C1O,5.3,90,74,340,Green,Emulsifier,88,1.9,7,88,personal_care
+Polyglyceryl-4 Oleate,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)COCC(O)CO,6.1,92,72,215,Green,Emulsifier,90,1.7,8,90,personal_care
+Xanthan Gum,OCC1OC(OC2C(OC(C2O)OCC3OC(OCC4OC(O)C(O)C(O)C4O)C(O)C(O)C3O)CO)C(O)C(O)C1O,7.2,100,68,480,Green,Thickener,97,1.0,9,99,personal_care
+Hydroxyethyl Cellulose,OCC1OC(O)C(O)C(O)C1OCC(O)CO,4.6,100,66,720,Green,Thickener,95,1.1,9,99,personal_care
+Guar Gum (bio),OCC1OC(OC2C(CO)OC(OCC3OC(O)C(CO)C(O)C3O)C(O)C2O)C(O)C(O)C1O,3.8,100,64,890,Green,Thickener,96,0.9,9,99,personal_care
+Panthenol,OCC(C)(CO)CCC(=O)NCCC(O)=O,12.5,100,75,140,Green,Conditioner,99,1.3,9,99,personal_care
+Allantoin,NC(=O)NC1NC(=O)NC1=O,8.8,100,73,180,Green,Skin Conditioning,99,1.2,9,99,personal_care
+Lactic Acid (bio),CC(O)C(=O)O,1.4,100,67,4200,Green,pH Adjuster,99,0.5,9,99,personal_care
+Sodium Phytate,OC(CO)(CO)C(O)(CO)CO,3.5,100,70,660,Green,Chelating Agent,98,0.8,9,99,personal_care
+Benzyl Alcohol (NF),OCc1ccccc1,2.9,85,69,880,Green,Preservative,92,1.6,7,83,personal_care
+Sodium Benzoate,OC(=O)c1ccccc1,1.8,80,65,1950,Green,Preservative,85,1.4,7,78,personal_care
+Potassium Sorbate,CC=CC(=O)[O-],2.1,90,66,1620,Green,Preservative,93,1.2,8,88,personal_care
+Sodium Gluconate,OC[C@@H](O)[C@@H](O)[C@H](O)[C@@H](O)C(=O)[O-],2.4,100,67,2300,Green,Chelating Agent,99,0.7,9,99,personal_care
+Tocopheryl Acetate,CC(=O)OC1=C(C)C=C2OC(CCC[C@H](C)CCC[C@H](C)CCCC(C)C)(C)CCC2=C1C,18.5,90,71,85,Green,Antioxidant,88,2.8,7,88,personal_care
+Ascorbic Acid,OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,4.2,100,69,520,Green,Antioxidant,99,0.8,9,99,personal_care
+D-Limonene,CC1=CCC(CC1)C(C)=C,2.4,100,92,2800,Green,Industrial Solvent,98,0.6,7,100,industrial
+Methyl Soyate,CCCCCCCC/C=C\CCCCCCCC(=O)OC,2.1,95,88,3200,Green,Industrial Solvent,96,0.8,8,94,industrial
+Ethyl Acetate (bio),CCOC(C)=O,1.8,85,80,4500,Green,Industrial Solvent,99,0.7,9,83,industrial
+n-Butyl Lactate,CCCCOC(=O)C(C)O,3.2,100,82,1200,Green,Industrial Solvent,97,0.9,9,99,industrial
+Isopropyl Alcohol (bio),CC(C)O,1.2,80,78,8000,Green,Industrial Solvent,99,0.6,9,78,industrial
+Propylene Glycol (bio),CC(O)CO,1.9,80,71,6500,Green,Solvent/Humectant,99,0.7,9,78,personal_care
+Dibasic Ester (bio),COC(=O)CCCC(=O)OC,3.8,85,85,980,Green,Industrial Solvent,94,1.1,8,83,industrial
+Soy Methyl Ester,CCCCCCCCCCCCCCCCCC(=O)OC,2.3,97,87,2600,Green,Industrial Solvent,95,0.8,8,96,industrial
+Corn-derived Ethanol,CCO,1.1,95,75,9500,Green,Industrial Solvent,99,0.5,9,93,industrial
+Lauryl Dimethyl Amine Oxide,CCCCCCCCCCCCN(C)(C)=O,5.8,78,89,420,Green,Foam Booster,85,2.3,7,76,personal_care
+Cocoamine Oxide,CCCCCCCCCCCC(=O)N(C)C,6.1,82,87,310,Green,Foam Booster,87,2.1,7,80,personal_care
+Sodium Lauryl Sulfoacetate,CCCCCCCCCCCCOC(=O)CS(=O)(=O)[O-],4.8,76,83,580,Green,Mild Anionic Surfactant,84,2.2,7,74,personal_care
+Disodium Laureth Sulfosuccinate,CCCCCCCCCCCCOC(=O)CC(S(=O)(=O)[O-])C(=O)[O-],6.8,78,85,290,Green,Mild Anionic Surfactant,83,2.3,7,76,personal_care
+Sodium Lauroyl Lactylate,CCCCCCCCCCCC(=O)OC(C)C(=O)[O-],5.5,88,83,380,Green,Mild Anionic Surfactant,90,1.7,8,86,personal_care
+Polyglyceryl-3 Cocoate,CCCCCCCCCCCC(=O)OCC(O)COCC(O)CO,7.2,94,77,210,Green,Emulsifier,91,1.6,8,92,personal_care
+Glyceryl Stearate (bio),CCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,4.9,92,74,480,Green,Emulsifier,89,1.8,8,90,personal_care
+Lecithin (sunflower),CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,8.5,100,76,320,Green,Emulsifier,93,1.4,9,99,personal_care
+Sodium Stearoyl Lactylate,CCCCCCCCCCCCCCCCCC(=O)OC(C)C(=O)[O-],4.2,88,75,640,Green,Emulsifier,88,1.9,8,86,personal_care
+Hydroxypropyl Methylcellulose,COC1OC(CO)C(OC)C(O)C1OC1OC(CO)C(O)C(OC)C1O,6.8,100,70,380,Green,Thickener/Film Former,94,1.2,9,99,personal_care
+Carrageenan,OCC1OC(OC2C(O)C(OS(=O)(=O)[O-])C(O)C(CO)O2)C(O)C(OS(=O)(=O)[O-])C1O,5.5,100,68,420,Green,Thickener,96,1.0,9,99,personal_care
+Cellulose Gum (CMC),OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,3.9,100,67,780,Green,Thickener,95,1.1,9,99,personal_care
+Pectin,OC1C(O)C(OC(=O)c2cc(O)c(O)c(O)c2)C(O)C(O)C1O,6.2,100,65,290,Green,Thickener/Stabilizer,97,0.9,9,99,personal_care
+Inulin,OCC1OC(OC2C(CO)OC(OCC3OC(O)C(O)C3O)C2O)C(O)C1O,5.8,100,66,350,Green,Thickener/Prebiotic,98,0.8,9,99,personal_care
+Sodium Hyaluronate,OCC1OC(OC2C(O)C(NC(C)=O)C(O)OC2C(=O)[O-])C(O)C(O)C1O,85.0,95,79,25,Green,Humectant/Film Former,96,1.5,9,93,personal_care
+Betaine (natural),C[N+](C)(C)CC(=O)[O-],4.8,95,74,680,Green,Humectant/Osmoprotectant,98,0.8,9,93,personal_care
+Trehalose,OCC1OC(OC2OC(CO)C(O)C(O)C2O)C(O)C(O)C1O,12.0,100,72,180,Green,Humectant/Stabilizer,99,0.9,9,99,personal_care
+Erythritol,OCC(O)C(O)CO,4.5,100,68,420,Green,Humectant,99,0.7,9,99,personal_care
+Maltitol,OCC(O)C(O)C(O)C(O)CO,3.8,100,69,560,Green,Humectant,99,0.7,9,99,personal_care
+Mannitol,OCC(O)C(O)C(O)C(O)CO,3.5,100,70,640,Green,Humectant,99,0.7,9,99,personal_care
+Sodium PCA (bio),N1CCC(=O)C1C(=O)[O-],8.5,90,76,180,Green,Humectant,96,1.2,8,88,personal_care
+Gluconolactone,OC1OC(=O)C(O)C(O)C1O,4.2,100,70,380,Green,pH Adjuster/Chelator,99,0.6,9,99,personal_care
+Malic Acid (bio),OC(CC(=O)O)C(=O)O,2.8,100,68,920,Green,pH Adjuster,99,0.5,9,99,personal_care
+Tartaric Acid (bio),OC(C(O)C(=O)O)C(=O)O,3.2,100,67,780,Green,pH Adjuster,99,0.5,9,99,personal_care
+Succinic Acid (bio),OC(=O)CCC(=O)O,2.5,95,68,1100,Green,pH Adjuster/Chelator,99,0.6,9,93,personal_care
+Gluconic Acid,OCC(O)C(O)C(O)C(O)C(=O)O,3.0,100,69,840,Green,Chelating Agent,99,0.6,9,99,personal_care
+Phytic Acid,OC1C(OP(=O)(O)O)C(OP(=O)(O)O)C(OP(=O)(O)O)C(OP(=O)(O)O)C1OP(=O)(O)O,5.5,100,72,320,Green,Chelating Agent,97,0.9,9,99,personal_care
+GLDA (Glutamic acid diacetic acid),OC(=O)CN(CC(=O)O)C(CCC(=O)O)C(=O)O,6.8,95,78,280,Green,Chelating Agent,96,1.1,9,93,personal_care
+MGDA (Methylglycinediacetic acid),OC(=O)CN(C)C(C(=O)O)CC(=O)O,5.9,90,76,340,Green,Chelating Agent,95,1.2,9,88,personal_care
+Sodium Citrate,OCC(O)(CC([O-])=O)C([O-])=O,1.8,100,70,2800,Green,Chelating Agent/Buffer,99,0.6,9,99,personal_care
+Potassium Citrate,[K+].[K+].[K+].OC(CC([O-])=O)(CC([O-])=O)C([O-])=O,2.2,100,69,2200,Green,Buffer/Chelating Agent,99,0.6,9,99,personal_care
+Sodium Bicarbonate,OC([O-])=O,0.8,0,65,12000,Green,pH Adjuster,99,0.3,10,20,personal_care
+Sodium Carbonate,O=C([O-])[O-],0.6,0,67,15000,Green,pH Adjuster/Builder,99,0.3,10,10,personal_care
+Sodium Metasilicate,O=[Si]([O-])[O-],0.9,0,88,8500,Green,Industrial Cleaner/Builder,99,0.4,8,5,industrial
+Sodium Sesquicarbonate,OC([O-])=O,1.1,0,82,6200,Green,Industrial Cleaner/Builder,99,0.3,9,8,industrial
+Trisodium Phosphate,OP(=O)([O-])[O-],1.2,0,85,5800,Amber,Industrial Builder,99,0.4,7,5,industrial
+Borax (sodium tetraborate),OB(O)O,1.5,0,80,4200,Amber,Industrial Cleaner,98,0.5,6,5,industrial
+Sodium Percarbonate,OOC(=O)[O-],2.1,0,87,3800,Green,Oxidizing Agent/Bleach,99,0.6,8,5,industrial
+Hydrogen Peroxide,OO,1.8,0,85,4500,Green,Oxidizing Agent,99,0.4,8,0,industrial
+Peracetic Acid,CC(=O)OO,3.5,80,90,1200,Amber,Disinfectant,98,0.8,6,78,industrial
+Caprylhydroxamic Acid,CCCCCCCC(=O)NO,9.5,85,78,180,Green,Preservative/Chelator,90,1.8,8,83,personal_care
+Ethylhexylglycerin,CCCCC(CC)COC(CO)CO,7.8,75,75,240,Green,Preservative Booster,88,2.0,7,73,personal_care
+Phenoxyethanol,OCCOc1ccccc1,4.5,60,77,680,Green,Preservative,82,2.2,7,58,personal_care
+Hexylene Glycol,CCCCCC(O)CO,6.2,70,74,380,Green,Preservative Booster,85,1.9,7,68,personal_care
+Levulinic Acid (bio),CC(=O)CCC(=O)O,3.8,95,72,480,Green,Preservative/Solvent,96,0.8,8,93,personal_care
+Caprylic Acid (bio),CCCCCCCC(=O)O,4.2,95,74,560,Green,Preservative,94,1.1,8,93,personal_care
+Undecylenic Acid,OC(=O)CCCCCCCCC=C,6.8,100,76,220,Green,Antifungal Preservative,93,1.3,8,99,food
+Rosemary Extract (antioxidant),CC1(C)CCCC2(C)C1CC=C(C2=O)C(C)C,22.0,100,74,85,Green,Antioxidant/Preservative,91,1.8,8,99,personal_care
+Green Tea Extract,OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,28.0,100,73,60,Green,Antioxidant,93,1.6,9,99,personal_care
+Vitamin E (mixed tocopherols),CC1=C(C)C2=C(OC(C)(CCC(C)CCC(C)CCCC(C)C)C2)C=C1O,32.0,100,72,45,Green,Antioxidant,89,2.1,8,99,personal_care
+Niacinamide,NC(=O)c1cccnc1,8.5,80,75,220,Green,Skin Active,95,1.4,8,78,personal_care
+Bakuchiol,CC(C)=CCc1ccc(cc1)C(O)c1cccc(c1)C=C,45.0,100,76,30,Green,Natural Retinol Alternative,92,2.2,8,99,personal_care
+Bisabolol,CC(C)=CCC(O)C1(C)CCCC(C)=C1,18.5,100,74,95,Green,Skin Soothing,93,1.8,9,99,personal_care
+Ceramide NP (bio),CCCCCCCCCCCCCCCCCC(=O)N[C@@H](CO)[C@H](O)CCCCCCCCCCCCC,95.0,88,78,15,Green,Skin Barrier,88,2.8,8,86,personal_care
+Neem Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(COC(=O)CCCCCCC/C=C\CCCCCCCC)OC(=O)CCCCCCC/C=C\CCCCCCCC,6.5,100,74,280,Green,Agricultural Adjuvant,91,1.5,7,99,agricultural
+Canola Methyl Ester,CCCCCCCC/C=C\CCCCCCCC(=O)OC,2.0,97,82,3800,Green,Agricultural Solvent,95,0.7,8,95,agricultural
+Alkyl Polyglycoside C12-16,CCCCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.2,96,84,520,Green,Agricultural Surfactant,94,1.3,9,94,agricultural
+Lecithin (soy),CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,4.8,100,77,680,Green,Agricultural Emulsifier,93,1.3,9,99,agricultural
+Castor Oil Ethoxylate,CCCCCCCCCC(O)CCCCCCCC(=O)OCC(COC(C)=O)OC(=O)CCCCCCCC(O)CCCCCCCC,6.9,88,78,340,Green,Agricultural Surfactant,87,2.0,7,86,agricultural
+Tall Oil Fatty Acid,CCCCCCCC/C=C/C=C/CCCCCCCC(=O)O,2.8,92,80,1800,Green,Agricultural Surfactant,91,1.4,8,90,agricultural
+Oleic Acid (bio),CCCCCCCC/C=C\CCCCCCCC(=O)O,2.5,95,76,2200,Green,Emollient/Emulsifier,93,1.2,8,93,personal_care
+Linoleic Acid (bio),CCCCCC/C=C\C/C=C\CCCCCCCC(=O)O,4.8,100,74,560,Green,Emollient,92,1.3,8,99,personal_care
+Stearic Acid (bio),CCCCCCCCCCCCCCCCCC(=O)O,2.2,90,73,2800,Green,Emollient/Thickener,90,1.5,9,88,personal_care
+Lauric Acid (bio),CCCCCCCCCCCC(=O)O,2.4,95,75,2400,Green,Emollient/Antimicrobial,92,1.2,8,93,personal_care
+Capric Acid (bio),CCCCCCCCCC(=O)O,3.8,95,73,780,Green,Emollient,93,1.1,8,93,personal_care
+Myristic Acid (bio),CCCCCCCCCCCCCC(=O)O,2.6,92,74,1800,Green,Emollient,91,1.3,9,90,personal_care
+Isostearic Acid,CC(CCCCCCCCCCCCCC)C(=O)O,5.2,88,75,480,Green,Emollient,88,1.8,8,86,personal_care
+Jojoba Esters,CCCCCCCCCC/C=C/CCCCCCCCCC(=O)OC/C=C/CCCCCCCCCC,12.5,100,77,180,Green,Emollient/Wax,89,1.9,9,99,personal_care
+Shea Butter (refined),CCCCCCCCCCCCCCCCCC(=O)OCC(COC(=O)CCCCCCCCCCCCCCCCCC)OC(=O)CCCCCCCCCCCCCCCCCC,8.5,100,74,320,Green,Emollient,88,2.0,9,99,personal_care
+Coconut Oil (fractionated),CCCCCCCCCCCC(=O)OCC(COC(=O)CCCCCCCCCCCC)OC(=O)CCCCCCCCCCCC,5.5,100,76,480,Green,Emollient/Carrier,91,1.4,9,99,personal_care
+Argan Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(COC(=O)CCCCCCCC/C=C\CCCCCCCC)OC(=O)CCCCCCC/C=C\CCCCCCCC,28.0,100,75,95,Green,Emollient/Antioxidant,90,1.9,9,99,personal_care
+Calendula Extract,CC1=CC(=O)c2c(cc(O)cc2O)C1,18.0,100,73,85,Green,Skin Soothing/Anti-inflammatory,92,1.7,9,99,personal_care
+Chamomile Extract,COc1cc(C=CC(=O)O)ccc1O,16.5,100,72,90,Green,Skin Soothing,93,1.6,9,99,personal_care
+Aloe Vera Extract,OCC1OC(O)C(O)C(O)C1O,9.5,100,74,240,Green,Skin Soothing/Humectant,97,1.1,9,99,personal_care
+Witch Hazel Extract,OCC(O)c1ccc(O)cc1,7.8,100,72,320,Green,Astringent/Antioxidant,94,1.3,8,99,personal_care
+Salicylic Acid (bio),OC(=O)c1ccccc1O,4.5,80,75,480,Green,Exfoliant/Preservative,88,1.6,7,78,personal_care
+Mandelic Acid,OC(C(=O)O)c1ccccc1,8.5,70,73,220,Green,Exfoliant,86,1.8,7,68,personal_care
+Glycolic Acid (bio),OCC(=O)O,3.8,80,74,680,Green,Exfoliant/pH Adjuster,97,0.8,8,78,personal_care
+Azelaic Acid,OC(=O)CCCCCCCC(=O)O,6.5,85,73,280,Green,Exfoliant/Antimicrobial,92,1.4,8,83,personal_care
+Pyruvic Acid,CC(=O)C(=O)O,5.2,90,71,380,Green,Exfoliant,96,0.9,8,88,personal_care
+Sodium PCA,N1CCC(=O)C1C(=O)[O-],8.5,90,74,200,Green,Humectant,96,1.2,8,88,personal_care
+Hydroxyacetophenone,CC(=O)c1ccc(O)cc1,9.2,75,74,180,Green,Antioxidant/Preservative Booster,88,1.7,7,73,personal_care
+Piroctone Olamine,CCCCCCCC/C=C/CC1=CC(=O)N(CCO)C(C)(C)C1,12.5,72,78,140,Green,Antidandruff Active,83,2.4,6,70,personal_care
+Zinc Pyrithione,C1=CC(=NC(=C1)S[Zn]SC2=CC=CN=C2)[O-],8.8,0,82,180,Amber,Antidandruff Preservative,72,2.8,5,0,personal_care
+Piroctone,CCCCCCCC/C=C/CC1=CC(=O)N(O)C(C)(C)C1,11.5,72,77,160,Green,Antifungal Active,84,2.3,7,70,personal_care
+Polyquaternium-10,OCC1OC(OCC[N+](C)(C)C)C(O)C(O)C1O,12.5,85,78,220,Green,Conditioning Polymer,88,1.9,7,83,personal_care
+Polyquaternium-7,C=C[N+](C)(C)C.C=CC(=O)[O-],9.8,65,76,280,Green,Conditioning Polymer,80,2.3,6,63,personal_care
+Guar Hydroxypropyltrimonium Chloride,OCC1OC(OC2C(CO)OC(OCC3OC(O)C(CO)C(O)C3O)C(O)C2O)C(O)C(O)C1O,14.5,95,79,160,Green,Conditioning Agent,93,1.5,8,93,personal_care
+Cetrimonium Chloride,CCCCCCCCCCCCCCCC[N+](C)(C)C,6.8,65,80,380,Amber,Conditioning Agent/Preservative,78,2.6,5,63,personal_care
+Behentrimonium Chloride,CCCCCCCCCCCCCCCCCCCCCC[N+](C)(C)C,7.5,68,81,310,Amber,Conditioning Agent,76,2.8,5,66,personal_care
+Stearamidopropyl Dimethylamine,CCCCCCCCCCCCCCCCCC(=O)NCCCN(C)C,8.2,80,79,240,Green,Conditioning Agent,82,2.2,7,78,personal_care
+Amino Silicone (bio-compatible),C[Si](C)(O)CCCNCCN,9.5,40,82,180,Green,Hair Conditioning,75,3.1,6,38,personal_care
+Dimethicone (low MW),C[Si](C)(C)O[Si](C)(C)O[Si](C)(C)C,5.8,0,80,580,Green,Emollient/Conditioning,70,3.5,8,0,personal_care
+Cyclomethicone,C[Si]1(C)O[Si](C)(C)O[Si](C)(C)O[Si](C)(C)O1,6.2,0,78,480,Amber,Volatile Emollient,68,3.8,6,0,personal_care
+Ethylene Glycol Distearate,CCCCCCCCCCCCCCCCCC(=O)OCCOC(=O)CCCCCCCCCCCCCCCCCC,5.5,80,74,340,Green,Opacifier/Pearl Agent,85,2.0,8,78,personal_care
+Glycol Distearate,CCCCCCCCCCCCCCCCCC(=O)OCCO,4.8,82,73,420,Green,Opacifier,86,1.9,8,80,personal_care
+Mica (cosmetic grade),O=S(=O)([O-])[O-],3.2,0,72,680,Green,Opacifier/Pearlizer,99,0.5,10,0,personal_care
+Titanium Dioxide (nano-free),O=[Ti]=O,3.8,0,75,520,Green,Opacifier/UV Filter,99,0.4,9,0,paint_coatings
+Zinc Oxide (non-nano),O=[Zn],4.5,0,77,420,Green,UV Filter/Antimicrobial,99,0.5,9,0,personal_care
+Kaolin Clay,O=[Al]O[Si](=O)O,1.2,0,68,1800,Green,Absorbent/Opacifier,99,0.3,10,0,personal_care
+Bentonite,O=[Al]O[Si](=O)O,1.5,0,70,1600,Green,Thickener/Absorbent,99,0.3,10,0,personal_care
+Magnesium Aluminum Silicate,O=[Al]O[Si](=O)O,2.8,0,69,980,Green,Thickener/Stabilizer,99,0.4,10,0,personal_care
+Microcrystalline Cellulose,OCC1OC(O)C(O)C(O)C1O,3.5,100,68,720,Green,Thickener/Stabilizer,95,1.0,9,99,personal_care
+Methyl Cellulose,COC1OC(OC)C(OC)C(O)C1O,5.2,100,69,480,Green,Thickener/Film Former,94,1.2,9,99,personal_care
+Sodium Alginate,OCC1OC(OC(C(=O)[O-])C(O)C(O)C=O)C(O)C(O)C1O,6.8,100,70,340,Green,Thickener/Stabilizer,96,1.0,9,99,personal_care
+Carob Bean Gum,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,4.5,100,67,580,Green,Thickener,96,0.9,9,99,personal_care
+Tara Gum,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,5.8,100,68,380,Green,Thickener,96,0.9,9,99,personal_care
+Cassia Gum,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,4.8,100,67,460,Green,Thickener,97,0.8,9,99,personal_care
+Pullulan,OCC1OC(OC2C(CO)OC(OC3C(CO)OC(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,12.5,100,71,180,Green,Film Former,97,1.1,9,99,personal_care
+Hydroxypropyl Starch,OCC1OC(OCC(O)CO)C(O)C(O)C1O,3.8,100,68,680,Green,Thickener/Stabilizer,96,0.9,9,99,personal_care
+Sodium Starch Octenylsuccinate,OCC1OC(OC(=O)CC=C)C(O)C(O)C1O,4.5,95,70,520,Green,Emulsifier/Thickener,94,1.1,9,93,personal_care
+Polyglutamic Acid (bio),OC(=O)CNC(=O)CNC(=O)CNC(=O)CN,18.0,100,74,120,Green,Humectant/Film Former,96,1.4,9,99,personal_care
+Fermentation Hyaluronic Acid,OCC1OC(OC2C(O)C(NC(C)=O)C(O)OC2C(=O)[O-])C(O)C(O)C1O,75.0,100,78,28,Green,Humectant,97,1.3,9,99,personal_care
+Collagen Peptides (hydrolyzed),NC(=O)CNC(=O)CNC(=O)CN,22.0,95,76,85,Green,Film Former/Skin Conditioning,94,1.7,9,93,personal_care
+Keratin (hydrolyzed),NC(=O)CNC(=O)C(CC1=CNC2=CC=CC=C12)NC(=O)CN,28.0,90,77,65,Green,Hair Conditioning,91,2.0,8,88,personal_care
+Silk Amino Acids,NC(=O)C(N)CC1=CC=CC=C1,32.0,100,75,45,Green,Skin Conditioning,93,1.8,9,99,personal_care
+Oat Beta-Glucan,OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,16.5,100,74,130,Green,Skin Soothing/Thickener,96,1.2,9,99,personal_care
+Quinoa Protein,NC(=O)C(N)CCCNC(=N)N,18.5,100,75,110,Green,Hair/Skin Conditioning,93,1.6,9,99,personal_care
+Pea Protein (hydrolyzed),NC(=O)CNC(=O)C(N)CCCCN,12.0,100,74,165,Green,Film Former,94,1.4,9,99,personal_care
+Glucoamylase (enzyme),OCC1OC(O)C(O)C(O)C1O,25.0,100,72,60,Green,Stain Removal Enzyme,96,1.5,9,99,fabric_laundry
+Protease (subtilisin),NC(=O)CNC(=O)CNC(=O)CN,18.0,100,74,85,Green,Stain Removal Enzyme,95,1.6,9,99,fabric_laundry
+Lipase (bio),CCCCCCCCCCCCCCCC(=O)O,22.0,100,75,70,Green,Stain Removal Enzyme,94,1.7,9,99,fabric_laundry
+Cellulase (bio),OCC1OC(O)C(O)C(O)C1O,20.0,100,73,78,Green,Fabric Care Enzyme,95,1.5,9,99,fabric_laundry
+Amylase (bio),OCC1OC(O)C(O)C(O)C1O,16.5,100,72,90,Green,Starch Stain Enzyme,96,1.4,9,99,fabric_laundry
+Mannanase (bio),OCC1OC(OC2OC(CO)C(O)C(O)C2O)C(O)C(O)C1O,19.0,100,73,72,Green,Stain Removal Enzyme,95,1.5,9,99,fabric_laundry
+Sodium Percarbonate (coated),OOC(=O)[O-],2.8,0,88,2800,Green,Oxidizing Agent/Bleach,99,0.6,8,0,industrial
+Tetrasodium EDDS,OC(=O)CN(CCN(CC(=O)O)CC(=O)O)CC(=O)O,6.5,85,78,380,Green,Chelating Agent (biodeg),96,1.3,8,83,personal_care
+Sodium Iminodisuccinate,OC(=O)CN(CC(=O)O)CC(=O)O,7.2,90,76,280,Green,Chelating Agent,97,1.1,9,88,personal_care
+Hydroxyethyl Iminodiacetic Acid,OCC(N(CC(=O)O)CC(=O)O),6.8,85,75,320,Green,Chelating Agent,95,1.3,8,83,personal_care
+Ethanol (bio),CCO,1.1,95,76,9500,Green,Solvent/Antimicrobial,99,0.5,9,93,personal_care
+Isosorbide,C1CO[C@@H]2CO[C@@H]1O2,4.8,100,72,480,Green,Bio-solvent,98,0.7,9,99,personal_care
+2-Methyltetrahydrofuran (bio),C1CCOC1C,3.5,95,80,980,Green,Bio-solvent,97,0.8,8,93,personal_care
+Cyrene (dihydrolevoglucosenone),O=C1CC2OCC1O2,6.2,100,81,380,Green,Bio-solvent,97,0.9,8,99,personal_care
+Gamma-Valerolactone (bio),CC1CCCO1=O,4.2,95,79,580,Green,Bio-solvent,97,0.8,9,93,personal_care
+Furfuryl Alcohol (bio),OCC1=CC=CO1,3.8,95,77,720,Green,Bio-solvent,96,0.9,8,93,personal_care
+Polyglycerol-3,OCC(O)COCC(O)COCC(O)CO,5.5,100,71,380,Green,Humectant/Emulsifier,98,0.8,9,99,personal_care
+Polyglyceryl-6 Distearate,CCCCCCCCCCCCCCCCCC(=O)OCC(O)COCC(O)COCC(O)CO,9.5,92,75,180,Green,Emulsifier,89,1.8,8,90,personal_care
+Cetyl Alcohol (bio),CCCCCCCCCCCCCCCCO,4.2,90,73,580,Green,Emollient/Thickener,88,1.8,9,88,personal_care
+Stearyl Alcohol (bio),CCCCCCCCCCCCCCCCCCO,4.5,90,73,520,Green,Emollient/Thickener,87,1.9,9,88,personal_care
+Behenyl Alcohol (bio),CCCCCCCCCCCCCCCCCCCCCCO,5.8,90,74,320,Green,Emollient/Wax,86,2.1,9,88,personal_care
+Beeswax (refined),CCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OCCCCCCCCCCCCCCCCCCCCCCCCCCC,12.5,100,73,240,Green,Wax/Emulsifier,85,2.2,9,99,personal_care
+Carnauba Wax,CCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC,8.5,100,72,320,Green,Wax,84,2.4,9,99,personal_care
+Candelilla Wax,CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC,7.8,100,71,380,Green,Wax,85,2.3,9,99,personal_care
+Povidone (PVP K30),C1CC(=O)NC1,8.5,0,82,480,Green,Pharma Binder/Solubilizer,72,2.8,7,0,pharmaceutical
+Hydroxypropyl Cellulose (HPC),OCC1OC(OCC(O)CO)C(O)C(O)C1O,9.2,100,80,320,Green,Pharma Binder/Film Coat,93,1.3,9,99,pharmaceutical
+Polyethylene Glycol 400,OCCOCCO,4.5,0,75,1200,Green,Pharma Solubilizer,78,2.4,7,0,pharmaceutical
+Polyethylene Glycol 4000,OCCOCCOCCOCCO,5.2,0,74,980,Green,Pharma Binder,76,2.5,7,0,pharmaceutical
+Poloxamer 407,CC(O)COC(C)COC(C)CO,18.5,0,82,180,Green,Pharma Solubilizer/Surfactant,75,3.2,7,0,pharmaceutical
+Poloxamer 188,CC(O)COC(C)COC(C)CO,16.5,0,80,220,Green,Pharma Surfactant/Stabilizer,76,3.1,7,0,pharmaceutical
+Cremophor EL,CCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,22.0,85,83,140,Green,Pharma Solubilizer,80,2.8,6,83,pharmaceutical
+Tween 20 (Polysorbate 20),CCCCCCCCCCCC(=O)OCC(CO)OCC(O)CO,6.8,88,80,480,Green,Pharma/Food Emulsifier,85,2.0,7,86,pharmaceutical
+Tween 80 (Polysorbate 80),CCCCCCCC/C=C\CCCCCCCC(=O)OCC(CO)OCC(O)CO,7.2,88,82,420,Green,Pharma/Food Emulsifier,84,2.1,7,86,pharmaceutical
+Span 80 (Sorbitan Oleate),CCCCCCCC/C=C\CCCCCCCC(=O)OC1CCOC(CO)C1O,5.5,88,76,380,Amber,Pharma/Agri Emulsifier,86,1.9,7,86,pharmaceutical
+Span 20 (Sorbitan Laurate),CCCCCCCCCCCC(=O)OC1CCOC(CO)C1O,5.2,90,75,420,Green,Pharma/Food Emulsifier,88,1.8,8,88,pharmaceutical
+Microcrystalline Cellulose PH102,OCC1OC(O)C(O)C(O)C1O,3.8,100,78,680,Green,Pharma Filler/Disintegrant,95,1.0,9,99,pharmaceutical
+Croscarmellose Sodium,OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,5.5,100,76,420,Green,Pharma Disintegrant,94,1.2,9,99,pharmaceutical
+Crospovidone,C1CC(=O)NC1,6.8,0,77,320,Green,Pharma Disintegrant,70,3.0,7,0,pharmaceutical
+Magnesium Stearate (pharma),CCCCCCCCCCCCCCCCCC(=O)[O-].[Mg+2],3.2,85,72,580,Green,Pharma Lubricant,88,1.8,8,83,pharmaceutical
+Silicon Dioxide (Aerosil),O=[Si]=O,4.5,0,74,420,Green,Pharma Flow Aid,99,0.5,10,0,pharmaceutical
+Lactose Monohydrate,OC[C@H]1O[C@@H](O[C@@H]2[C@@H](O)[C@H](O)[C@@H](CO)O2)[C@H](O)[C@@H](O)[C@H]1O,2.8,100,71,1200,Green,Pharma Filler,99,0.8,9,99,pharmaceutical
+Starch (pregelatinized),OCC1OC(O)C(O)C(O)C1O,2.5,100,72,1500,Green,Pharma Binder/Filler,97,0.8,9,99,pharmaceutical
+Hypromellose (HPMC E5),COC1OC(OC)C(OC)C(O)C1O,7.5,100,81,380,Green,Pharma Film Coat/Binder,93,1.3,9,99,pharmaceutical
+Ethylcellulose,CCOC1OC(OCC)C(OCC)C(O)C1O,6.8,100,79,320,Green,Pharma Film Coat,90,1.5,9,99,pharmaceutical
+Shellac (pharmaceutical),OC(=O)c1ccc(O)cc1,18.5,100,77,120,Green,Pharma Enteric Coat,88,2.0,8,99,pharmaceutical
+Zein (corn protein),NC(=O)CNC(=O)CNC(=O)CN,12.5,100,76,180,Green,Pharma/Food Film Former,91,1.6,9,99,pharmaceutical
+Gelatin (pharmaceutical),NC(=O)CNC(=O)C(N)CCCCN,8.5,95,78,280,Green,Pharma Capsule/Binder,92,1.7,8,93,pharmaceutical
+Carnauba Wax (pharma grade),CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OC,8.8,100,74,240,Green,Pharma Tablet Coat,84,2.4,9,99,pharmaceutical
+Talc (pharma grade),O=[Mg]=O,1.2,0,71,1800,Green,Pharma Glidant,99,0.3,9,0,pharmaceutical
+Calcium Carbonate (pharma),OC([O-])=O,0.8,0,70,2400,Green,Pharma Filler/Antacid,99,0.3,10,0,pharmaceutical
+Stearic Acid (pharma grade),CCCCCCCCCCCCCCCCCC(=O)O,2.5,90,73,980,Green,Pharma Lubricant,90,1.5,9,88,pharmaceutical
+Glyceryl Behenate,CCCCCCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,6.5,90,75,280,Green,Pharma Lubricant/Matrix,87,2.0,8,88,pharmaceutical
+Polyvinyl Alcohol (PVA),OCC(O)C(O)CO,5.8,0,78,380,Green,Pharma Film Former,76,2.6,8,0,pharmaceutical
+Sodium Starch Glycolate,OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,4.8,95,76,480,Green,Pharma Superdisintegrant,94,1.1,9,93,pharmaceutical
+Lecithin (pharma grade),CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,12.5,100,79,200,Green,Pharma Emulsifier/Solubilizer,93,1.5,9,99,pharmaceutical
+Glycerin (USP grade),OCC(O)CO,1.6,100,76,4800,Green,Pharma Humectant/Solvent,98,0.8,9,99,pharmaceutical
+Propylene Glycol (USP),CC(O)CO,2.0,80,74,3200,Green,Pharma Solvent/Humectant,99,0.7,9,78,pharmaceutical
+Sorbitol Solution 70%,OCC(O)C(O)C(O)C(O)CO,2.4,100,73,2800,Green,Pharma Sweetener/Humectant,99,0.7,9,99,pharmaceutical
+Sucrose (pharma),OC[C@H]1O[C@@]([C@H](O)[C@@H]1O)(CO)O[C@@H]1O[C@H](CO)[C@@H](O)[C@H](O)[C@H]1O,1.8,100,72,3200,Green,Pharma Filler/Sweetener,99,0.6,9,99,pharmaceutical
+Citric Acid Monohydrate (pharma),OC(=O)CC(O)(CC(=O)O)C(=O)O,1.8,100,70,2800,Green,Pharma pH Adjuster/Chelator,99,0.6,9,99,pharmaceutical
+Sodium Hydroxide (pharma),O,0.5,0,68,8000,Green,Pharma pH Adjuster,99,0.3,9,0,pharmaceutical
+Hydrochloric Acid (pharma),Cl,0.8,0,67,6000,Amber,Pharma pH Adjuster,99,0.4,7,0,pharmaceutical
+Benzalkonium Chloride,CCCCCCCCCCCCCC[N+](C)(C)Cc1ccccc1,8.5,60,83,280,Amber,Pharma Preservative,72,3.0,5,58,pharmaceutical
+Thiomersal,CC[Hg]Sc1ccccc1C(=O)[O-],45.0,0,80,25,Amber,Pharma Preservative,60,4.5,4,0,pharmaceutical
+Methyl Paraben (pharma),COC(=O)c1ccc(O)cc1,4.2,75,76,480,Green,Pharma Preservative,82,2.0,7,73,pharmaceutical
+Propyl Paraben (pharma),CCCOC(=O)c1ccc(O)cc1,4.8,72,75,380,Green,Pharma Preservative,80,2.1,6,70,pharmaceutical
+Carboxymethyl Cellulose Na (pharma),OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,4.2,100,74,680,Green,Pharma Viscosifier,94,1.2,9,99,pharmaceutical
+Xylitol,OCC(O)C(O)C(O)CO,5.5,100,72,380,Green,Pharma/Food Sweetener,99,0.8,9,99,pharmaceutical
+Lecithin (food grade),CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,5.2,100,80,580,Green,Food Emulsifier,93,1.3,9,99,food
+Mono/Diglycerides (food),CCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,3.8,88,78,680,Green,Food Emulsifier,89,1.8,8,86,food
+DATEM,CCCCCCCCCCCCCCCCCC(=O)OC(CC(=O)OCC(O)CO)C(=O)O,6.5,85,77,320,Green,Food Emulsifier/Dough Cond,87,2.0,7,83,food
+SSL (Sodium Stearoyl Lactylate),CCCCCCCCCCCCCCCCCC(=O)OC(C)C(=O)[O-],4.5,88,78,580,Green,Food Emulsifier/Dough Cond,88,1.9,8,86,food
+Carrageenan (food grade),OCC1OC(OC2C(O)C(OS(=O)(=O)[O-])C(O)C(CO)O2)C(O)C(OS(=O)(=O)[O-])C1O,5.8,100,70,380,Green,Food Thickener/Gelling,96,1.0,9,99,food
+Xanthan Gum (food grade),OCC1OC(OC2C(OC(C2O)OCC3OC(OCC4OC(O)C(O)C(O)C4O)C(O)C(O)C3O)CO)C(O)C(O)C1O,7.5,100,70,420,Green,Food Thickener/Stabilizer,97,1.0,9,99,food
+Guar Gum (food grade),OCC1OC(OC2C(CO)OC(OCC3OC(O)C(CO)C(O)C3O)C(O)C2O)C(O)C(O)C1O,4.0,100,68,680,Green,Food Thickener,96,0.9,9,99,food
+Locust Bean Gum,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,4.8,100,68,520,Green,Food Thickener/Stabilizer,96,0.9,9,99,food
+Agar-Agar,OCC1OC(OC2C(O)C(O)C(OC3OC(CO)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,8.5,100,72,280,Green,Food Gelling Agent,96,1.1,9,99,food
+Gelatin (food grade),NC(=O)CNC(=O)C(N)CCCCN,6.5,95,74,420,Green,Food Gelling/Stabilizer,92,1.6,8,93,food
+Pectin (food grade),OC1C(O)C(OC(=O)c2cc(O)c(O)c(O)c2)C(O)C(O)C1O,6.5,100,67,320,Green,Food Gelling/Stabilizer,97,0.9,9,99,food
+Modified Starch (food),OCC1OC(OC(=O)CCCCC)C(O)C(O)C1O,2.8,95,71,1200,Green,Food Thickener/Stabilizer,94,1.0,9,93,food
+Maltodextrin,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,2.2,100,70,1500,Green,Food Filler/Carrier,98,0.7,9,99,pharmaceutical
+Dextrose Monohydrate,OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O,1.5,100,69,2200,Green,Food Filler/Sweetener,99,0.5,9,99,pharmaceutical
+Fructose,OCC1OC(O)C(O)C(O)C1O,2.0,100,70,1800,Green,Food Sweetener,99,0.5,9,99,food
+Acacia Gum (Arabic),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,6.8,100,69,380,Green,Food Emulsifier/Stabilizer,97,0.9,9,99,food
+Carob Bean Gum (food),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,4.8,100,68,420,Green,Food Thickener,96,0.9,9,99,food
+Ascorbic Acid (food grade),OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,4.5,100,71,580,Green,Food Antioxidant/Preservative,99,0.8,9,99,food
+Tocopherols Mixed (food),CC1=C(C)C2=C(OC(C)(CCC(C)CCC(C)CCCC(C)C)C2)C=C1O,28.0,100,74,95,Green,Food Antioxidant,89,2.1,8,99,food
+Rosemary Extract (food),CC1(C)CCCC2(C)C1CC=C(C2=O)C(C)C,22.0,100,73,120,Green,Food Antioxidant,91,1.8,8,99,food
+Natamycin,OC1C(O)C(OC2C(O)C=CC(=O)O2)C(O)C(O)C1OC,45.0,100,78,45,Green,Food Antifungal Preservative,88,2.5,7,99,food
+Nisin,NC(=O)CNC(=O)CNC(=O)CN,85.0,100,80,25,Green,Food Antimicrobial Peptide,92,2.8,8,99,food
+Potassium Sorbate (food),CC=CC(=O)[O-],2.2,90,68,1800,Green,Food Preservative,93,1.2,8,88,food
+Sodium Benzoate (food),OC(=O)c1ccccc1,1.9,80,67,2000,Green,Food Preservative,85,1.4,7,78,food
+Sodium Nitrite,N(=O)[O-],1.5,0,72,1200,Amber,Food Preservative/Curing,95,0.6,5,0,food
+Sulfur Dioxide (food),O=S=O,1.2,0,70,800,Amber,Food Preservative/Antioxidant,99,0.4,6,0,food
+Citric Acid (food grade),OC(=O)CC(O)(CC(=O)O)C(=O)O,1.7,100,70,3200,Green,Food pH Adjuster/Preservative,99,0.6,9,99,food
+Lactic Acid (food grade),CC(O)C(=O)O,1.5,100,69,3800,Green,Food pH Adjuster/Acidulant,99,0.5,9,99,food
+Acetic Acid (food),CC(=O)O,0.8,80,67,6000,Green,Food Acidulant/Preservative,99,0.5,8,78,food
+Tartaric Acid (food),OC(C(O)C(=O)O)C(=O)O,3.4,100,69,720,Green,Food Acidulant,99,0.5,9,99,food
+Malic Acid (food),OC(CC(=O)O)C(=O)O,3.0,100,70,880,Green,Food Acidulant,99,0.5,9,99,food
+Fumaric Acid,OC(=O)/C=C/C(=O)O,2.8,85,69,980,Green,Food Acidulant,97,0.7,8,83,food
+Sodium Alginate (food),OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,7.2,100,71,320,Green,Food Thickener/Gelling,96,1.0,9,99,food
+Methylcellulose (food),COC1OC(OC)C(OC)C(O)C1O,5.5,100,70,420,Green,Food Thickener/Emulsifier,94,1.2,9,99,food
+Hydroxypropyl Methylcellulose (food),COC1OC(OCC(O)CO)C(OC)C(O)C1O,7.8,100,72,360,Green,Food Thickener/Film Former,93,1.3,9,99,food
+Calcium Chloride (food),ClCaCl,0.6,0,68,3000,Green,Food Firming Agent/Gelling,99,0.3,8,0,food
+Calcium Carbonate (food),OC([O-])=O,0.9,0,70,2800,Green,Food Filler/Fortifier,99,0.3,10,0,pharmaceutical
+Calcium Phosphate Dibasic,OP(=O)([O-])[O-],1.8,0,71,1600,Green,Food/Pharma Filler,99,0.4,9,0,pharmaceutical
+Sodium Bicarbonate (food),OC([O-])=O,0.9,0,68,5000,Green,Food Leavening/pH Adjuster,99,0.3,10,0,food
+Potassium Chloride (food),ClK,0.8,0,67,3000,Green,Food Mineral/Salt Substitute,99,0.3,10,0,food
+Magnesium Sulfate (food),OS(=O)(=O)O,0.7,0,67,2500,Green,Food Mineral/Firming,99,0.3,10,0,food
+Neem Oil (agri grade),CCCCCCCCCCCCCCCCCC(=O)OCC(COC(=O)CCCCCCCC/C=C\CCCCCCCC)OC(=O)CCCCCCCC/C=C\CCCCCCCC,6.8,100,76,280,Green,Agri Biopesticide/Adjuvant,91,1.5,7,99,agricultural
+Pyrethrin I,CC(=O)OC1CC(=C(C)C)CC1C(C)(C)/C=C/C(C)=O,28.0,100,84,85,Green,Agri Biopesticide,88,2.2,6,99,agricultural
+Azadirachtin,OC(=O)C1=CC(=O)OC1CC(=O)O,35.0,100,82,60,Green,Agri Systemic Biopesticide,90,2.0,7,99,agricultural
+Spinosad,CC[C@@H]1CC[C@@]2(C)CC[C@@H](OC)[C@H]2C1,85.0,100,88,30,Green,Agri Bioinsecticide,92,1.8,7,99,agricultural
+Beauveria Bassiana,NC(=O)CNC(=O)CN,45.0,100,85,50,Green,Agri Entomopathogenic Fungus,95,1.2,9,99,agricultural
+Bacillus Thuringiensis,NC(=O)CNC(=O)CNC(=O)CN,28.0,100,86,80,Green,Agri Bioinsecticide,96,1.0,9,99,agricultural
+Kaolin (agri grade),O=[Al]O[Si](=O)O,1.0,0,72,2400,Green,Agri Particle Film/Insect Barrier,99,0.3,10,0,agricultural
+Diatomaceous Earth,O=[Si]=O,2.5,0,74,1200,Green,Agri Insecticide/Desiccant,99,0.4,9,0,agricultural
+Copper Hydroxide,OC[Cu]O,5.5,0,80,480,Amber,Agri Fungicide,85,1.8,5,0,agricultural
+Sulfur (wettable),S,1.2,0,78,1800,Green,Agri Fungicide/Acaricide,99,0.4,7,0,agricultural
+Copper Sulfate (agri),OS(=O)(=O)O,2.8,0,77,680,Amber,Agri Fungicide/Bactericide,90,1.0,5,0,agricultural
+Potassium Bicarbonate (agri),OC([O-])=O,1.5,0,72,1200,Green,Agri Fungicide,99,0.4,9,0,agricultural
+Hydrogen Peroxide 50% (agri),OO,2.2,0,80,800,Green,Agri Disinfectant/Oxidant,99,0.5,7,0,agricultural
+Caprylic Acid (agri),CCCCCCCC(=O)O,4.5,95,76,480,Green,Agri Herbicide/Fungicide,94,1.1,8,93,agricultural
+Clove Oil,COc1ccc(CC=C)cc1O,12.0,100,80,180,Green,Agri Biopesticide/Herbicide,92,1.6,7,99,agricultural
+Thyme Oil,CC(C)c1ccc(C)cc1O,15.0,100,81,140,Green,Agri Biopesticide/Fungicide,91,1.7,7,99,agricultural
+Citronella Oil,CC(C)=CCCC(C)=CCO,8.5,100,78,240,Green,Agri Repellent/Biopesticide,93,1.4,7,99,agricultural
+Silwet L-77 (agri),C[Si](C)(C)O[Si](C)(C)CCCOC(C)CO,18.5,55,90,160,Amber,Agri Superspreader Adjuvant,75,3.5,5,53,agricultural
+Crop Oil Concentrate,CCCCCCCCCCCCCCCCCC(=O)OCC(COC(=O)CCCCCCCC/C=C\CCCCCCCC)OC(=O)CCCCCCCC/C=C\CCCCCCCC,4.8,88,82,480,Green,Agri Oil Adjuvant,88,1.8,7,86,agricultural
+Methylated Seed Oil,CCCCCCCCCCCCCCCCCC(=O)OC,3.2,92,80,680,Green,Agri MSO Adjuvant,91,1.5,8,90,agricultural
+Ammonium Sulfate (agri),OS(=O)(=O)O,0.6,0,72,2400,Green,Agri Compatibility Adjuvant,99,0.4,8,0,agricultural
+Urea Ammonium Nitrate,NC(=N)N,0.8,0,70,2000,Amber,Agri Fertilizer Adjuvant,95,0.8,6,0,agricultural
+Humic Acid,OC(=O)c1ccc(O)c(O)c1,4.5,95,74,680,Green,Agri Soil Conditioner/Adjuvant,94,1.1,8,93,agricultural
+Fulvic Acid,OC(=O)c1cc(O)ccc1O,5.5,95,75,480,Green,Agri Soil Conditioner,95,1.0,8,93,agricultural
+Seaweed Extract,OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,8.5,100,76,320,Green,Agri Biostimulant,96,1.1,9,99,agricultural
+Fish Hydrolysate,NC(=O)CNC(=O)CNC(=O)CN,6.5,100,75,420,Green,Agri Biostimulant/Fertilizer,94,1.4,8,99,agricultural
+Chitosan (agri),OCC1OC(N)C(O)C(O)C1O,12.0,100,78,180,Green,Agri Elicitor/Fungicide,95,1.2,8,99,agricultural
+Linseed Oil,CCCCCCCC/C=C\C/C=C\C/C=C\CCCCCCCC(=O)OCC(COC(=O)CCCCCCC/C=C\C/C=C\C/C=C\CCCCCCCC)OC(=O)CCCCCCC/C=C\CCCCCCCC,2.8,100,76,480,Green,Paint/Coatings Binder,89,1.6,8,99,pharmaceutical
+Tung Oil,CCCCCCCC/C=C\C=C/CCCCCCCC(=O)OCC(COC(=O)CCCCCCCC/C=C\CCCCCCCC)OC(=O)CCCCCCC/C=C\C=C/CCCCCCCC,5.5,100,78,280,Green,Paint/Coatings Binder,87,1.8,8,99,pharmaceutical
+Soybean Oil (modified),CCCCCCCC/C=C\C/C=C\CCCCCCCC(=O)OCC(COC(=O)CCCCCCC/C=C\CCCCCCCC)OC(=O)CCCCCCCC/C=C\CCCCCCCC,3.2,100,75,580,Green,Paint/Coatings Binder,90,1.5,8,99,pharmaceutical
+Castor Oil (dehydrated),CCCCCCCC/C=C\C=C/CCCCCCCC(=O)OCC(COC(=O)CCCCCCCC/C=C\CCCCCCCC)OC(=O)CCCCCCC/C=C\CCCCCCCC,4.8,100,77,380,Green,Paint/Coatings Binder,88,1.7,8,99,pharmaceutical
+Rosin (gum),OC(=O)[C@@H]1CC[C@H]2CC[C@@](C)(C(=O)O)[C@@H]2[C@@H]1C,4.2,100,76,580,Green,Paint/Coatings Resin,86,1.9,7,99,paint_coatings
+Rosin Ester,CCOC(=O)[C@@H]1CC[C@H]2CC[C@@](C)(C(=O)OCC)[C@@H]2[C@@H]1C,5.8,95,78,380,Green,Paint/Coatings Resin,84,2.1,7,93,paint_coatings
+Shellac (coatings),OC(=O)c1ccc(O)cc1,16.5,100,79,160,Green,Paint/Coatings Film Former,88,2.0,8,99,paint_coatings
+Cellulose Acetate,COC1OC(OC(C)=O)C(O)C(O)C1O,8.5,100,74,280,Green,Paint/Coatings Binder,88,1.8,8,99,pharmaceutical
+Nitrocellulose,OCC1OC(ON(=O)=O)C(O)C(O)C1O,5.5,100,82,380,Amber,Paint/Coatings Binder,72,3.2,6,99,pharmaceutical
+Alkyd Resin (bio-based),OC(=O)CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,6.8,75,80,320,Green,Paint/Coatings Binder,82,2.5,7,73,pharmaceutical
+Epoxidized Soybean Oil (ESBO),CCCCCCCC1OC1CCCCCCCC(=O)OCC(COC(=O)CCCCCCC1OC1CCCCCCCC)OC(=O)CCCCCCC1OC1CCCCCCCC,6.5,98,79,340,Green,Paint/Coatings Plasticizer,89,1.7,8,96,paint_coatings
+Zinc Oxide (coatings),O=[Zn],4.8,0,78,420,Green,Paint/Coatings UV Stabilizer,99,0.5,9,0,paint_coatings
+Titanium Dioxide (rutile),O=[Ti]=O,4.0,0,85,580,Green,Paint/Coatings Pigment/Opacifier,99,0.4,9,0,paint_coatings
+Iron Oxide Red,O=[Fe]O[Fe]=O,3.5,0,80,680,Green,Paint/Coatings Pigment,99,0.4,9,0,paint_coatings
+Iron Oxide Yellow,OO[Fe]=O,3.8,0,79,580,Green,Paint/Coatings Pigment,99,0.4,9,0,paint_coatings
+Carbon Black,C,2.8,0,88,880,Green,Paint/Coatings Pigment,85,1.5,8,0,paint_coatings
+Calcium Carbonate (coatings),OC([O-])=O,0.7,0,72,3000,Green,Paint/Coatings Extender,99,0.3,10,0,paint_coatings
+Kaolin (coatings grade),O=[Al]O[Si](=O)O,1.1,0,71,2400,Green,Paint/Coatings Extender,99,0.3,10,0,paint_coatings
+Talc (coatings grade),O=[Mg]=O,1.0,0,70,2200,Green,Paint/Coatings Extender,99,0.3,9,0,paint_coatings
+Calcium Silicate,O=[Si]([O-])[O-],2.2,0,72,1600,Green,Paint/Coatings Extender,99,0.4,9,0,paint_coatings
+BYK-190 (bio-compatible dispersant),OCC(O)CO,12.5,65,82,180,Green,Paint/Coatings Dispersant,80,2.8,7,63,paint_coatings
+Hydroxyethyl Cellulose (coatings),OCC1OC(O)C(O)C(O)C1OCC(O)CO,5.0,100,70,480,Green,Paint/Coatings Thickener,95,1.1,9,99,paint_coatings
+Sodium Lauryl Sulfoacetate (fabric),CCCCCCCCCCCCOC(=O)CS(=O)(=O)[O-],5.0,76,84,520,Green,Fabric Surfactant,84,2.2,7,74,fabric_laundry
+Cocamide DEA,CCCCCCCCCCCC(=O)NCCO,5.5,82,82,380,Green,Fabric Foam Booster,84,2.3,7,80,fabric_laundry
+Cocamide MEA,CCCCCCCCCCCC(=O)NCO,5.2,82,81,420,Green,Fabric Foam Booster,85,2.2,7,80,fabric_laundry
+Sodium Laureth Sulfate (fabric),CCCCCCCCCCCCOCCCS(=O)(=O)[O-],4.2,78,86,680,Green,Fabric Primary Surfactant,83,2.3,7,76,fabric_laundry
+Alkyl Polyglycoside (fabric C8-14),CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.5,95,84,480,Green,Fabric Nonionic Surfactant,94,1.3,9,93,fabric_laundry
+Fatty Alcohol Ethoxylate C12-15,CCCCCCCCCCCCCCCOCCO,5.8,82,80,420,Green,Fabric Nonionic Surfactant,83,2.1,7,80,fabric_laundry
+Isotridecyl Alcohol Ethoxylate,CCCCCCCCCCCCCOCCO,6.2,65,79,360,Green,Fabric Nonionic Surfactant,80,2.4,7,63,fabric_laundry
+Sodium Percarbonate (fabric),OOC(=O)[O-],2.5,0,88,2400,Green,Fabric Oxidizing Bleach,99,0.6,8,0,fabric_laundry
+Sodium Carbonate (fabric),O=C([O-])[O-],0.7,0,80,6000,Green,Fabric Builder/Softener,99,0.3,9,5,fabric_laundry
+Zeolite A (fabric),O=[Al]O[Si](=O)O,1.8,0,82,2000,Green,Fabric Builder (phosphate-free),99,0.4,9,0,fabric_laundry
+Citric Acid (fabric),OC(=O)CC(O)(CC(=O)O)C(=O)O,1.9,100,72,2800,Green,Fabric Chelating Agent,99,0.6,9,99,fabric_laundry
+Acrylic Polymer (bio),OC(=O)C=C,8.5,60,78,320,Green,Fabric Soil Release Polymer,78,2.6,7,58,fabric_laundry
+PEG-based Soil Release,OCCOCCO,9.5,55,76,280,Green,Fabric Soil Release,76,2.8,7,53,fabric_laundry
+Silicone Softener (amino),C[Si](C)(O)[Si](C)(C)CCCN,12.5,40,84,220,Green,Fabric Softener/Conditioner,72,3.2,6,38,fabric_laundry
+Distearyldimethyl Ammonium Chloride,CCCCCCCCCCCCCCCCCC[N+](C)(C)CCCCCCCCCCCCCCCCCC,8.5,65,82,280,Amber,Fabric Softener,72,3.5,5,63,fabric_laundry
+Esterquat (fabric softener),CCCCCCCCCCCCCCCCCC(=O)OCC[N+](C)(C)CCOC(=O)CCCCCCCCCCCCCCCCCC,9.2,80,83,240,Green,Fabric Softener (biodeg),80,2.8,7,78,fabric_laundry
+Optical Brightener CBS-X,Nc1ccc(/C=C/c2ccc(N)cc2)cc1,12.5,0,82,160,Amber,Fabric Optical Brightener,68,3.8,5,0,fabric_laundry
+Protease (fabric grade),NC(=O)CNC(=O)CNC(=O)CN,20.0,100,86,80,Green,Fabric Stain Enzyme,95,1.6,9,99,fabric_laundry
+Amylase (fabric grade),OCC1OC(O)C(O)C(O)C1O,18.0,100,85,95,Green,Fabric Starch Stain Enzyme,96,1.4,9,99,fabric_laundry
+Lipase (fabric grade),CCCCCCCCCCCCCCCC(=O)O,24.0,100,84,65,Green,Fabric Oil Stain Enzyme,94,1.7,9,99,fabric_laundry
+Pectinase (fabric),OC1C(O)C(OC(=O)c2cc(O)c(O)c(O)c2)C(O)C(O)C1O,22.0,100,83,70,Green,Fabric Pectin Stain Enzyme,95,1.5,9,99,fabric_laundry
+Fragrance (citrus bio),CC1=CCC(CC1)C(C)=C,8.5,90,72,280,Green,Fabric/Personal Care Fragrance,88,1.8,7,88,fabric_laundry
+Fragrance (floral bio),CCCCC/C=C/CC1=CC=CO1,12.5,85,73,180,Green,Fabric/Personal Care Fragrance,86,2.0,7,83,fabric_laundry
+Cyclodextrin (beta),OCC1OC2OC(CO)C(O)C(OC3OC(CO)C(O)C(O)C3OC3OC(CO)C(O)C(O)C3)C2O1,12.0,100,74,180,Green,Fragrance Encapsulant,96,1.3,9,99,fabric_laundry
+Sodium Metabisulfite,OS(=O)S(=O)O,1.5,0,72,1400,Green,Fabric Reductive Bleach,95,0.7,7,0,fabric_laundry
+Triethylene Glycol,OCCOCCOCCO,3.8,0,72,680,Green,Industrial Coupling Solvent,85,2.0,7,0,industrial
+Dipropylene Glycol,CC(O)COC(C)CO,4.2,80,74,580,Green,Industrial Solvent/Coupling Agent,90,1.5,8,78,industrial
+Propylene Glycol n-Butyl Ether,CCCCOCCC(O)C,6.5,75,82,380,Green,Industrial Coupling Solvent,86,2.0,7,73,industrial
+Dipropylene Glycol Monomethyl Ether,COCC(C)OCC(C)O,5.8,75,80,420,Green,Industrial Solvent,87,1.9,7,73,industrial
+Ethylene Glycol Monobutyl Ether,CCCCOCCCO,4.8,70,78,480,Green,Industrial Coupling Solvent,82,2.2,7,68,industrial
+Sodium Xylenesulfonate,Cc1cccc(C)c1S(=O)(=O)[O-],3.5,0,78,880,Green,Industrial Hydrotrope,85,1.8,8,0,industrial
+Sodium Cumenesulfonate,CC(C)c1cccc(S(=O)(=O)[O-])c1,3.8,0,77,780,Green,Industrial Hydrotrope,84,1.9,8,0,industrial
+Sodium Toluenesulfonate,Cc1ccccc1S(=O)(=O)[O-],3.2,0,76,920,Green,Industrial Hydrotrope,83,1.8,8,0,industrial
+Triethanolamine (TEA),OCCN(CCO)CCO,2.8,0,74,1200,Amber,Industrial pH Adjuster,80,2.2,6,0,industrial
+Monoethanolamine (MEA),NCCO,1.8,0,72,1600,Amber,Industrial pH Adjuster,82,1.8,7,0,industrial
+Diethanolamine (DEA),OCCNCCO,2.2,0,73,1400,Amber,Industrial pH Adjuster,78,2.0,6,0,industrial
+Sodium Sesquisilicate,O=[Si]([O-])[O-],1.0,0,84,5000,Green,Industrial Heavy-Duty Cleaner,99,0.4,8,5,industrial
+Potassium Hydroxide,OK,0.8,0,80,4000,Green,Industrial pH Adjuster/Saponifier,99,0.3,9,0,industrial
+Phosphoric Acid 85%,OP(=O)(O)O,1.2,0,82,3000,Amber,Industrial Descaler/pH Adjuster,99,0.5,7,0,industrial
+Sulfamic Acid,NS(=O)(=O)O,2.5,0,80,1800,Green,Industrial Descaler,97,0.8,7,0,industrial
+Glucono Delta Lactone,OC1OC(=O)C(O)C(O)C1O,4.5,100,72,480,Green,Industrial pH Adjuster (slow),99,0.6,9,99,industrial
+Pine Oil,CC1(C)CCC(=C)CC1,5.5,100,82,520,Green,Industrial Solvent/Disinfectant,91,1.5,7,99,industrial
+Orange Terpenes,CC1=CCC(CC1)C(C)=C,3.8,100,84,780,Green,Industrial Bio-Solvent,94,1.2,8,99,industrial
+Corn Ethanol (industrial),CCO,1.0,95,76,6000,Green,Industrial Solvent,99,0.5,9,93,industrial
+Benzyl Alcohol (industrial),OCc1ccccc1,3.0,85,78,780,Green,Industrial Solvent/Preservative,92,1.6,7,83,industrial
+2-Butoxyethanol,CCCCOCCCO,3.5,0,80,680,Amber,Industrial Coupling Solvent,78,2.5,6,0,industrial
+Nonylphenol Ethoxylate (substitute),CCCCCCCCCCOC(CO)CO,5.5,72,80,480,Amber,Industrial Nonionic Surfactant,76,2.8,6,70,industrial
+Sodium Lauryl Ether Sulfate (industrial),CCCCCCCCCCCCOCCCS(=O)(=O)[O-],4.0,78,85,680,Green,Industrial Anionic Surfactant,83,2.3,7,76,industrial
+Linear Alkylbenzene Sulfonate (LAS),CCCCCCCCCCCCC1=CC=CC=C1S(=O)(=O)[O-],3.2,65,86,1200,Green,Industrial Anionic Surfactant,80,2.5,6,63,industrial
+Amphoteric Surfactant C12,CCCCCCCCCCCC[N+](CC([O-])=O)(C)C,5.8,78,84,380,Green,Industrial Amphoteric Surfactant,83,2.2,7,76,industrial
+Neopentyl Glycol Diacrylate,C=CC(=O)OCC(C)(C)COC(=O)C=C,8.5,0,86,280,Amber,Paint/Coatings Crosslinker,72,3.2,6,0,paint_coatings
+Dipentaerythritol Hexaacrylate,C=CC(=O)OCC(COC(=O)C=C)(COC(=O)C=C)COC(=O)C=C,12.5,0,88,180,Amber,Paint/Coatings UV Crosslinker,68,3.8,5,0,paint_coatings
+Trimethylolpropane Triacrylate,C=CC(=O)OCC(CC)(COC(=O)C=C)COC(=O)C=C,9.8,0,87,220,Amber,Paint/Coatings Crosslinker,70,3.5,6,0,paint_coatings
+Hydroxyethyl Acrylate,C=CC(=O)OCCO,5.5,0,82,380,Green,Paint/Coatings Reactive Diluent,78,2.8,7,0,paint_coatings
+Isobornyl Acrylate,C=CC(=O)OC1CC2CC1(C)C(C)(C)C2,8.2,85,84,280,Green,Paint/Coatings Reactive Diluent,80,2.5,7,83,paint_coatings
+Acrylic Acid,C=CC(=O)O,3.2,70,80,680,Amber,Paint/Coatings Monomer,82,2.2,6,68,paint_coatings
+Methacrylic Acid,CC(=C)C(=O)O,3.8,70,81,580,Amber,Paint/Coatings Monomer,80,2.3,6,68,paint_coatings
+Styrene Acrylic Emulsion,C=Cc1ccccc1,5.5,45,84,480,Amber,Paint/Coatings Binder,72,3.0,6,43,paint_coatings
+Pure Acrylic Emulsion,C=CC(=O)OCC,6.2,50,85,420,Green,Paint/Coatings Waterborne Binder,75,2.8,7,48,paint_coatings
+Vinyl Acetate Ethylene Copolymer,CC(=O)OC=C,4.8,60,82,520,Green,Paint/Coatings Binder,78,2.5,7,58,paint_coatings
+Wacker Silicone Resin,C[Si](C)(O)O[Si](C)(C)O,18.5,0,86,160,Green,Paint/Coatings Weather Resist,72,3.8,7,0,paint_coatings
+Fumed Silica (coatings),O=[Si]=O,6.5,0,76,320,Green,Paint/Coatings Rheology Modifier,99,0.5,9,0,paint_coatings
+Organoclay (coatings),O=[Al]O[Si](=O)O,8.5,0,78,240,Green,Paint/Coatings Rheology Modifier,95,0.8,8,0,paint_coatings
+Propylene Glycol (coatings),CC(O)CO,2.0,80,74,1200,Green,Paint/Coatings Coalescent,90,1.5,8,78,paint_coatings
+Texanol (coalescent),CCCC(OC(=O)CC(C)(C)CO)C(C)C,5.8,70,78,380,Green,Paint/Coatings Coalescent,82,2.4,7,68,paint_coatings
+Dibutyl Phthalate (bio alt),CCCCOC(=O)c1ccccc1C(=O)OCCCC,6.2,60,76,280,Amber,Paint/Coatings Plasticizer,75,2.8,6,58,paint_coatings
+ATBC (bio plasticizer),CCOC(=O)CC(OC(C)=O)(CC(=O)OCC)CC(=O)OCC,9.5,92,78,220,Green,Paint/Coatings Bio-Plasticizer,85,2.0,8,90,paint_coatings
+BHT (antioxidant coatings),CC(C)(C)c1cc(C(C)(C)C)c(O)c(C(C)(C)C)c1,5.5,0,74,380,Amber,Paint/Coatings Antioxidant,72,2.8,6,0,paint_coatings
+HALS (light stabilizer),CC1(C)CC(CC(C)(C)N1)NC(=O)CCC(=O)O,12.5,0,79,180,Green,Paint/Coatings UV Stabilizer,70,3.2,7,0,paint_coatings
+Benzophenone UV Absorber,O=C(c1ccccc1)c1ccccc1,8.5,0,78,220,Amber,Paint/Coatings UV Absorber,72,3.0,6,0,paint_coatings
+Cobalt Dryer,OC(=O)CCCCCCC,18.5,0,80,120,Amber,Paint/Coatings Drier,65,4.0,4,0,paint_coatings
+Zirconium Dryer,OC(=O)CCCCCCC,16.5,0,79,140,Green,Paint/Coatings Drier,68,3.8,5,0,paint_coatings
+Calcium Carbonate Coated,OC([O-])=O,0.9,0,72,2800,Green,Paint/Coatings Coated Extender,99,0.3,10,0,paint_coatings
+Barium Sulfate,OS(=O)(=O)O,2.5,0,75,1200,Green,Paint/Coatings Extender,99,0.4,9,0,paint_coatings
+Wollastonite,O=[Si]([O-])[O-],3.2,0,74,880,Green,Paint/Coatings Reinforcing Extender,99,0.5,9,0,paint_coatings
+Diatomite (coatings),O=[Si]=O,3.0,0,73,980,Green,Paint/Coatings Flatting Agent,99,0.4,9,0,paint_coatings
+Micronized Wax (coatings),CCCCCCCCCCCCCCCCCCCCCCCCCCCCC,5.5,90,76,380,Green,Paint/Coatings Surface Modifier,86,2.0,9,88,paint_coatings
+Fluorocarbon Surfactant,OCC(F)(F)F,28.0,0,85,120,Amber,Paint/Coatings Wetting Agent,55,5.5,4,0,paint_coatings
+Silicone Defoamer (coatings),C[Si](C)(C)O[Si](C)(C)C,8.5,0,78,320,Green,Paint/Coatings Defoamer,70,3.5,7,0,paint_coatings
+Mineral Spirits (bio alt),CCCCCCCC,4.5,80,82,580,Green,Paint/Coatings Solvent,82,2.0,7,78,paint_coatings
+Ibuprofen,CC(C)Cc1ccc(cc1)C(C)C(=O)O,28.0,80,82,80,Green,Pharma Active (NSAID),88,2.5,7,78,pharmaceutical
+Aspirin (acetylsalicylic acid),CC(=O)Oc1ccccc1C(=O)O,8.5,75,80,180,Green,Pharma Active (NSAID),90,1.8,7,73,pharmaceutical
+Paracetamol (acetaminophen),CC(=O)Nc1ccc(O)cc1,5.5,70,81,280,Green,Pharma Active (Analgesic),88,2.0,7,68,pharmaceutical
+Caffeine,Cn1cnc2c1c(=O)n(C)c(=O)n2C,12.0,78,78,180,Green,Pharma Active (Stimulant),85,2.2,7,76,pharmaceutical
+Vitamin C (ascorbic acid pharma),OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,6.5,100,79,320,Green,Pharma Active/Antioxidant,99,0.8,9,99,pharmaceutical
+Vitamin B12 (cyanocobalamin),OC1C(O)C(OCC(O)C(O)CO)OC1n1cnc2c(N)ncnc12,450.0,80,82,8,Green,Pharma Active (Vitamin),92,2.8,8,78,pharmaceutical
+Folic Acid,NC(=O)c1ccc(NCC2CNc3nc(N)nc(=O)c3N2)cc1,85.0,80,80,20,Green,Pharma Active (Vitamin),90,2.5,8,78,pharmaceutical
+Zinc Sulfate (pharma),OS(=O)(=O)O,2.2,0,74,480,Green,Pharma Mineral Active,99,0.4,8,0,pharmaceutical
+Ferrous Sulfate (pharma),OS(=O)(=O)O,1.8,0,73,580,Green,Pharma Iron Supplement,99,0.4,7,0,pharmaceutical
+Calcium Citrate (pharma),OC(=O)CC(O)(CC(=O)O)C(=O)O,4.5,100,75,380,Green,Pharma Calcium Supplement,99,0.6,9,99,pharmaceutical
+Magnesium Oxide (pharma),O=[Mg],1.5,0,72,680,Green,Pharma Antacid/Laxative,99,0.4,9,0,pharmaceutical
+Colloidal Silicon Dioxide,O=[Si]=O,12.0,0,76,220,Green,Pharma Glidant/Anticaking,99,0.5,10,0,pharmaceutical
+Povidone Iodine,C1CC(=O)NC1,18.5,0,84,180,Amber,Pharma Antiseptic,72,3.5,6,0,pharmaceutical
+Chlorhexidine Gluconate,NC(=N)NCCCCCCNC(=N)NC1=CC=CC=C1,28.0,0,86,120,Amber,Pharma Antiseptic,68,4.0,5,0,pharmaceutical
+Sodium Carboxymethyl Starch,OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,5.2,95,77,380,Green,Pharma Disintegrant,94,1.1,9,93,pharmaceutical
+Kollidon VA64,C1CC(=O)NC1,9.5,0,80,280,Green,Pharma Spray-Dry Binder,71,3.0,7,0,pharmaceutical
+Eudragit L100,COC(=O)C(C)CC(=O)OCC,12.5,0,82,200,Green,Pharma Enteric Polymer,72,3.2,7,0,pharmaceutical
+Eudragit RS,COC(=O)C(C)CC(=O)OCC,14.5,0,81,160,Green,Pharma Sustained Release,71,3.3,7,0,pharmaceutical
+Hydroxypropyl Starch (pharma),OCC1OC(OCC(O)CO)C(O)C(O)C1O,4.2,100,75,420,Green,Pharma Binder/Filler,96,0.9,9,99,pharmaceutical
+Fumaric Acid (pharma),OC(=O)/C=C/C(=O)O,3.0,85,71,380,Green,Pharma pH Modifier,97,0.7,8,83,pharmaceutical
+Tartaric Acid (pharma),OC(C(O)C(=O)O)C(=O)O,3.5,100,70,320,Green,Pharma pH Modifier/Excipient,99,0.5,9,99,pharmaceutical
+Saccharin Sodium,NS(=O)(=O)c1ccccc1C(=O)[O-],8.5,0,70,180,Green,Pharma Sweetener,80,2.2,7,0,pharmaceutical
+Aspartame,NC(Cc1ccccc1)C(=O)NC(CC(=O)OC)C(=O)O,22.0,80,72,120,Green,Pharma/Food Sweetener,85,2.0,7,78,pharmaceutical
+Sucralose,OCC1OC(OC2C(Cl)C(O)C(Cl)C(CO)O2)C(O)C(Cl)C1O,28.0,0,73,95,Green,Pharma/Food Sweetener,82,2.5,7,0,pharmaceutical
+Stevia Extract,OC[C@H]1O[C@@H](Oc2cc3c(cc2O)CC[C@@H]3C)C(O)C(O)C1O,35.0,100,74,80,Green,Pharma/Food Natural Sweetener,93,1.8,9,99,pharmaceutical
+Menthol (pharma),CC(C)C1CCC(C)CC1O,12.0,100,78,180,Green,Pharma Cooling Agent/Flavor,90,1.8,8,99,pharmaceutical
+Eucalyptus Oil (pharma),CC1(C)CCCC(C)(C1)O,8.5,100,79,240,Green,Pharma Essential Oil/Active,88,1.9,7,99,pharmaceutical
+Peppermint Oil (pharma),CC(C)C1CCC(C)(CC1=O)O,10.5,100,78,200,Green,Pharma Flavor/Active,89,1.8,8,99,pharmaceutical
+Gelatin Capsule Shell,NC(=O)CNC(=O)C(N)CCCCN,9.5,95,78,280,Green,Pharma Capsule Shell,92,1.7,8,93,pharmaceutical
+HPMC Capsule Shell,COC1OC(OCC(O)CO)C(OC)C(O)C1O,12.5,100,80,180,Green,Pharma Veg Capsule Shell,93,1.4,9,99,pharmaceutical
+Pectin (pharma grade),OC1C(O)C(OC(=O)c2cc(O)c(O)c(O)c2)C(O)C(O)C1O,8.5,100,76,160,Green,Pharma Gelling/Controlled Release,97,0.9,9,99,pharmaceutical
+Dipotassium Phosphate (pharma),OP(=O)([O-])[O-],2.2,0,72,480,Green,Pharma Buffer,99,0.4,9,0,pharmaceutical
+Trisodium Citrate (pharma),OC(=O)CC(O)(CC(=O)O)C(=O)O,2.5,100,71,520,Green,Pharma Buffer/Chelator,99,0.6,9,99,pharmaceutical
+Sodium Acetate (pharma),CC(=O)[O-],1.8,80,70,680,Green,Pharma Buffer,99,0.5,9,78,pharmaceutical
+Ammonium Bicarbonate,OC([O-])=O,1.2,0,68,880,Green,Pharma/Food Leavening,99,0.4,9,0,food
+Apple Cider Vinegar,CC(=O)O,1.5,95,70,1200,Green,Food Acidulant/Preservation,98,0.5,8,93,food
+Beet Sugar (sucrose food),OC[C@H]1O[C@@]([C@H](O)[C@@H]1O)(CO)OC,1.9,100,72,2800,Green,Food Sweetener/Filler,99,0.6,9,99,food
+Corn Syrup Solids,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,2.2,100,71,2200,Green,Food Bulking Agent,98,0.7,9,99,food
+Trehalose (food grade),OCC1OC(OC2OC(CO)C(O)C(O)C2O)C(O)C(O)C1O,14.0,100,73,160,Green,Food Stabilizer/Cryoprotectant,99,0.9,9,99,food
+Inulin (food grade),OCC1OC(OC2C(CO)OC(OCC3OC(O)C(O)C3O)C2O)C(O)C1O,6.5,100,68,320,Green,Food Prebiotic/Fat Replacer,98,0.8,9,99,food
+Resistant Starch,OCC1OC(O)C(O)C(O)C1O,3.5,100,69,680,Green,Food Fiber/Prebiotic,97,0.9,9,99,food
+Psyllium Husk,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,8.5,100,70,280,Green,Food Fiber/Thickener,97,0.9,9,99,food
+Beta-Glucan (food),OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,18.0,100,72,120,Green,Food Functional Fiber,96,1.2,9,99,food
+Pea Fiber,OCC1OC(O)C(O)C(O)C1O,4.5,100,68,480,Green,Food Fiber/Bulking,97,0.9,9,99,food
+Oat Fiber,OCC1OC(O)C(O)C(O)C1O,4.2,100,69,520,Green,Food Fiber/Texture,97,0.9,9,99,food
+Bamboo Fiber,OCC1OC(O)C(O)C(O)C1O,3.8,100,68,580,Green,Food Fiber,98,0.8,9,99,food
+Pea Protein Isolate,NC(=O)CNC(=O)C(N)CCCCN,14.5,100,80,180,Green,Food Protein/Emulsifier,94,1.4,9,99,food
+Soy Protein Isolate,NC(=O)CNC(=O)C(N)CCCCN,8.5,100,79,280,Green,Food Protein/Emulsifier,93,1.5,9,99,food
+Whey Protein Isolate,NC(=O)CNC(=O)C(N)CCCCN,18.0,95,81,160,Green,Food Protein/Emulsifier,92,1.8,8,93,food
+Casein (food),NC(=O)CNC(=O)CNC(=O)CN,12.5,95,79,200,Green,Food Protein/Emulsifier,91,1.9,8,93,food
+Sodium Caseinate,NC(=O)CNC(=O)CNC(=O)CN,13.5,95,80,180,Green,Food Emulsifier/Stabilizer,91,1.9,8,93,food
+Egg Albumen Powder,NC(=O)CNC(=O)CNC(=O)CN,15.0,100,82,160,Green,Food Protein/Foaming,92,1.8,8,99,food
+Sunflower Lecithin,CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,9.5,100,78,280,Green,Food Emulsifier,93,1.3,9,99,food
+Rapeseed Lecithin,CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,8.5,100,77,320,Green,Food Emulsifier,93,1.3,9,99,food
+Lysolecithin,CCCCCCCCCCCCCCCC(=O)OCC(O)COP(=O)([O-])OCC[N+](C)(C)C,12.5,100,79,180,Green,Food Emulsifier (enhanced),94,1.4,9,99,food
+Konjac Glucomannan,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,12.0,100,73,180,Green,Food Gelling/Thickener,97,1.0,9,99,food
+Tara Gum (food),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,6.5,100,69,320,Green,Food Thickener/Stabilizer,96,0.9,9,99,food
+Gellan Gum,OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,18.5,100,73,140,Green,Food Gelling Agent,97,1.1,9,99,food
+Gum Arabic (food grade),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,7.2,100,70,360,Green,Food Emulsifier/Thickener,97,0.9,9,99,food
+Sodium Alginate (food grade),OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,7.5,100,72,300,Green,Food Thickener/Alginate,96,1.0,9,99,food
+Calcium Alginate,OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,9.5,100,73,220,Green,Food Gelling/Encapsulant,96,1.0,9,99,food
+Vanillin (bio),COc1cc(C=O)ccc1O,8.5,95,74,280,Green,Food Flavor,92,1.6,7,93,food
+Ethyl Vanillin,CCOc1cc(C=O)ccc1O,9.5,80,75,240,Green,Food Flavor (enhanced),88,1.8,7,78,food
+Natural Vanilla Extract,COc1cc(C=O)ccc1O,28.0,100,75,95,Green,Food Natural Flavor,92,1.7,8,99,food
+Citrus Terpenes (food),CC1=CCC(CC1)C(C)=C,4.5,100,76,480,Green,Food Flavor/Antioxidant,93,1.2,8,99,food
+Oleoresin Paprika,CCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,18.5,100,74,120,Green,Food Natural Color,90,1.8,8,99,food
+Beta-Carotene (natural),CC1=C(C=CC(=C1)/C=C/C(=C/C=C/C(=C/C=C/C=C(\C)/C=C/C=C(\C)/C=C/C2=C(C)CCCC2(C)C)C)C)C(C)(C)CCC,85.0,100,76,45,Green,Food Natural Color/Antioxidant,88,2.8,8,99,food
+Caramel Color (type IV),OCC(O)CO,3.5,100,72,680,Green,Food Color,95,0.9,8,99,food
+Annatto Extract,OC(=O)/C=C/C=C/C=C/C=C/C=C/c1ccccc1,22.0,100,73,120,Green,Food Natural Color,91,1.8,8,99,food
+Turmeric Extract,COc1cc(/C=C/C(=O)/C=C(/O)c2ccc(O)c(OC)c2)ccc1O,15.0,100,74,160,Green,Food Natural Color/Active,90,1.9,8,99,food
+Spirulina Extract,NC(=O)CNC(=O)CNC(=O)CN,28.0,100,75,85,Green,Food Natural Color/Protein,93,1.6,9,99,food
+Beet Root Extract,OCC(O)CO,8.5,100,73,280,Green,Food Natural Color,95,1.1,9,99,food
+Sodium Diacetate,CC(=O)O,2.5,80,70,880,Green,Food Preservative/Flavoring,96,0.6,8,78,food
+Propionic Acid,CCC(=O)O,2.2,75,69,980,Green,Food Preservative (bakery),95,0.7,7,73,food
+Calcium Propionate,CCC(=O)[O-],2.8,75,70,820,Green,Food Preservative (bakery),95,0.7,7,73,food
+Sodium Propionate,CCC(=O)[O-],2.5,75,69,880,Green,Food Preservative,95,0.7,7,73,food
+Sodium Erythorbate,OCC(O)C1OC(=O)C(O)=C1O,4.8,100,71,420,Green,Food Antioxidant/Preservative,98,0.7,9,99,food
+EDTA (food grade),OC(=O)CN(CC(=O)O)CCN(CC(=O)O)CC(=O)O,5.5,0,72,380,Amber,Food Chelating Agent,72,2.8,6,0,food
+Glucono Delta Lactone (food),OC1OC(=O)C(O)C(O)C1O,5.0,100,72,420,Green,Food Acidulant/Leavening,99,0.6,9,99,food
+Dipotassium Phosphate (food),OP(=O)([O-])[O-],2.0,0,70,680,Green,Food Buffer/Emulsifying Salt,99,0.4,9,0,food
+Sodium Hexametaphosphate,OP(=O)(O)OP(=O)(O)O,2.8,0,73,480,Green,Food Sequestrant/Emulsifier,92,0.8,7,0,food
+Triethyl Citrate,CCOC(=O)CC(O)(CC(=O)OCC)C(=O)OCC,8.5,95,76,280,Green,Food/Pharma Plasticizer,94,1.3,8,93,food
+Tributyl Citrate,CCCCOC(=O)CC(O)(CC(=O)OCCCC)C(=O)OCCCC,9.5,90,77,240,Green,Food/Pharma Plasticizer,91,1.6,8,88,food
+Acetylated Monoglycerides,CC(=O)OCC(OC(=O)CCCCCCCCCCCCCCCCCC)CO,5.2,85,78,380,Green,Food Emulsifier/Plasticizer,87,1.9,8,83,food
+Glycerol Monooleate,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,5.5,92,77,340,Green,Food Emulsifier,90,1.7,8,90,food
+Glycerol Monostearate (food),CCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,4.8,90,76,420,Green,Food Emulsifier,89,1.8,8,88,food
+Quillaja Extract,OC(=O)c1ccc(O)c(O)c1,22.0,100,78,120,Green,Food Natural Saponin/Emulsifier,91,1.8,8,99,food
+Yucca Extract,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,18.0,100,76,140,Green,Food Natural Saponin,92,1.7,8,99,food
+Ferrous Gluconate,OCC(O)C(O)C(O)C(O)C(=O)[O-],4.5,100,73,320,Green,Food Iron Fortifier,99,0.7,9,99,food
+Zinc Gluconate,OCC(O)C(O)C(O)C(O)C(=O)[O-],5.5,100,74,280,Green,Food Zinc Fortifier,99,0.7,9,99,food
+Magnesium Gluconate,OCC(O)C(O)C(O)C(O)C(=O)[O-],4.8,100,73,300,Green,Food Magnesium Fortifier,99,0.7,9,99,food
+Potassium Gluconate,OCC(O)C(O)C(O)C(O)C(=O)[O-],4.2,100,72,340,Green,Food Potassium Fortifier,99,0.7,9,99,food
+Vermicompost Extract,OCC(O)CO,6.5,100,77,320,Green,Agri Soil Biostimulant,96,1.0,9,99,agricultural
+Trichoderma (bio),NC(=O)CNC(=O)CNC(=O)CN,25.0,100,83,80,Green,Agri Biocontrol/Biostimulant,96,1.1,9,99,agricultural
+Bacillus Subtilis (agri),NC(=O)CNC(=O)CNC(=O)CN,22.0,100,84,95,Green,Agri Biocontrol Agent,96,1.1,9,99,agricultural
+Mycorrhizal Inoculant,NC(=O)CNC(=O)CN,28.0,100,82,60,Green,Agri Biostimulant/Root Growth,97,1.0,9,99,agricultural
+Rotenone (bio),OC1OC2CC3=CC(=O)C4=CC(OC)=C(OC)C=C4C3=CC2=CC1O,25.0,100,80,75,Green,Agri Bioinsecticide,88,2.2,6,99,agricultural
+Pyrethrin II,CC(=O)OC1CC(=C(C)C)CC1C(C)(C)/C=C/C(C)=O,30.0,100,83,70,Green,Agri Bioinsecticide,87,2.3,6,99,agricultural
+Sabadilla (veratrine),NC(=O)CNC(=O)CN,18.0,100,79,90,Green,Agri Bioinsecticide,90,1.8,7,99,agricultural
+Ryania (ryanodine),OC1C(O)CC2(C1O)C(C)(C)CCC2,22.0,100,78,80,Green,Agri Bioinsecticide,89,2.0,7,99,agricultural
+Kaolin (agri spray),O=[Al]O[Si](=O)O,1.2,0,73,2200,Green,Agri Particle Film,99,0.3,10,0,agricultural
+Mineral Oil (agri),CCCCCCCCCCCC,4.5,0,78,580,Green,Agri Spray Oil/Suffocant,80,2.5,7,0,agricultural
+Dormant Oil (refined),CCCCCCCCCCCC,5.2,0,79,480,Green,Agri Dormant Spray Oil,82,2.4,7,0,agricultural
+Tall Oil Rosin,OC(=O)[C@@H]1CC[C@H]2CC[C@@](C)(C(=O)O)[C@@H]2[C@@H]1C,5.5,92,77,380,Green,Agri Spreader/Sticker,86,1.9,7,90,agricultural
+Castor Oil (agri),CCCCCCCC(O)CCCCCCCC(=O)OCC(COC(=O)CCCCCCCC(O)CCCCCCCC)OC(=O)CCCCCCCC(O)CCCCCCCC,5.8,100,76,420,Green,Agri Spray Adjuvant,89,1.6,8,99,agricultural
+Ethylene (plant growth),C=C,2.5,90,75,880,Green,Agri Plant Growth Regulator,99,0.5,8,88,agricultural
+Gibberellic Acid,OC(=O)[C@@H]1C[C@@H]2C(=C)[C@@H]1CC2=O,45.0,100,80,50,Green,Agri Plant Growth Regulator,92,1.8,8,99,agricultural
+Cytokinin (kinetin),NC1=NC=NC2=C1N=CN2,35.0,100,78,60,Green,Agri Plant Growth Regulator,93,1.6,8,99,agricultural
+Indole-3-Acetic Acid,OC(=O)Cc1c[nH]c2ccccc12,28.0,100,77,75,Green,Agri Auxin/Root Growth,93,1.6,8,99,agricultural
+Potassium Silicate (agri),O=[Si]([O-])[O-],2.5,0,75,880,Green,Agri Silicon Fertilizer,99,0.4,9,0,agricultural
+Molasses,OCC(O)CO,1.2,100,72,1800,Green,Agri Biostimulant/Carrier,98,0.6,9,99,agricultural
+Kelp Meal Extract,OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,7.5,100,75,320,Green,Agri Biostimulant,96,1.2,9,99,agricultural
+Amino Acid Blend (agri),NC(=O)CNC(=O)CN,8.5,100,76,280,Green,Agri Biostimulant/Chelator,95,1.3,9,99,agricultural
+Compost Tea Extract,OCC(O)CO,5.5,100,74,380,Green,Agri Soil Microbiome Stimulant,97,1.0,9,99,agricultural
+Worm Castings Extract,OCC(O)CO,4.8,100,73,420,Green,Agri Soil Biostimulant,97,0.9,9,99,agricultural
+Sodium Lauryl Sulfate (fabric),CCCCCCCCCCCCCOS(=O)(=O)[O-],3.5,78,84,880,Green,Fabric Primary Surfactant,82,2.3,7,76,fabric_laundry
+Sodium Alpha Olefin Sulfonate,CCCCCCCCCCCC=CCS(=O)(=O)[O-],4.2,72,85,680,Green,Fabric Anionic Surfactant,83,2.2,7,70,fabric_laundry
+Betaine (fabric),C[N+](C)(C)CC(=O)[O-],5.5,95,80,420,Green,Fabric Amphoteric Surfactant,97,0.8,8,93,fabric_laundry
+Sodium Lauroyl Isethionate,CCCCCCCCCCCC(=O)OCCS(=O)(=O)[O-],6.2,85,84,360,Green,Fabric Mild Surfactant,88,1.9,8,83,fabric_laundry
+Lauryl Hydroxysultaine,CCCCCCCCCCCC[N+](CC([O-])=O)(CCO)CCS(=O)(=O)[O-],6.8,78,82,300,Green,Fabric Amphoteric Surfactant,84,2.2,7,76,fabric_laundry
+Polycarboxylate Polymer,OC(=O)C=C,6.5,55,80,380,Green,Fabric Anti-Redeposition Agent,78,2.5,7,53,fabric_laundry
+CMC (fabric grade),OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,4.5,100,74,520,Green,Fabric Anti-Redeposition,94,1.2,9,99,fabric_laundry
+Sodium Silicate (fabric),O=[Si]([O-])[O-],1.2,0,80,2400,Green,Fabric Builder/Corrosion Inhibitor,99,0.4,9,0,fabric_laundry
+TAED (tetraacetyl ethylenediamine),CC(=O)N(CCN(C(C)=O)C(C)=O)C(C)=O,4.5,0,82,480,Green,Fabric Bleach Activator,80,2.2,7,0,fabric_laundry
+NOBS (bleach activator),CCCCCCCCCCCC(=O)OC(=O)c1ccccc1,5.5,72,81,360,Green,Fabric Bleach Activator,78,2.5,7,70,fabric_laundry
+Manganese Catalyst (bleach),OC([O-])=O,18.5,0,84,120,Green,Fabric Bleach Catalyst,70,4.0,6,0,fabric_laundry
+Fluorescent Whitening Agent,Nc1ccc(/C=C/c2ccc(N)cc2)cc1,14.5,0,82,160,Amber,Fabric OBA,67,3.9,5,0,fabric_laundry
+Fragrance Encapsulate (fabric),CC1=CCC(CC1)C(C)=C,12.5,85,75,200,Green,Fabric Encapsulated Fragrance,86,2.0,7,83,fabric_laundry
+Silicone Emulsion (fabric),C[Si](C)(O)O[Si](C)(C)O,9.5,40,80,280,Green,Fabric Softener/Smoothing,72,3.2,7,38,fabric_laundry
+Hydroxyethyl Cellulose (fabric),OCC1OC(O)C(O)C(O)C1OCC(O)CO,5.2,100,72,420,Green,Fabric Rheology Modifier,95,1.1,9,99,fabric_laundry
+Carboxymethyl Inulin,OCC1OC(OCC(=O)[O-])C(O)C(O)C1O,8.5,100,74,240,Green,Fabric Biodeg Chelating Agent,96,1.0,9,99,fabric_laundry
+Glucaric Acid,OC(C(O)C(O)C(O)C(=O)O)C(=O)O,5.5,100,74,320,Green,Fabric Biodeg Builder,98,0.7,9,99,fabric_laundry
+Cellulase (fabric premium),OCC1OC(O)C(O)C(O)C1O,22.0,100,86,75,Green,Fabric Bio-Polishing Enzyme,95,1.5,9,99,fabric_laundry
+Xylanase (fabric),OCC1OC(O)C(O)C(O)C1O,18.5,100,83,85,Green,Fabric Fiber Care Enzyme,96,1.4,9,99,fabric_laundry
+Catalase (fabric),OO,22.0,100,82,70,Green,Fabric H2O2 Removal Enzyme,95,1.5,9,99,fabric_laundry
+Cutinase (fabric),CCCCCCCCCCCCCCCC(=O)O,24.0,100,84,60,Green,Fabric Bio-Scouring Enzyme,94,1.6,9,99,fabric_laundry
+Methyl Soyate (industrial),CCCCCCCC/C=C\CCCCCCCC(=O)OC,2.3,95,88,2800,Green,Industrial Bio-Degreaser,96,0.8,8,93,industrial
+Isopropyl Acetate (bio),CC(=O)OCC(C)C,3.5,80,79,680,Green,Industrial Bio-Solvent,95,0.9,8,78,industrial
+Ethyl Lactate (industrial),CCOC(=O)C(C)O,3.0,100,81,1200,Green,Industrial Bio-Solvent,97,0.9,9,99,industrial
+Propyl Acetate (bio),CC(=O)OCCC,3.2,80,78,780,Green,Industrial Bio-Solvent,96,0.9,8,78,industrial
+Butyl Acetate (bio),CC(=O)OCCCC,3.5,80,80,680,Green,Industrial Bio-Solvent,95,1.0,8,78,industrial
+Isobutyl Acetate (bio),CC(=O)OCC(C)C,3.8,80,79,620,Green,Industrial Bio-Solvent,95,1.0,8,78,industrial
+Dimethyl Carbonate,COC(=O)OC,3.5,75,78,580,Green,Industrial Green Solvent,92,1.3,8,73,industrial
+Diethyl Carbonate,CCOC(=O)OCC,4.2,75,79,480,Green,Industrial Green Solvent,91,1.4,8,73,industrial
+Propylene Carbonate,CC1CCCO1=O,4.8,80,80,420,Green,Industrial Green Solvent,93,1.2,8,78,industrial
+Methyl Formate,COC=O,2.5,70,75,880,Green,Industrial Solvent/Blowing Agent,96,0.8,8,68,industrial
+Dibasic Ester Mix,COC(=O)CCCC(=O)OC,4.0,85,84,820,Green,Industrial Bio-Solvent Mix,93,1.1,8,83,industrial
+Solketal,CC1(C)OCC(O)O1,5.5,100,77,380,Green,Industrial Bio-Solvent,97,0.8,8,99,industrial
+Methyl Levulinate,COC(=O)CCC(C)=O,4.5,95,76,480,Green,Industrial Bio-Solvent,96,0.8,8,93,industrial
+Ethyl Levulinate,CCOC(=O)CCC(C)=O,5.0,95,77,420,Green,Industrial Bio-Solvent,95,0.9,8,93,industrial
+Furfural,O=Cc1ccco1,3.2,100,78,680,Green,Industrial Bio-Solvent/Chemical,92,1.1,7,99,industrial
+5-HMF (hydroxymethylfurfural),OCC1=CC=C(C=O)O1,8.5,100,76,280,Green,Industrial Bio-Platform Chemical,93,1.0,8,99,industrial
+Levulinic Acid (industrial),CC(=O)CCC(=O)O,4.0,95,75,520,Green,Industrial Bio-Platform Chemical,96,0.8,8,93,industrial
+Sodium Gluconate (industrial),OC[C@@H](O)[C@@H](O)[C@H](O)[C@@H](O)C(=O)[O-],2.6,100,78,1800,Green,Industrial Chelating Agent,99,0.7,9,99,industrial
+Potassium Pyrophosphate,OP(=O)(O)OP(=O)(O)O,3.5,0,80,880,Amber,Industrial Sequestrant,95,0.8,7,0,industrial
+HEDP (phosphonate),CC(O)(P(=O)(O)O)P(=O)(O)O,4.5,0,79,680,Amber,Industrial Scale Inhibitor,78,2.5,6,0,industrial
+ATMP (phosphonate),NCP(=O)(O)O,5.2,0,80,580,Amber,Industrial Scale/Corrosion Inhibitor,72,2.8,5,0,industrial
+Benzotriazole,c1cnc2ccccc2n1,6.5,0,78,420,Amber,Industrial Corrosion Inhibitor,72,3.0,5,0,industrial
+Tolyltriazole,Cc1ccc2[nH]nnc2c1,7.5,0,79,360,Amber,Industrial Corrosion Inhibitor,70,3.2,5,0,industrial
+Sodium Nitrite (industrial),N(=O)[O-],1.5,0,74,1400,Amber,Industrial Corrosion Inhibitor,95,0.6,5,0,industrial
+Molybdate Sodium,O=[Mo](=O)([O-])[O-],8.5,0,78,280,Green,Industrial Corrosion Inhibitor,90,1.2,7,0,industrial
+Amine Oxide (industrial),CCCCCCCCCCCCN(C)(C)=O,6.2,78,86,380,Green,Industrial Foam Booster,84,2.3,7,76,industrial
+Cocoamide MIPA,CCCCCCCCCCCC(=O)NCC(C)O,6.8,82,83,320,Green,Industrial Foam Stabilizer,86,2.1,7,80,industrial
+Sodium Lauroyl Glutamate (industrial),CCCCCCCCCCCC(=O)N[C@@H](CCC(=O)[O-])C(=O)[O-],6.8,90,85,300,Green,Industrial Mild Surfactant,91,1.8,8,88,industrial
+Caprylyl/Capryl Glucoside,CCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.5,95,82,420,Green,Industrial Nonionic Surfactant,95,1.2,9,93,industrial
+Lauramine Oxide,CCCCCCCCCCCCN(C)=O,5.8,78,84,400,Green,Industrial Foam Booster/Wetting,84,2.3,7,76,industrial
+Disodium EDTA,OC(=O)CN(CC(=O)[O-])CCN(CC(=O)O)CC(=O)[O-],5.2,0,76,580,Amber,Industrial Chelating Agent,72,2.8,6,0,industrial
+Tetrasodium EDTA,OC(=O)CN(CC(=O)[O-])CCN(CC(=O)[O-])CC(=O)[O-],5.8,0,75,520,Amber,Industrial Chelating Agent,70,2.9,6,0,industrial
+Sodium DTPA,OC(=O)CN(CCN(CC(=O)O)CC(=O)O)CCN(CC(=O)O)CC(=O)O,6.5,0,77,440,Amber,Industrial Chelating Agent,68,3.0,6,0,industrial
+Peracetic Acid (industrial),CC(=O)OO,3.8,80,91,1000,Amber,Industrial Disinfectant/Oxidant,98,0.8,6,78,industrial
+Sodium Hypochlorite,ClO[Na],0.8,0,88,2800,Amber,Industrial Disinfectant/Bleach,95,0.5,6,0,industrial
+Glutaraldehyde,O=CCCCC=O,3.5,0,85,680,Amber,Industrial Biocide/Disinfectant,75,2.5,4,0,industrial
+Quaternary Ammonium (industrial),CCCCCCCCCCCCCC[N+](C)(C)C,5.5,60,85,480,Amber,Industrial Biocide/Disinfectant,70,3.0,5,58,industrial
+Isothiazolinone (MIT/CMIT),CSC1=NC(=O)CS1,8.5,0,82,280,Amber,Industrial Biocide,65,3.5,4,0,industrial
+Polyvinyl Butyral (PVB),OCC(O)CC1CCCO1,12.5,0,84,220,Green,Paint/Coatings Binder/Adhesive,72,3.2,7,0,paint_coatings
+Epoxy Ester Resin,OC(COc1ccc(CC2CO2)cc1)CO,8.5,55,86,280,Green,Paint/Coatings Binder,74,3.0,6,53,paint_coatings
+Polyurethane Dispersion (bio),OC(CO)CO,12.5,65,88,200,Green,Paint/Coatings PUD Binder,76,2.9,7,63,paint_coatings
+Waterborne Epoxy Resin,OC(COc1ccc(CC2CO2)cc1)CO,9.5,60,87,240,Green,Paint/Coatings Epoxy Binder,73,3.1,6,58,paint_coatings
+Soya Alkyd (long oil),CCCCCCCC/C=C\C/C=C\CCCCCCCC(=O)OCC(O)CO,7.2,92,83,320,Green,Paint/Coatings Alkyd Binder,85,2.2,7,90,paint_coatings
+Sunflower Alkyd,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,7.5,95,82,280,Green,Paint/Coatings Bio-Alkyd,86,2.1,7,93,paint_coatings
+Tall Oil Alkyd,OC(=O)[C@@H]1CC[C@H]2CC[C@@](C)(C(=O)O)[C@@H]2[C@@H]1C,5.8,88,81,380,Green,Paint/Coatings Alkyd,84,2.3,7,86,paint_coatings
+Cardanol (CNSL-based resin),OCc1cccc(C=CC=CCCCCCCCCCC)c1,6.5,100,82,280,Green,Paint/Coatings Bio-Resin,88,1.8,7,99,paint_coatings
+Itaconic Acid Polymer,OC(=O)CC(=C)C(=O)O,8.5,100,80,240,Green,Paint/Coatings Bio-Monomer,92,1.2,8,99,paint_coatings
+Succinic Acid Polymer,OC(=O)CCC(=O)O,6.5,95,79,320,Green,Paint/Coatings Bio-Monomer,96,0.9,8,93,paint_coatings
+2-Ethylhexyl Acrylate,C=CC(=O)OCC(CC)CCCC,5.8,0,82,380,Amber,Paint/Coatings Soft Monomer,72,3.0,6,0,paint_coatings
+Butyl Acrylate,C=CC(=O)OCCCC,4.5,0,83,480,Amber,Paint/Coatings Soft Monomer,74,2.8,6,0,paint_coatings
+Methyl Methacrylate,C=C(C)C(=O)OC,3.8,0,85,580,Amber,Paint/Coatings Hard Monomer,72,2.9,6,0,paint_coatings
+Ethyl Acrylate,C=CC(=O)OCC,3.5,0,82,620,Amber,Paint/Coatings Monomer,73,2.8,6,0,paint_coatings
+Vinyl Acetate,CC(=O)OC=C,2.8,60,80,780,Green,Paint/Coatings Monomer,76,2.5,7,58,paint_coatings
+Glycidyl Methacrylate,C=C(C)C(=O)OCC1CO1,6.5,0,82,280,Amber,Paint/Coatings Functional Monomer,70,3.2,6,0,paint_coatings
+Hydroxyethyl Methacrylate,C=C(C)C(=O)OCCO,5.8,0,81,320,Green,Paint/Coatings Hydroxyl Monomer,73,3.0,7,0,paint_coatings
+Hydroxypropyl Methacrylate,C=C(C)C(=O)OCC(C)O,6.2,0,82,300,Green,Paint/Coatings Hydroxyl Monomer,72,3.1,7,0,paint_coatings
+Acrylamide (industrial),C=CC(N)=O,3.2,0,79,480,Amber,Paint/Coatings Monomer,78,2.5,5,0,paint_coatings
+N-Methylol Acrylamide,C=CC(=O)NCO,4.5,0,80,380,Amber,Paint/Coatings Crosslink Monomer,75,2.8,6,0,paint_coatings
+Dioctyl Adipate (bio),CCCCCCCC(=O)OCCCCCCCOC(=O)CCCCCCC,8.5,80,78,240,Green,Paint/Coatings Plasticizer,84,2.2,7,78,paint_coatings
+Tributyl Acetylcitrate,CCCCOC(=O)CC(OC(C)=O)(CC(=O)OCCCC)C(=O)OCCCC,9.8,88,77,200,Green,Paint/Coatings Bio-Plasticizer,88,1.9,8,86,paint_coatings
+Polypropylene Glycol,CC(O)CO,4.8,0,75,420,Green,Paint/Coatings Plasticizer/Solvent,80,2.2,7,0,paint_coatings
+Glycol Ether DPM,CC(OCC(C)O)OC,5.5,0,79,360,Green,Paint/Coatings Coalescing Agent,82,2.1,7,0,paint_coatings
+Glycol Ether DPnB,CCCOC(C)COC(C)CO,5.8,0,80,320,Green,Paint/Coatings Coalescing Agent,80,2.2,7,0,paint_coatings
+Ethylene Glycol Monohexyl Ether,CCCCCCOCCCO,5.2,0,79,360,Green,Paint/Coatings Coalescing Agent,80,2.2,7,0,paint_coatings
+Propylene Glycol Monobutyl Ether,CCCCOC(C)CO,5.0,75,78,400,Green,Paint/Coatings Coalescing Agent,83,2.0,7,73,paint_coatings
+Ethanol (coatings grade),CCO,1.2,90,76,3000,Green,Paint/Coatings Solvent,99,0.5,9,88,paint_coatings
+Isopropanol (coatings),CC(C)O,1.5,80,77,2500,Green,Paint/Coatings Solvent,99,0.6,9,78,paint_coatings
+n-Butanol (bio),CCCCO,2.2,85,79,1200,Green,Paint/Coatings Solvent,97,0.8,8,83,paint_coatings
+Terpinol (bio),CC1(C)CCC(=CC1)CO,5.5,100,80,480,Green,Paint/Coatings Bio-Solvent,91,1.5,7,99,paint_coatings
+2-Propanol (IPA coatings),CC(C)O,1.5,80,77,2400,Green,Paint/Coatings Cosolvent,99,0.6,9,78,paint_coatings
+Ammonia Solution (coatings),N,0.5,0,70,2000,Green,Paint/Coatings pH Adjuster,99,0.3,7,0,paint_coatings
+AMP-95 (aminomethyl propanol),NCC(C)(C)O,4.5,0,74,480,Green,Paint/Coatings pH Neutralizer,82,2.2,7,0,paint_coatings
+DMAE (dimethylaminoethanol),CN(C)CCO,3.8,0,73,520,Amber,Paint/Coatings pH Neutralizer,80,2.3,6,0,paint_coatings
+Hydroxyethyl Cellulose (coatings HEC),OCC1OC(O)C(O)C(O)C1OCC(O)CO,5.5,100,73,420,Green,Paint/Coatings Thickener,95,1.1,9,99,paint_coatings
+Xanthan Gum (coatings),OCC1OC(OC2C(OC(C2O)OCC3OC(OCC4OC(O)C(O)C(O)C4O)C(O)C(O)C3O)CO)C(O)C(O)C1O,8.0,100,72,320,Green,Paint/Coatings Bio-Thickener,97,1.0,9,99,paint_coatings
+Polyacrylic Acid Thickener,OC(=O)C=C,6.8,0,78,380,Green,Paint/Coatings ASE Thickener,75,2.7,7,0,paint_coatings
+HEUR Thickener (associative),CCCCCCCCCCCCCCCCCCOC(C)CO,9.5,0,80,280,Green,Paint/Coatings HEUR Thickener,72,3.0,7,0,paint_coatings
+HASE Thickener,OC(=O)C=C,8.5,0,79,300,Green,Paint/Coatings HASE Thickener,73,2.9,7,0,paint_coatings
+Attapulgite Clay,O=[Al]O[Si](=O)O,2.5,0,72,880,Green,Paint/Coatings Thickener/Antisag,99,0.4,9,0,paint_coatings
+Sepiolite,O=[Si]([O-])[O-],3.0,0,73,780,Green,Paint/Coatings Rheology Modifier,99,0.4,9,0,paint_coatings
+Silica Matting Agent,O=[Si]=O,8.5,0,76,280,Green,Paint/Coatings Matting Agent,99,0.5,9,0,paint_coatings
+PTFE Wax,C(F)(F)F,18.5,0,82,160,Amber,Paint/Coatings Slip Agent,40,6.0,6,0,paint_coatings
+Polyethylene Wax,CCCCCCCCCCCCCCCCCCCC,4.5,0,78,480,Green,Paint/Coatings Wax/Slip Agent,65,3.5,8,0,paint_coatings
+Carnauba Wax (coatings),CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OC,9.0,100,74,280,Green,Paint/Coatings Natural Wax,84,2.4,9,99,paint_coatings
+Zinc Stearate,CCCCCCCCCCCCCCCCCC(=O)[O-].[Zn+2],3.8,85,74,420,Green,Paint/Coatings Wax/Lubricant,86,2.0,8,83,paint_coatings
+Sodium Hexametaphosphate (coatings),OP(=O)(O)OP(=O)(O)O,3.0,0,75,580,Green,Paint/Coatings Dispersant,92,0.8,7,0,paint_coatings
+Polyacrylate Dispersant,OC(=O)C=C,7.5,0,80,320,Green,Paint/Coatings Pigment Dispersant,75,2.7,7,0,paint_coatings
+Sodium Polyacrylate,OC(=O)C=C,5.5,0,78,420,Green,Paint/Coatings Dispersant,74,2.8,7,0,paint_coatings
+Lignosulfonate Dispersant,OCC1OC(O)C(O)C(O)C1O,4.5,100,77,380,Green,Paint/Coatings Bio-Dispersant,88,1.6,8,99,paint_coatings
+Tributyl Phosphate,CCCCOP(=O)(OCCCC)OCCCC,6.5,0,76,320,Amber,Paint/Coatings Defoamer,72,3.0,5,0,paint_coatings
+Polydimethylsiloxane Defoamer,C[Si](C)(C)O[Si](C)(C)C,9.5,0,79,280,Green,Paint/Coatings Silicone Defoamer,68,3.6,7,0,paint_coatings
+Vegetable Oil Defoamer,CCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,4.8,95,77,360,Green,Paint/Coatings Bio-Defoamer,91,1.5,8,93,paint_coatings
+Mineral Oil Defoamer,CCCCCCCCCCCC,3.5,0,76,480,Green,Paint/Coatings Defoamer,75,2.5,7,0,paint_coatings
+Biocide IPBC,OC(=O)C#CC(Br)(Br)CO,12.5,0,82,180,Amber,Paint/Coatings In-Can Biocide,68,3.8,4,0,paint_coatings
+Biocide BIT,c1cnc2c(n1)SC(=O)N2,10.5,0,80,200,Amber,Paint/Coatings In-Can Biocide,70,3.5,4,0,paint_coatings
+Zinc Pyrithione (coatings),C1=CC(=NC(=C1)S[Zn]SC2=CC=CN=C2)[O-],9.5,0,83,180,Amber,Paint/Coatings Film Biocide,68,3.8,4,0,paint_coatings
+Octylisothiazolinone (OIT),CCCCCCCCN1SC(=O)C=C1,11.5,0,81,160,Amber,Paint/Coatings Film Biocide,66,3.9,4,0,paint_coatings
+Zinc Oxide (UV coatings),O=[Zn],5.0,0,80,380,Green,Paint/Coatings UV Absorber,99,0.5,9,0,paint_coatings
+Cerium Oxide (UV),O=[Ce]=O,28.0,0,82,120,Green,Paint/Coatings UV Stabilizer,99,0.6,9,0,paint_coatings
+Antifungal Active Zinc Pyrithione,C1=CC(=NC(=C1)S[Zn]SC2=CC=CN=C2)[O-],9.0,0,82,200,Amber,Personal Care Antifungal,68,3.8,4,0,personal_care
+Glyceryl Oleate,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,5.8,92,76,360,Green,Personal Care Emollient,90,1.7,8,90,personal_care
+Caprylic/Capric Triglyceride,CCCCCCCC(=O)OCC(OC(=O)CCCCCCCC)COC(=O)CCCCCCCC,6.5,98,80,420,Green,Personal Care Emollient/Carrier,92,1.4,9,96,personal_care
+Isopropyl Myristate,CCCCCCCCCCCCCC(=O)OCC(C)C,4.8,90,78,480,Green,Personal Care Emollient,87,1.9,8,88,personal_care
+Isopropyl Palmitate,CCCCCCCCCCCCCCCC(=O)OCC(C)C,5.0,90,77,440,Green,Personal Care Emollient,86,2.0,8,88,personal_care
+Cetyl Palmitate,CCCCCCCCCCCCCCCC(=O)OCCCCCCCCCCCCCCCCO,5.5,90,75,380,Green,Personal Care Emollient/Wax,85,2.1,9,88,personal_care
+C12-15 Alkyl Benzoate,OC(=O)c1ccccc1,6.8,70,80,300,Green,Personal Care Emollient,84,2.3,8,68,personal_care
+Diisopropyl Adipate,CC(OC(=O)CCCCC(=O)OC(C)C)C,6.2,75,79,320,Green,Personal Care Emollient,86,2.1,8,73,personal_care
+Ethylhexyl Palmitate,CCCCCCCCCCCCCCCC(=O)OCC(CC)CCCC,5.5,80,79,360,Green,Personal Care Emollient,85,2.1,8,78,personal_care
+Ethylhexyl Stearate,CCCCCCCCCCCCCCCCCC(=O)OCC(CC)CCCC,5.8,80,78,320,Green,Personal Care Emollient,84,2.2,8,78,personal_care
+Squalane (bio),CC(C)CCCC(C)CCCC(C)CCCC(C)CCC=C(C)C,28.0,100,82,120,Green,Personal Care Premium Emollient,92,1.8,9,99,personal_care
+Meadowfoam Seed Oil,CCCCCCCCCCCC/C=C/CCCCCCCC(=O)OCC(O)CO,22.0,100,80,100,Green,Personal Care Specialty Emollient,91,1.9,9,99,personal_care
+Marula Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,32.0,100,81,75,Green,Personal Care Premium Oil,90,2.0,9,99,personal_care
+Sea Buckthorn Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,45.0,100,80,50,Green,Personal Care Specialty Oil,89,2.1,8,99,personal_care
+Rosehip Oil,CCCCCC/C=C\C/C=C\CCCCCCCC(=O)OCC(O)CO,38.0,100,79,60,Green,Personal Care Specialty Oil,90,1.9,9,99,personal_care
+Baobab Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,28.0,100,80,80,Green,Personal Care Specialty Oil,90,2.0,9,99,personal_care
+Hemp Seed Oil,CCCCCC/C=C\C/C=C\C/C=C\CCCCCCCC(=O)OCC(O)CO,18.5,100,79,120,Green,Personal Care Specialty Oil,91,1.8,9,99,personal_care
+Moringa Oil,CCCCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,25.0,100,80,90,Green,Personal Care Premium Oil,90,1.9,9,99,personal_care
+Chia Seed Oil,CCCCCC/C=C\C/C=C\C/C=C\CCCCCCCC(=O)OCC(O)CO,32.0,100,79,70,Green,Personal Care Specialty Oil,91,1.8,9,99,personal_care
+Mango Butter,CCCCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,12.0,100,76,200,Green,Personal Care Butter/Emollient,88,1.9,9,99,personal_care
+Kokum Butter,CCCCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,15.0,100,76,160,Green,Personal Care Butter,87,2.0,9,99,personal_care
+Cocoa Butter,CCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,8.5,100,77,280,Green,Personal Care Butter/Emollient,87,1.9,9,99,personal_care
+Sal Butter,CCCCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,10.5,100,76,220,Green,Personal Care Butter,87,1.9,9,99,personal_care
+Illipe Butter,CCCCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,14.0,100,76,180,Green,Personal Care Butter,87,2.0,9,99,personal_care
+Murumuru Butter,CCCCCCCCCCCC(=O)OCC(O)CO,18.0,100,77,140,Green,Personal Care Specialty Butter,88,1.9,9,99,personal_care
+Avocado Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,15.0,100,80,180,Green,Personal Care Emollient Oil,90,1.8,9,99,personal_care
+Macadamia Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,18.5,100,80,140,Green,Personal Care Emollient Oil,90,1.8,9,99,personal_care
+Sweet Almond Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,12.0,100,79,220,Green,Personal Care Emollient Oil,90,1.7,9,99,personal_care
+Apricot Kernel Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,10.5,100,79,250,Green,Personal Care Emollient Oil,90,1.7,9,99,personal_care
+Grapeseed Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,8.5,100,78,320,Green,Personal Care Emollient Oil,90,1.7,9,99,personal_care
+Pomegranate Seed Oil,OC(=O)C/C=C\C/C=C\C/C=C\CCCCC,45.0,100,80,50,Green,Personal Care Specialty Oil,91,2.0,9,99,personal_care
+Tamanu Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,35.0,100,79,65,Green,Personal Care Specialty Healing Oil,89,2.1,8,99,personal_care
+Black Seed Oil (Nigella),CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,22.0,100,79,100,Green,Personal Care Active Oil,89,2.0,8,99,personal_care
+Emu Oil (emu or vegan alt),CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,28.0,95,80,80,Green,Personal Care Penetrating Oil,89,1.9,8,93,personal_care
+Lecithin (cosmetic grade),CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,10.5,100,79,240,Green,Personal Care Emulsifier/Skin Replenish,93,1.4,9,99,personal_care
+Glyceryl Stearate SE,CCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,5.5,90,76,420,Green,Personal Care Self-Emulsifying Base,87,1.9,9,88,personal_care
+Cetearyl Alcohol,CCCCCCCCCCCCCCCCO,4.8,88,75,520,Green,Personal Care Emollient/Emulsifier,87,1.9,9,86,personal_care
+Ceteareth-20,CCCCCCCCCCCCCCCCOCCO,6.5,80,79,380,Green,Personal Care O/W Emulsifier,82,2.2,7,78,personal_care
+Steareth-2,CCCCCCCCCCCCCCCCCCCOCCO,5.8,82,77,420,Green,Personal Care W/O Emulsifier,83,2.1,8,80,personal_care
+Steareth-21,CCCCCCCCCCCCCCCCCCCOCCOCCOC,6.2,80,78,380,Green,Personal Care O/W Emulsifier,82,2.2,7,78,personal_care
+PEG-100 Stearate,CCCCCCCCCCCCCCCCCC(=O)OCCO,5.8,78,77,380,Green,Personal Care Emulsifier,80,2.3,7,76,personal_care
+Glyceryl Laurate,CCCCCCCCCCCC(=O)OCC(O)CO,5.5,95,79,360,Green,Personal Care Emulsifier/Antimicrobial,91,1.6,8,93,personal_care
+Sucrose Laurate,CCCCCCCCCCCC(=O)OC1OC(CO)C(O)C(O)C1O,8.5,100,78,240,Green,Personal Care Emulsifier,93,1.4,9,99,personal_care
+Sucrose Stearate,CCCCCCCCCCCCCCCCCC(=O)OC1OC(CO)C(O)C(O)C1O,9.2,100,77,200,Green,Personal Care HLB-adj Emulsifier,92,1.5,9,99,personal_care
+Inulin Laurylcarbamate,CCCCCCCCCCCCNC(=O)OCC1OC(O)C(O)C(O)C1O,12.5,100,78,160,Green,Personal Care Prebiotic Emulsifier,95,1.3,9,99,personal_care
+Olivoyl Hydrolyzed Oat Protein,NC(=O)CNC(=O)CN,22.0,100,79,100,Green,Personal Care Conditioning Protein,93,1.6,9,99,personal_care
+Wheat Protein (hydrolyzed),NC(=O)CNC(=O)CNC(=O)CN,14.5,100,78,160,Green,Personal Care Hair Conditioning,91,1.7,8,99,personal_care
+Rice Protein (hydrolyzed),NC(=O)CNC(=O)CNC(=O)CN,16.0,100,77,140,Green,Personal Care Conditioning,92,1.6,9,99,personal_care
+Soy Protein (hydrolyzed),NC(=O)CNC(=O)CNC(=O)CN,12.5,100,78,180,Green,Personal Care Film Former,91,1.7,8,99,personal_care
+Sodium PCA (natural),N1CCC(=O)C1C(=O)[O-],9.5,95,77,180,Green,Personal Care Humectant,96,1.2,8,93,personal_care
+Sodium Lactate,CC(O)C(=O)[O-],2.2,100,72,1400,Green,Personal Care Humectant/pH Adj,99,0.5,9,99,personal_care
+Urea (cosmetic),NC(N)=O,1.8,60,75,1800,Green,Personal Care Humectant/Keratolytic,95,0.9,8,58,personal_care
+Propanediol (bio),CCC(O)CO,4.5,100,74,580,Green,Personal Care Humectant/Solvent,98,0.7,9,99,personal_care
+Butylene Glycol,CCC(O)CO,5.2,75,74,480,Green,Personal Care Humectant/Solvent,96,0.9,8,73,personal_care
+Pentylene Glycol,CCCC(O)CO,5.8,80,75,400,Green,Personal Care Humectant/Preservative,95,1.0,8,78,personal_care
+Caprylyl Glycol,CCCCCCC(O)CO,7.5,80,76,300,Green,Personal Care Humectant/Preservative Boost,92,1.5,8,78,personal_care
+Dipropylene Glycol (cosmetic),CC(O)COC(C)CO,4.5,80,74,520,Green,Personal Care Solvent/Humectant,90,1.5,8,78,personal_care
+Diethylene Glycol Monoethyl Ether,CCOCCOCCO,4.8,0,76,440,Green,Personal Care Penetration Enhancer,82,2.0,7,0,personal_care
+Transcutol (diethylene glycol monoethyl ether),CCOCCOCCO,12.5,0,78,200,Green,Personal Care Penetration Enhancer,82,2.0,7,0,personal_care
+Cyclomethicone D5,C[Si]1(C)O[Si](C)(C)O[Si](C)(C)O[Si](C)(C)O[Si](C)(C)O1,6.5,0,79,440,Amber,Personal Care Volatile Silicone,65,4.0,6,0,personal_care
+Dimethicone 100cSt,C[Si](C)(C)O[Si](C)(C)O[Si](C)(C)C,7.2,0,81,380,Green,Personal Care Silicone Emollient,68,3.6,7,0,personal_care
+Dimethicone 350cSt,C[Si](C)(C)O[Si](C)(C)O[Si](C)(C)C,7.8,0,82,320,Green,Personal Care Heavy Silicone,67,3.7,7,0,personal_care
+Phenyl Trimethicone,C[Si](C)(C)O[Si](c1ccccc1)(C)O[Si](C)(C)C,9.5,0,83,240,Green,Personal Care Silicone Shine,66,3.8,7,0,personal_care
+PEG-12 Dimethicone,C[Si](C)(C)O[Si](C)(COCCO)O[Si](C)(C)C,12.5,0,80,180,Green,Personal Care Silicone Surfactant,66,3.8,7,0,personal_care
+Cyclopentasiloxane,C[Si]1(C)O[Si](C)(C)O[Si](C)(C)O[Si](C)(C)O[Si](C)(C)1,6.2,0,78,460,Amber,Personal Care Volatile Silicone,63,4.1,5,0,personal_care
+Carbomer 940,OC(=O)C=C,8.5,0,78,280,Green,Personal Care Thickener/Emulsifier,72,2.8,7,0,personal_care
+Carbomer 980,OC(=O)C=C,8.8,0,79,260,Green,Personal Care Thickener,72,2.8,7,0,personal_care
+Acrylates/C10-30 Crosspolymer,OC(=O)C=C,9.5,0,80,240,Green,Personal Care Thickener/Stabilizer,71,2.9,7,0,personal_care
+Sodium Acrylate/Sodium Acryloyl Dimethyl Taurate Copolymer,OC(=O)C=C,10.5,0,79,200,Green,Personal Care Thickener,72,2.8,7,0,personal_care
+Hydroxypropyl Guar,OCC1OC(OCC(O)CO)C(O)C(O)C1O,8.5,100,74,280,Green,Personal Care Conditioning Thickener,94,1.1,9,99,personal_care
+Cellulose Gum (cosmetic),OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,4.5,100,70,560,Green,Personal Care Thickener,95,1.1,9,99,personal_care
+Locust Bean Gum (cosmetic),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,5.5,100,70,380,Green,Personal Care Thickener,96,0.9,9,99,personal_care
+Sclerotium Gum,OCC1OC(O)C(O)C(O)C1O,18.5,100,74,120,Green,Personal Care Bio-Thickener,97,1.2,9,99,personal_care
+Hyaluronic Acid (low MW),OCC1OC(OC2C(O)C(NC(C)=O)C(O)OC2C(=O)[O-])C(O)C(O)C1O,95.0,100,80,20,Green,Personal Care Humectant (penetrating),97,1.3,9,99,personal_care
+Hyaluronic Acid (high MW),OCC1OC(OC2C(O)C(NC(C)=O)C(O)OC2C(=O)[O-])C(O)C(O)C1O,65.0,100,79,30,Green,Personal Care Humectant (film forming),97,1.3,9,99,personal_care
+Polyglutamic Acid (high MW),OC(=O)CNC(=O)CNC(=O)CNC(=O)CN,22.0,100,77,100,Green,Personal Care Humectant (superior),96,1.4,9,99,personal_care
+Astaxanthin (natural),CC1=C(C(=O)/C=C/C(=C/C=C/C(=C/C=C/C=C(\C)/C=C/C=C(\C)/C=C/C2=C(C)C(=O)CC(O)C2(C)C)C)C)C(O)CC1(C)C,450.0,100,80,8,Green,Personal Care Antioxidant Active,89,2.8,8,99,personal_care
+Resveratrol,Oc1ccc(/C=C/c2cc(O)cc(O)c2)cc1,85.0,100,79,25,Green,Personal Care Antioxidant Active,91,1.9,8,99,personal_care
+Coenzyme Q10,COc1cc(CC/C=C(\C)CCC/C=C(\C)CCC/C=C(\C)CCC/C=C(\C)CCC/C=C(\C)CCC/C=C(\C)CCC/C=C(\C)CCC/C=C(\C)CC)ccc1OC,185.0,90,80,12,Green,Personal Care Antioxidant Active,88,2.5,8,88,personal_care
+Ferulic Acid,OC(=O)/C=C/c1ccc(O)c(OC)c1,15.0,100,78,160,Green,Personal Care Antioxidant/Brightening,92,1.7,8,99,personal_care
+Kojic Acid,OCC1=CC(=O)C(O)=CO1,12.5,90,77,180,Green,Personal Care Skin Brightening,90,1.8,8,88,personal_care
+Alpha-Arbutin,OC[C@H]1O[C@@H](Oc2ccc(O)cc2)[C@H](O)[C@@H](O)[C@H]1O,45.0,100,79,55,Green,Personal Care Skin Brightening,92,1.6,8,99,personal_care
+Tranexamic Acid,NC(CCCC(=N)N)C(=O)O,28.0,80,78,80,Green,Personal Care Brightening Active,88,2.2,7,78,personal_care
+Licorice Root Extract,OC(=O)c1ccc(O)cc1,18.5,100,77,130,Green,Personal Care Anti-inflammatory/Brightening,91,1.7,8,99,personal_care
+Centella Asiatica Extract,OC(=O)C1CCC2CC(O)C(O)C2C1,22.0,100,78,100,Green,Personal Care Wound Healing Active,92,1.6,9,99,personal_care
+Madecassoside,OC[C@H]1O[C@@H](OC2CCC3C(C)(C)CCC3C2)C(O)C(O)C1O,55.0,100,79,40,Green,Personal Care Calming Active,92,1.7,9,99,personal_care
+Adenosine,NC1=NC=NC2=C1N=CN2[C@@H]1O[C@H](CO)[C@@H](O)[C@H]1O,28.0,90,79,80,Green,Personal Care Anti-wrinkle Active,91,1.7,8,88,personal_care
+Palmitoyl Tripeptide-1,CCCCCCCCCCCCCCCC(=O)NCC(=O)NCC(=O)O,85.0,85,81,25,Green,Personal Care Anti-aging Peptide,88,2.5,8,83,personal_care
+Palmitoyl Tetrapeptide-7,CCCCCCCCCCCCCCCC(=O)NC(=O)NC(=O)NC(=O)O,95.0,85,82,20,Green,Personal Care Anti-aging Peptide,87,2.6,8,83,personal_care
+Acetyl Hexapeptide-3 (Argireline),CC(=O)NC(=O)NC(=O)NC(=O)NC(=O)NC(=O)O,120.0,85,83,15,Green,Personal Care Wrinkle Relaxing Peptide,86,2.8,8,83,personal_care
+Copper Tripeptide-1,NC(=O)CNC(=O)C(N)CCCCN,180.0,90,82,10,Green,Personal Care Wound Healing Peptide,90,2.5,8,88,personal_care
+Retinol (Vitamin A),CC1=C(\C=C\C(=C\C=C\C(=C\CO)C)C)C(C)(C)CCC1,85.0,80,83,22,Green,Personal Care Anti-aging Active,86,2.6,7,78,personal_care
+Retinyl Palmitate,CCCCCCCCCCCCCCCC(=O)OCC=C,32.0,80,81,80,Green,Personal Care Vitamin A Ester,86,2.4,8,78,personal_care
+Retinaldehyde,CC1=C(\C=C\C(=C\C=C\C(=C\C=O)C)C)C(C)(C)CCC1,95.0,80,83,18,Green,Personal Care Active Retinoid,85,2.7,7,78,personal_care
+Glycolic Acid (cosmetic),OCC(=O)O,4.2,80,76,580,Green,Personal Care AHA Exfoliant,97,0.8,8,78,personal_care
+Lactic Acid (cosmetic),CC(O)C(=O)O,2.5,100,74,1800,Green,Personal Care AHA Exfoliant/Humectant,99,0.5,9,99,personal_care
+Citric Acid (cosmetic),OC(=O)CC(O)(CC(=O)O)C(=O)O,2.0,100,72,2400,Green,Personal Care AHA/Chelator,99,0.6,9,99,personal_care
+Mandelic Acid (cosmetic),OC(C(=O)O)c1ccccc1,9.0,70,76,200,Green,Personal Care AHA (gentle),86,1.8,7,68,personal_care
+Phytic Acid (cosmetic),OC1C(OP(=O)(O)O)C(OP(=O)(O)O)C(OP(=O)(O)O)C(OP(=O)(O)O)C1OP(=O)(O)O,6.0,100,74,300,Green,Personal Care Chelator/Brightening,97,0.9,9,99,personal_care
+Glucosamide DEA,OCC(O)C(O)C(O)C(O)CN(CCO)CCO,8.5,88,77,220,Green,Personal Care Foam Booster/Conditioning,86,2.0,7,86,personal_care
+Disodium Lauroamphodiacetate,CCCCCCCCCCCC(=O)NCC[N+](CC([O-])=O)(CC([O-])=O)C,6.5,82,85,340,Green,Personal Care Amphoteric Surfactant,86,2.0,7,80,personal_care
+Sodium Lauroyl Methyl Isethionate,CCCCCCCCCCCC(=O)N(C)CCS(=O)(=O)[O-],7.5,85,87,300,Green,Personal Care Premium Mild Surfactant,88,1.9,8,83,personal_care
+Sodium Cocoyl Isethionate (SCI),CCCCCCCCCCCC(=O)OCCS(=O)(=O)[O-],6.8,90,88,360,Green,Personal Care Solid Cleanser,89,1.8,8,88,personal_care
+Sodium Methyl Cocoyl Taurate,CCCCCCCCCCCC(=O)N(C)CCS(=O)(=O)[O-],7.2,85,86,320,Green,Personal Care Mild Sulfonate,88,1.9,8,83,personal_care
+Sodium Lauroyl Alaninate,CCCCCCCCCCCC(=O)NC(C)C(=O)[O-],7.8,88,85,280,Green,Personal Care Amino Acid Surfactant,90,1.8,8,86,personal_care
+Potassium Cocoyl Glycinate,CCCCCCCCCCCC(=O)NCC(=O)[O-],7.5,90,84,300,Green,Personal Care Amino Acid Surfactant,91,1.7,8,88,personal_care
+Sodium Myristoyl Glutamate,CCCCCCCCCCCCCC(=O)N[C@@H](CCC(=O)[O-])C(=O)[O-],7.0,92,85,280,Green,Personal Care Mild Surfactant,91,1.7,8,90,personal_care
+Sodium Palmitoyl Glutamate,CCCCCCCCCCCCCCCC(=O)N[C@@H](CCC(=O)[O-])C(=O)[O-],7.5,92,84,260,Green,Personal Care Mild Surfactant,90,1.8,8,90,personal_care
+Glycine Betaine,C[N+](C)(C)CC(=O)[O-],5.5,95,75,420,Green,Personal Care Osmolyte/Humectant,98,0.8,9,93,personal_care
+Lactobacillus Ferment,OCC(O)CO,18.5,100,77,130,Green,Personal Care Probiotic Active,96,1.2,9,99,personal_care
+Bifida Ferment Lysate,NC(=O)CNC(=O)CN,35.0,100,79,65,Green,Personal Care Microbiome Active,95,1.5,9,99,personal_care
+Saccharomyces Ferment,OCC(O)CO,22.0,100,77,100,Green,Personal Care Ferment Active,95,1.3,9,99,personal_care
+Noni Fruit Extract,OCC(O)C(O)C(O)C(O)C(=O)O,15.0,100,75,150,Green,Personal Care Antioxidant Active,93,1.4,8,99,personal_care
+Sea Kelp Extract,OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,12.0,100,76,200,Green,Personal Care Marine Active,96,1.2,9,99,personal_care
+Tremella Fuciformis Extract,OCC1OC(O)C(O)C(O)C1O,25.0,100,78,90,Green,Personal Care Snow Mushroom Hydrator,96,1.3,9,99,personal_care
+Sodium Hyaluronate Crosspolymer,OCC1OC(OC2C(O)C(NC(C)=O)C(O)OC2C(=O)[O-])C(O)C(O)C1O,120.0,100,81,18,Green,Personal Care 3D Hyaluronic Filler,97,1.4,9,99,personal_care
+Pseudoalteromonas Ferment Extract,NC(=O)CNC(=O)CN,45.0,100,80,40,Green,Personal Care Marine Exopolysaccharide,96,1.5,9,99,personal_care
+Hexapeptide-11,CC(=O)NC(=O)NC(=O)NC(=O)NC(=O)NC(=O)O,85.0,85,80,22,Green,Personal Care Smoothing Peptide,87,2.6,8,83,personal_care
+Niacinamide (cosmetic grade),NC(=O)c1cccnc1,9.5,80,80,200,Green,Personal Care Multi-Active (brightening/pore),95,1.4,8,78,personal_care
+Tranexamic Acid (cosmetic),NC(CCCC(=N)N)C(=O)O,30.0,80,79,75,Green,Personal Care Brightening Active,88,2.2,7,78,personal_care
+Magnesium Ascorbyl Phosphate,OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,28.0,100,80,80,Green,Personal Care Stable Vitamin C,98,0.9,9,99,personal_care
+Ascorbyl Glucoside,OCC(O)CO,32.0,100,79,70,Green,Personal Care Stable Vitamin C,97,1.0,9,99,personal_care
+3-O-Ethyl Ascorbic Acid,CCOC1=C(O)C(=O)OC1CO,28.0,80,80,75,Green,Personal Care Stable Vitamin C,93,1.5,8,78,personal_care
+Ethyl Ascorbic Acid,CCOC1=C(O)C(=O)OC1CO,30.0,80,80,70,Green,Personal Care Stable Vitamin C Ether,93,1.5,8,78,personal_care
+Tetrahexyldecyl Ascorbate,OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,65.0,80,81,35,Green,Personal Care Oil-Soluble Vitamin C,90,2.2,8,78,personal_care
+Ammonium Glycyrrhizinate,OC(=O)C1CCC2CC(O)C(O)C2C1,18.0,100,78,130,Green,Personal Care Anti-inflammatory,91,1.7,8,99,personal_care
+Dipotassium Glycyrrhizate,OC(=O)C1CCC2CC(O)C(O)C2C1,20.0,100,78,115,Green,Personal Care Anti-inflammatory,91,1.7,8,99,personal_care
+Caffeine (cosmetic),Cn1cnc2c1c(=O)n(C)c(=O)n2C,13.0,78,79,170,Green,Personal Care Anti-cellulite Active,85,2.2,7,76,personal_care
+Escin (horse chestnut),OC(=O)C1CCC2CC(O)C(O)C2C1,22.0,100,78,110,Green,Personal Care Vascular Active,90,1.8,8,99,personal_care
+Butyl Avocadate,CCCCOC(=O)CCCCCCCCCCC,8.5,95,79,240,Green,Personal Care Emollient,89,1.7,8,93,personal_care
+Linoleic Acid Ethyl Ester,CCCCCC/C=C\C/C=C\CCCCCCCC(=O)OCC,6.5,100,78,300,Green,Personal Care EFA Emollient,92,1.4,8,99,personal_care
+Sodium Lauroyl Oat Amino Acids,CCCCCCCCCCCC(=O)NC(=O)CNC(=O)CN,12.5,100,83,180,Green,Personal Care Amino Acid Cleanser,91,1.7,9,99,personal_care
+Hydroxypropyl Cyclodextrin,OCC1OC2OC(CO)C(O)C(OCC(O)CO)C2O1,18.5,100,76,130,Green,Personal Care Active Delivery System,96,1.3,9,99,personal_care
+Biotin,OC(=O)CCCC[C@@H]1SC[C@@H]2NC(=O)N[C@H]12,85.0,100,77,25,Green,Personal Care Hair Active (Vitamin B7),94,1.6,9,99,personal_care
+Pantothenic Acid,OCC(C)(CO)CCC(=O)NCCC(O)=O,18.0,100,77,130,Green,Personal Care Hair/Skin Active (Vitamin B5),97,1.3,9,99,personal_care
+Pyrrolidone Carboxylic Acid,N1CCC(=O)C1C(=O)O,6.5,90,75,360,Green,Personal Care NMF Humectant,96,1.1,8,88,personal_care
+Azelaic Acid (cosmetic),OC(=O)CCCCCCCC(=O)O,7.0,85,76,260,Green,Personal Care Acne/Rosacea Active,92,1.4,8,83,personal_care
+Pyruvic Acid (cosmetic),CC(=O)C(=O)O,5.5,90,74,360,Green,Personal Care AHA Exfoliant,96,0.9,8,88,personal_care
+Arachidonic Acid,CCCCCC/C=C\C/C=C\C/C=C\C/C=C\CCCC(=O)O,85.0,100,79,22,Green,Personal Care Essential FA,90,2.0,8,99,personal_care
+Gamma Linolenic Acid,CCCCCC/C=C\C/C=C\C/C=C\CCCCCCCC(=O)O,38.0,100,79,60,Green,Personal Care Essential FA (GLA),91,1.8,8,99,personal_care
+Docosahexaenoic Acid (DHA),CCCC=CC=CC=CC=CC=CCCCCCC(=O)O,95.0,100,80,22,Green,Personal Care Omega-3 Active,89,2.1,8,99,personal_care
+Eicosapentaenoic Acid (EPA),CCC=CC=CC=CC=CC=CCCCCCCCC(=O)O,85.0,100,80,25,Green,Personal Care Omega-3 Active,90,2.0,8,99,personal_care
+Dipotassium Phosphate (cosmetic),OP(=O)([O-])[O-],2.5,0,70,520,Green,Personal Care Buffer,99,0.4,9,0,personal_care
+Sodium Phosphate Dibasic,OP(=O)([O-])[O-],2.2,0,70,580,Green,Personal Care Buffer,99,0.4,9,0,personal_care
+Triethanolamine (cosmetic grade),OCCN(CCO)CCO,3.0,0,72,1000,Green,Personal Care pH Neutralizer,80,2.2,6,0,personal_care
+AMP (aminomethyl propanol),NCC(C)(C)O,4.8,0,73,440,Green,Personal Care pH Adjuster,82,2.2,7,0,personal_care
+Disodium Phosphate (cosmetic),OP(=O)([O-])[O-],2.0,0,70,620,Green,Personal Care Buffer,99,0.4,9,0,personal_care
+Grapefruit Seed Extract,OC(=O)c1ccc(O)c(O)c1,15.0,100,76,150,Green,Personal Care Natural Preservative,92,1.5,8,99,personal_care
+Neem Leaf Extract,OC(=O)C1CCC2CC(O)C(O)C2C1,12.0,100,75,170,Green,Personal Care Natural Antimicrobial,91,1.6,8,99,personal_care
+Zinc Acetate (cosmetic),CC(=O)[O-],3.5,0,74,420,Green,Personal Care Astringent/Antimicrobial,95,0.7,8,0,personal_care
+Propolis Extract,OC(=O)c1ccc(O)cc1,22.0,100,78,100,Green,Personal Care Natural Antimicrobial,90,1.8,8,99,personal_care
+Tea Tree Oil,CC1CCC(C(C)C)CC1O,12.5,100,82,180,Green,Personal Care Essential Oil/Antimicrobial,91,1.7,7,99,personal_care
+Lavender Oil,CC(C)=CCCC(C)=CCO,10.5,100,78,220,Green,Personal Care Essential Oil/Calming,91,1.7,7,99,personal_care
+Peppermint Oil (cosmetic),CC(C)C1CCC(C)(CC1=O)O,9.5,100,79,240,Green,Personal Care Essential Oil/Cooling,89,1.8,8,99,personal_care
+Eucalyptus Oil (cosmetic),CC1(C)CCCC(C)(C1)O,8.0,100,79,260,Green,Personal Care Essential Oil,88,1.9,7,99,personal_care
+Frankincense Oil,CC1(C)CCC(CC1)C(C)=C,28.0,100,79,80,Green,Personal Care Essential Oil/Anti-aging,89,2.0,8,99,personal_care
+Myrrh Oil,COc1ccc(CCC=O)cc1O,32.0,100,78,70,Green,Personal Care Essential Oil/Healing,88,2.1,8,99,personal_care
+Rose Hip CO2 Extract,CCCCCC/C=C\C/C=C\CCCCCCCC(=O)OCC(O)CO,45.0,100,81,50,Green,Personal Care Premium Active,91,1.9,9,99,personal_care
+Blue Tansy Oil,CC1=CC(=O)c2c(cccc2O)C1,55.0,100,80,40,Green,Personal Care Anti-inflammatory Oil,90,2.0,8,99,personal_care
+Squalene (plant-derived),CC(C)CCCC(C)CCCC(C)CCCC(C)CCC=C(C)C,22.0,100,81,120,Green,Personal Care Emollient/Antioxidant,92,1.7,9,99,personal_care
+Behenyl Alcohol (cosmetic),CCCCCCCCCCCCCCCCCCCCCCO,6.0,90,75,300,Green,Personal Care Emollient/Emulsifier,86,2.1,9,88,personal_care
+Stearyl Glycyrrhetinate,CCCCCCCCCCCCCCCCCCOC(=O)C1CCC2CC(O)C(O)C2C1,28.0,92,78,80,Green,Personal Care Anti-inflammatory Ester,87,2.2,8,90,personal_care
+Oleo Europaea (Olive) Extract,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,12.0,100,79,200,Green,Personal Care Antioxidant/Emollient,91,1.6,9,99,personal_care
+Polyglyceryl-3 Beeswax,CCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OCC(O)COCC(O)CO,14.0,100,76,160,Green,Personal Care Natural Emulsifier,87,2.1,9,99,personal_care
+Oryza Sativa (Rice Bran) Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,8.5,100,79,280,Green,Personal Care Emollient/Antioxidant,90,1.7,9,99,personal_care
+Helianthus Annuus (Sunflower) Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,4.5,100,78,480,Green,Personal Care Emollient,90,1.6,9,99,personal_care
+Prunus Amygdalus Dulcis (Sweet Almond) Oil,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,12.0,100,79,220,Green,Personal Care Emollient,90,1.7,9,99,personal_care
+Simmondsia Chinensis (Jojoba) Seed Oil,CCCCCCCCCC/C=C/CCCCCCCCCC(=O)OCC/C=C/CCCCCCCCCC,14.0,100,80,190,Green,Personal Care Skin-Identical Wax,89,1.9,9,99,personal_care
+Cannabis Sativa Seed Oil,CCCCCC/C=C\C/C=C\C/C=C\CCCCCCCC(=O)OCC(O)CO,18.5,100,80,130,Green,Personal Care EFA-Rich Oil,91,1.8,9,99,personal_care
+Vaccinium Myrtillus (Blueberry) Seed Oil,OC(=O)C/C=C\C/C=C\C/C=C\CCCCC,48.0,100,80,45,Green,Personal Care Specialty Antioxidant Oil,91,2.0,9,99,personal_care
+Punica Granatum (Pomegranate) Seed Oil,OC(=O)C/C=C\C/C=C\C/C=C\CCCCC,48.0,100,80,45,Green,Personal Care Premium Active Oil,91,2.0,9,99,personal_care
+Ammonium Lauryl Sulfate,CCCCCCCCCCCCCOS(=O)(=O)[O-],3.8,78,85,680,Green,Personal Care Anionic Surfactant,82,2.4,7,76,personal_care
+Ammonium Laureth Sulfate,CCCCCCCCCCCCOCCCS(=O)(=O)[O-],4.2,78,86,600,Green,Personal Care Primary Surfactant,83,2.3,7,76,personal_care
+Potassium Lauryl Sulfate,CCCCCCCCCCCCCOS(=O)(=O)[O-],4.5,78,84,560,Green,Personal Care Surfactant,82,2.4,7,76,personal_care
+Sodium Lauroyl Creatinate,CCCCCCCCCCCC(=O)NCC(=O)N(C)CCN,8.5,88,85,260,Green,Personal Care Amino Acid Surfactant,89,1.9,8,86,personal_care
+Bacillus Coagulans (probiotic),NC(=O)CNC(=O)CNC(=O)CN,45.0,100,78,45,Green,Personal Care Probiotic Active,96,1.2,9,99,personal_care
+Inositol,OC1C(O)C(O)C(O)C(O)C1O,8.5,100,75,280,Green,Personal Care Moisturizing Active,99,0.8,9,99,personal_care
+D-Panthenol,OCC(C)(CO)CCC(=O)NCCC(O)=O,14.0,100,77,150,Green,Personal Care Hair/Skin Conditioning,99,1.3,9,99,personal_care
+Potassium Palmitoyl Hydrolyzed Wheat Protein,CCCCCCCCCCCCCCCC(=O)NCC(=O)[O-],18.0,90,80,130,Green,Personal Care Lipopeptide Conditioner,89,2.0,8,88,personal_care
+Sodium Palmitoyl Proline,CCCCCCCCCCCCCCCC(=O)N1CCCC1C(=O)[O-],15.0,90,79,150,Green,Personal Care Lipopeptide Active,90,2.0,8,88,personal_care
+Polyglyceryl-10 Laurate,CCCCCCCCCCCC(=O)OCC(O)COCC(O)COCC(O)CO,12.5,100,78,160,Green,Personal Care Mild Emulsifier,93,1.4,9,99,personal_care
+Polyglyceryl-10 Oleate,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)COCC(O)CO,13.5,100,77,140,Green,Personal Care Emulsifier,92,1.5,9,99,personal_care
+Polyglyceryl-10 Stearate,CCCCCCCCCCCCCCCCCC(=O)OCC(O)COCC(O)CO,13.0,100,77,150,Green,Personal Care Emulsifier,91,1.6,9,99,personal_care
+Polyglyceryl-6 Polyricinoleate,CCCCCCCC(O)CCCCCCCC(=O)OCC(O)COCC(O)CO,14.5,100,79,130,Green,Personal Care W/O Emulsifier,90,1.7,9,99,personal_care
+Bis-PEG-18 Methyl Ether Dimethyl Silane,C[Si](C)(OCCO)OCCO,12.0,0,80,180,Green,Personal Care Silicone Humectant,68,3.5,7,0,personal_care
+Lauryl PEG-9 Polydimethylsiloxyethyl Dimethicone,CCCCCCCCCCCCOC(C)CO,14.5,0,81,160,Green,Personal Care Silicone Emulsifier,66,3.7,7,0,personal_care
+Sodium Stearoyl Glutamate,CCCCCCCCCCCCCCCCCC(=O)N[C@@H](CCC(=O)[O-])C(=O)[O-],7.8,90,84,280,Green,Personal Care Mild Surfactant,90,1.8,8,88,personal_care
+Gluconolactone (cosmetic),OC1OC(=O)C(O)C(O)C1O,5.0,100,74,380,Green,Personal Care PHA Exfoliant,99,0.6,9,99,personal_care
+Lactobionic Acid,OCC(O)C(O)C(O)C(O)C(=O)OCC(O)C(O)C(O)C(=O)O,8.5,100,75,260,Green,Personal Care PHA Exfoliant,99,0.7,9,99,personal_care
+Galactose,OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@H]1O,4.5,100,71,420,Green,Personal Care Skin Sugar/Active,99,0.6,9,99,personal_care
+Allantoin (cosmetic),NC(=O)NC1NC(=O)NC1=O,9.5,100,75,170,Green,Personal Care Skin Healing,99,1.2,9,99,personal_care
+Colloidal Oatmeal,OCC1OC(O)C(O)C(O)C1O,8.5,100,77,260,Green,Personal Care Soothing Active,96,1.1,9,99,personal_care
+Avenanthramide,OC(=O)/C=C/c1ccc(O)c(OC)c1,28.0,100,79,80,Green,Personal Care Oat Active/Anti-itch,95,1.5,9,99,personal_care
+Sophora Japonica Extract,OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,18.5,100,78,120,Green,Personal Care Anti-inflammatory,91,1.7,8,99,personal_care
+Saccharide Isomerate,OCC(O)CO,18.0,100,77,130,Green,Personal Care Skin-Identical Humectant,97,1.1,9,99,personal_care
+Thermus Thermophilus Ferment,NC(=O)CNC(=O)CN,35.0,100,80,55,Green,Personal Care Thermophilic Enzyme Active,95,1.5,9,99,personal_care
+Zinc PCA,N1CCC(=O)C1C(=O)[O-],10.5,90,78,200,Green,Personal Care Sebum Regulating Active,95,1.3,8,88,personal_care
+Neopentyl Glycol Diheptanoate,CCCCCCC(=O)OCC(C)(C)COC(=O)CCCCCC,7.5,0,79,280,Green,Personal Care Emollient,83,2.3,8,0,personal_care
+Caprylyl Pyrrolidone,CCCCCCCCN1CCCC1=O,8.5,0,78,240,Green,Personal Care Solubilizer/Conditioning,82,2.4,7,0,personal_care
+Hydroxycitronellal,OCC(C)CCCC(C)(C)O,8.5,100,74,240,Green,Personal Care Fragrance,90,1.7,7,99,personal_care
+Linalool (bio),CC(C)=CCCC(C)(O)C=C,6.5,100,75,340,Green,Personal Care Fragrance/Antioxidant,92,1.5,7,99,personal_care
+Limonene (d-form),CC1=CCC(CC1)C(C)=C,3.5,100,76,580,Green,Personal Care Fragrance/Solvent,95,0.9,7,99,personal_care
+Geraniol (bio),CC(C)=CCC/C(=C/CO)C,7.5,100,75,300,Green,Personal Care Fragrance,91,1.6,7,99,personal_care
+Citronellol (bio),CC(CCO)CCC=C(C)C,6.8,100,74,320,Green,Personal Care Fragrance,91,1.6,7,99,personal_care
+Eugenol (bio),COc1cc(CC=C)ccc1O,5.5,100,76,380,Green,Personal Care Fragrance/Antimicrobial,90,1.7,7,99,personal_care
+Vanillin (cosmetic),COc1cc(C=O)ccc1O,9.0,95,75,260,Green,Personal Care Fragrance,92,1.6,7,93,personal_care
+Benzyl Benzoate,O=C(OCc1ccccc1)c1ccccc1,5.8,80,76,320,Green,Personal Care Fragrance/Solubilizer,86,2.1,7,78,personal_care
+Iso E Super,CC1(C)CCCC2(C)C1CCC(=C)C2CC=O,18.5,85,75,130,Green,Personal Care Fragrance,85,2.3,6,83,personal_care
+Ambroxan,CC1(C)CCCC2(C)CCCCC2CO1,45.0,85,76,50,Green,Personal Care Fragrance,84,2.5,7,83,personal_care
+Hydroxyethyl Starch (pharma),OCC1OC(OCC(O)CO)C(O)C(O)C1O,5.5,100,76,380,Green,Pharma Plasma Expander,95,1.1,9,99,pharmaceutical
+Dextran (pharma),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,18.5,100,78,160,Green,Pharma Plasma Expander,96,1.3,9,99,pharmaceutical
+Cyclodextrin Alpha,OCC1OC2OC(CO)C(O)C(OC3OC(CO)C(O)C(O)C3)C2O1,18.0,100,77,160,Green,Pharma Complexing Agent,96,1.3,9,99,pharmaceutical
+Cyclodextrin Gamma,OCC1OC2OC(CO)C(O)C(OC3OC(CO)C(O)C(O)C3OC3OC(CO)C(O)C(O)C3)C2O1,20.0,100,78,140,Green,Pharma Complexing Agent,96,1.3,9,99,pharmaceutical
+HP-Beta-Cyclodextrin,OCC1OC2OC(CO)C(O)C(OCC(O)CO)C2O1,22.0,100,79,130,Green,Pharma Solubilizer/Complexer,96,1.3,9,99,pharmaceutical
+Chitosan (pharma grade),OCC1OC(N)C(O)C(O)C1O,14.0,100,80,160,Green,Pharma Mucoadhesive/Binder,95,1.2,8,99,pharmaceutical
+Chondroitin Sulfate (pharma),OCC1OC(OC2C(O)C(NS(=O)(=O)O)C(O)OC2C(=O)[O-])C(O)C(O)C1O,45.0,95,79,50,Green,Pharma Active/Excipient,93,1.7,8,93,pharmaceutical
+Glucosamine HCl (pharma),OCC1OC(N)C(O)C(O)C1O,12.5,95,78,180,Green,Pharma Active/Excipient,95,1.3,8,93,pharmaceutical
+Methylsulfonylmethane (MSM),CS(C)=O,8.5,80,76,240,Green,Pharma Active/Excipient,90,1.6,8,78,pharmaceutical
+Alpha Lipoic Acid,OC(=O)CCCC1CCSS1,28.0,80,79,80,Green,Pharma Antioxidant Active,88,2.2,7,78,pharmaceutical
+N-Acetyl Cysteine,CC(=O)NC(CS)C(=O)O,18.0,80,79,130,Green,Pharma Mucolytic Active,89,2.0,8,78,pharmaceutical
+Quercetin,OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,28.0,100,79,80,Green,Pharma Flavonoid Active,91,1.9,8,99,pharmaceutical
+Berberine,COc1ccc2cc3c(cc2c1OC)N(C)CCC3=O,35.0,100,80,65,Green,Pharma Plant Alkaloid Active,89,2.1,7,99,pharmaceutical
+Curcumin (pharma),COc1cc(/C=C/C(=O)/C=C(/O)c2ccc(O)c(OC)c2)ccc1O,22.0,100,79,100,Green,Pharma Active/Anti-inflammatory,90,1.9,8,99,pharmaceutical
+Piperine,O=C(/C=C/C=C/c1ccc2c(c1)OCO2)N1CCCCC1,18.0,100,78,120,Green,Pharma Bioavailability Enhancer,89,2.0,7,99,pharmaceutical
+Lecithin (IV grade),CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,22.0,100,81,140,Green,Pharma IV Emulsifier,93,1.5,9,99,pharmaceutical
+Medium Chain Triglycerides (pharma),CCCCCCCC(=O)OCC(OC(=O)CCCCCCCC)COC(=O)CCCCCCCC,8.5,98,82,280,Green,Pharma Lipid Carrier,93,1.4,9,96,pharmaceutical
+Castor Oil (pharma grade),CCCCCCCC(O)CCCCCCCC(=O)OCC(O)CO,5.5,100,78,360,Green,Pharma Laxative/Excipient,89,1.6,8,99,pharmaceutical
+Olive Oil (pharma grade),CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,9.5,100,80,240,Green,Pharma Excipient/Vehicle,91,1.6,9,99,pharmaceutical
+Soybean Oil (pharma grade),CCCCCCCC/C=C\C/C=C\CCCCCCCC(=O)OCC(O)CO,5.5,100,79,320,Green,Pharma Lipid Vehicle,91,1.5,8,99,pharmaceutical
+Sesame Oil (pharma),CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,8.5,100,79,240,Green,Pharma Oil Vehicle,90,1.6,8,99,pharmaceutical
+Cottonseed Oil (pharma),CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,5.8,100,78,300,Green,Pharma Oil Vehicle,90,1.6,8,99,pharmaceutical
+Beeswax (pharma grade),CCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OCCCCCCCCCCCCCCCCCCCCCCCCCCC,14.0,100,75,200,Green,Pharma Wax/Ointment Base,85,2.2,9,99,pharmaceutical
+White Petrolatum (pharma),CCCCCCCCCCCC,3.5,0,73,480,Green,Pharma Ointment Base,65,3.5,8,0,pharmaceutical
+Liquid Paraffin (pharma),CCCCCCCCCCCC,3.8,0,74,420,Green,Pharma Emollient/Laxative,65,3.5,8,0,pharmaceutical
+Microcrystalline Wax (pharma),CCCCCCCCCCCCCCCCCCCCC,4.5,0,74,360,Green,Pharma Wax/Consistency Agent,66,3.4,8,0,pharmaceutical
+Lanolin (pharma grade),CCCCCCCCCCCCCCCCCCCC(=O)OC,18.5,90,79,130,Green,Pharma Emollient/Emulsifier,84,2.5,7,88,pharmaceutical
+Anhydrous Lanolin,CCCCCCCCCCCCCCCCCCCC(=O)OC,22.0,90,80,110,Green,Pharma Ointment Base,83,2.6,7,88,pharmaceutical
+Zinc Oxide (pharma grade),O=[Zn],4.8,0,79,380,Green,Pharma Antiseptic/Skin Protectant,99,0.5,9,0,pharmaceutical
+Titanium Dioxide (pharma),O=[Ti]=O,4.2,0,77,420,Green,Pharma Opacifier/Sunscreen,99,0.4,9,0,pharmaceutical
+Aluminum Hydroxide (pharma),OO[Al],2.5,0,74,480,Green,Pharma Antacid,99,0.4,9,0,pharmaceutical
+Magnesium Hydroxide (pharma),OO[Mg],2.2,0,73,520,Green,Pharma Antacid/Laxative,99,0.4,9,0,pharmaceutical
+Calcium Phosphate Tribasic,OP(=O)([O-])[O-],2.0,0,73,560,Green,Pharma Calcium Supplement,99,0.4,9,0,pharmaceutical
+Ferric Ammonium Citrate,OC(=O)CC(O)(CC(=O)O)C(=O)O,5.5,100,74,280,Green,Pharma Iron Supplement,99,0.7,8,99,pharmaceutical
+Sodium Lauryl Sulfate (pharma),CCCCCCCCCCCCCOS(=O)(=O)[O-],4.0,78,83,580,Green,Pharma Wetting Agent/Disintegrant,82,2.3,7,76,pharmaceutical
+Dioctyl Sodium Sulfosuccinate,CCCCCCCC(=O)OCC(CS(=O)(=O)[O-])OC(=O)CCCCCCC,6.8,70,80,280,Amber,Pharma Wetting Agent/Laxative,78,2.8,6,68,pharmaceutical
+Polysorbate 60,CCCCCCCCCCCCCCCCCC(=O)OCC(CO)OCC(O)CO,7.5,88,80,360,Green,Pharma Emulsifier/Solubilizer,84,2.1,7,86,pharmaceutical
+Polysorbate 40,CCCCCCCCCCCCCC(=O)OCC(CO)OCC(O)CO,7.0,88,79,380,Green,Pharma Emulsifier,84,2.1,7,86,pharmaceutical
+Sorbitan Stearate,CCCCCCCCCCCCCCCCCC(=O)OC1CCOC(CO)C1O,5.8,88,77,360,Green,Pharma W/O Emulsifier,85,2.0,8,86,pharmaceutical
+Sorbitan Palmitate,CCCCCCCCCCCCCCCC(=O)OC1CCOC(CO)C1O,5.5,90,76,380,Green,Pharma Emulsifier,86,1.9,8,88,pharmaceutical
+Sodium Starch Glycolate (type A),OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,5.0,95,77,420,Green,Pharma Superdisintegrant,94,1.1,9,93,pharmaceutical
+Croscarmellose Sodium Type B,OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,5.8,100,77,380,Green,Pharma Disintegrant,94,1.2,9,99,pharmaceutical
+Low-Substituted HPC (L-HPC),OCC1OC(OCC(O)CO)C(O)C(O)C1O,8.5,100,78,280,Green,Pharma Disintegrant/Binder,93,1.3,9,99,pharmaceutical
+Spray-Dried Lactose,OC[C@H]1O[C@@H](O[C@@H]2[C@@H](O)[C@H](O)[C@@H](CO)O2)[C@H](O)[C@@H](O)[C@H]1O,3.2,100,73,1000,Green,Pharma DCI Filler,99,0.8,9,99,pharmaceutical
+Mannitol DC Grade,OCC(O)C(O)C(O)C(O)CO,4.0,100,74,760,Green,Pharma DCI Filler,99,0.7,9,99,pharmaceutical
+Xylitol (pharma),OCC(O)C(O)C(O)CO,6.0,100,73,340,Green,Pharma Sweetener/Filler,99,0.8,9,99,pharmaceutical
+Isomalt,OCC(O)COC(CO)CO,5.8,100,73,360,Green,Pharma Sugar Alcohol Filler,99,0.8,9,99,pharmaceutical
+Sorbitol Instant (pharma),OCC(O)C(O)C(O)C(O)CO,2.8,100,74,820,Green,Pharma DCI Filler,99,0.7,9,99,pharmaceutical
+Corn Starch (pharma),OCC1OC(O)C(O)C(O)C1O,2.2,100,71,1200,Green,Pharma Filler/Disintegrant,97,0.8,9,99,pharmaceutical
+Potato Starch (pharma),OCC1OC(O)C(O)C(O)C1O,2.5,100,71,1100,Green,Pharma Filler/Disintegrant,97,0.8,9,99,pharmaceutical
+Rice Starch (pharma),OCC1OC(O)C(O)C(O)C1O,3.5,100,72,780,Green,Pharma Filler,97,0.9,9,99,pharmaceutical
+Wheat Starch (pharma),OCC1OC(O)C(O)C(O)C1O,2.8,100,71,1000,Green,Pharma Binder/Filler,97,0.8,9,99,pharmaceutical
+Acacia (pharma grade),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,7.5,100,72,300,Green,Pharma Binder/Emulsifier,97,0.9,9,99,pharmaceutical
+Tragacanth (pharma),OCC1OC(O)C(O)C(O)C1O,18.5,100,72,130,Green,Pharma Binder/Thickener,96,1.1,9,99,pharmaceutical
+Alginic Acid (pharma),OCC1OC(O)C(O)C(O)C1O,9.5,100,74,240,Green,Pharma Disintegrant/Binder,96,1.0,9,99,pharmaceutical
+Sodium Alginate (pharma),OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,8.5,100,75,280,Green,Pharma Binder/Viscosifier,96,1.0,9,99,pharmaceutical
+Carbopol 934 (pharma),OC(=O)C=C,9.5,0,79,240,Green,Pharma Gel Base/Thickener,72,2.8,7,0,pharmaceutical
+Polycarbophil,OC(=O)C=C,10.5,0,80,200,Green,Pharma Mucoadhesive/Thickener,71,2.9,7,0,pharmaceutical
+Methocel E5 (pharma),COC1OC(OCC(O)CO)C(OC)C(O)C1O,8.0,100,81,300,Green,Pharma Controlled Release Matrix,93,1.3,9,99,pharmaceutical
+Ethocel 10 (pharma),CCOC1OC(OCC)C(OCC)C(O)C1O,7.5,100,80,320,Green,Pharma Sustained Release Film,90,1.5,9,99,pharmaceutical
+Surelease (ethylcellulose dispersion),CCOC1OC(OCC)C(OCC)C(O)C1O,12.5,100,81,200,Green,Pharma Aqueous Film Coat,90,1.5,9,99,pharmaceutical
+Opadry (HPMC film coat),COC1OC(OCC(O)CO)C(OC)C(O)C1O,14.5,100,82,180,Green,Pharma Instant Release Film Coat,93,1.4,9,99,pharmaceutical
+Kollicoat IR,OCC(O)CO,12.0,80,80,200,Green,Pharma Film Coat,80,2.4,7,78,pharmaceutical
+Eudragit EPO,COC(=O)C(C)CC(=O)OCC,11.5,0,81,220,Green,Pharma Taste Masking,71,3.3,7,0,pharmaceutical
+Aerosil R972 (hydrophobic),O=[Si]=O,14.5,0,77,180,Green,Pharma Hydrophobic Flow Aid,99,0.5,9,0,pharmaceutical
+Calcium Silicate (pharma),O=[Si]([O-])[O-],3.5,0,74,440,Green,Pharma Adsorbent/Anticaking,99,0.4,9,0,pharmaceutical
+Sodium Stearyl Fumarate,CCCCCCCCCCCCCCCCCCOC(=O)/C=C/C(=O)[O-],6.5,85,77,300,Green,Pharma Alternative Lubricant,88,2.0,8,83,pharmaceutical
+Glyceryl Palmitostearate,CCCCCCCCCCCCCCCC(=O)OCC(O)CO,6.0,90,76,340,Green,Pharma Lubricant/Matrix Former,87,2.0,8,88,pharmaceutical
+Hydrogen Peroxide (pharma),OO,2.0,0,86,1200,Green,Pharma Antiseptic,99,0.4,7,0,pharmaceutical
+Isopropyl Alcohol (pharma),CC(C)O,1.8,80,77,1600,Green,Pharma Solvent/Antiseptic,99,0.6,9,78,pharmaceutical
+Acetone (pharma),CC(C)=O,2.2,80,78,1200,Amber,Pharma Solvent,98,0.8,7,78,pharmaceutical
+Dichloromethane (pharma),ClCCl,3.5,0,80,480,Amber,Pharma Solvent (residual),68,4.0,5,0,pharmaceutical
+Ethyl Acetate (pharma),CCOC(C)=O,2.5,85,79,1000,Green,Pharma Bio-Solvent,99,0.7,9,83,pharmaceutical
+n-Hexane (pharma),CCCCCC,2.8,0,78,680,Amber,Pharma Extraction Solvent,85,2.0,6,0,pharmaceutical
+Methanol (pharma),CO,1.5,80,75,1400,Amber,Pharma Solvent,97,0.6,6,78,pharmaceutical
+Water for Injection (WFI),O,0.5,100,70,5000,Green,Pharma Solvent/Vehicle,100,0.1,10,99,pharmaceutical
+Acesulfame Potassium,CC1=CC(=O)[N-]S(=O)(=O)O1,12.5,0,72,180,Green,Pharma Sweetener,80,2.2,7,0,pharmaceutical
+Sodium Saccharin,NS(=O)(=O)c1ccccc1C(=O)[O-],9.0,0,71,220,Green,Pharma Sweetener,80,2.2,7,0,pharmaceutical
+Erythritol (pharma),OCC(O)C(O)CO,5.0,100,71,380,Green,Pharma Sugar Alcohol Sweetener,99,0.7,9,99,pharmaceutical
+Cedarwood Oil,CC1(C)CCCC2(C)C1CCC(=C)C2,12.0,100,77,190,Green,Pharma/Personal Care Essential Oil,90,1.8,7,99,pharmaceutical
+Camphor (pharma),CC1(C)C2CCC1(C)C(=O)C2,8.5,100,78,240,Green,Pharma Counterirritant/Active,88,2.0,7,99,pharmaceutical
+Thymol (pharma),CC(C)c1ccc(C)cc1O,10.5,100,80,200,Green,Pharma Antiseptic Active,90,1.8,7,99,pharmaceutical
+Carvacrol,CC(C)c1ccc(C)cc1O,9.5,100,80,220,Green,Pharma/Agri Antimicrobial,90,1.8,7,99,pharmaceutical
+Myristicin,COc1cc(CC=C)cc(OC)c1O,15.0,100,78,150,Green,Pharma/Food Flavor Active,89,2.0,7,99,pharmaceutical
+Ellagic Acid,OC1=CC2=CC(O)=C(O)C3=C(OC(=O)C4=C1C(O)=C(O)C2=C4)C3=O,28.0,100,79,80,Green,Pharma Polyphenol Active,91,1.8,8,99,pharmaceutical
+Pterostilbene,COc1ccc(/C=C/c2cc(OC)cc(O)c2)cc1,65.0,100,80,35,Green,Pharma Premium Antioxidant,91,1.9,8,99,pharmaceutical
+Spermidine,NCCCCNCCCN,55.0,80,80,40,Green,Pharma Longevity Active,88,2.2,8,78,pharmaceutical
+Acetyl-L-Carnitine,CC(OC(C)=O)CC(=O)[O-],22.0,80,79,100,Green,Pharma Nootropic Active,90,1.8,8,78,pharmaceutical
+Phosphatidylcholine (pharma),CCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCC/C=C\CCCCCCCC)COP(=O)([O-])OCC[N+](C)(C)C,35.0,100,81,70,Green,Pharma Lipid Active/Emulsifier,93,1.6,9,99,pharmaceutical
+Corn Gluten Meal,NC(=O)CNC(=O)CNC(=O)CN,3.2,100,72,680,Green,Agri Natural Herbicide,94,1.1,8,99,agricultural
+Wood Vinegar (pyroligneous acid),CC(=O)O,2.8,100,75,820,Green,Agri Soil Amendment/Pesticide,97,0.7,8,99,agricultural
+Bamboo Vinegar,CC(=O)O,3.2,100,74,720,Green,Agri Soil Amendment,97,0.7,8,99,agricultural
+Diatomaceous Earth (agri food grade),O=[Si]=O,2.8,0,75,1000,Green,Agri Insecticide/Desiccant,99,0.4,9,0,agricultural
+Iron Phosphate (agri),OP(=O)([O-])[O-],4.5,0,78,480,Green,Agri Molluscicide (organic),99,0.5,9,0,agricultural
+Spinosyn A,CC[C@@H]1CC[C@@]2(C)CC[C@@H](OC)[C@H]2C1,90.0,100,88,28,Green,Agri Bioinsecticide (OMRI),92,1.8,7,99,agricultural
+Milbemectin,CC[C@@H]1CC[C@@]2(C)CC[C@@H](OC)[C@H]2C1,65.0,100,86,35,Green,Agri Biopesticide,90,2.0,6,99,agricultural
+Metarhizium Anisopliae,NC(=O)CNC(=O)CN,32.0,100,84,65,Green,Agri Biocontrol Entomopathogen,95,1.2,9,99,agricultural
+Isaria Fumosorosea,NC(=O)CNC(=O)CN,28.0,100,83,70,Green,Agri Biocontrol Entomopathogen,95,1.2,9,99,agricultural
+Lecanicillium Muscarium,NC(=O)CNC(=O)CN,30.0,100,83,68,Green,Agri Biocontrol Whitefly,95,1.2,9,99,agricultural
+Pythium Oligandrum,NC(=O)CNC(=O)CN,35.0,100,83,60,Green,Agri Biocontrol Soil Pathogen,96,1.1,9,99,agricultural
+Beneficial Nematodes (Steinernema),NC(=O)CNC(=O)CN,28.0,100,84,72,Green,Agri Biocontrol Insect Pathogen,96,1.1,9,99,agricultural
+Coniothyrium Minitans,NC(=O)CNC(=O)CN,32.0,100,82,62,Green,Agri Biocontrol Sclerotinia,95,1.2,9,99,agricultural
+Gliocladium Catenulatum,NC(=O)CNC(=O)CN,28.0,100,82,65,Green,Agri Biocontrol Root Disease,95,1.2,9,99,agricultural
+Boric Acid (agri),OB(O)O,2.5,0,75,880,Amber,Agri Micronutrient/Insecticide,95,0.6,6,0,agricultural
+Manganese Sulfate (agri),OS(=O)(=O)O,1.8,0,73,1000,Green,Agri Micronutrient,99,0.4,8,0,agricultural
+Zinc Sulfate (agri),OS(=O)(=O)O,2.0,0,74,920,Green,Agri Micronutrient/Fungicide,99,0.4,7,0,agricultural
+Copper EDTA (agri),OC(=O)CN(CC(=O)O)CCN(CC(=O)O)CC(=O)O,6.5,0,76,380,Amber,Agri Micronutrient Chelate,72,2.8,6,0,agricultural
+Iron EDTA (agri),OC(=O)CN(CC(=O)O)CCN(CC(=O)O)CC(=O)O,5.8,0,77,420,Amber,Agri Iron Chelate,72,2.8,6,0,agricultural
+Calcium Nitrate (agri),ON(=O)=O,1.2,0,71,1800,Green,Agri Calcium Fertilizer,99,0.5,7,0,agricultural
+Magnesium Sulfate (agri),OS(=O)(=O)O,0.8,0,70,2200,Green,Agri Magnesium Fertilizer,99,0.3,9,0,agricultural
+Potassium Sulfate (agri),OS(=O)(=O)O,1.5,0,72,1400,Green,Agri Potassium Fertilizer,99,0.4,9,0,agricultural
+Urea (agri),NC(N)=O,0.7,60,73,3000,Green,Agri Nitrogen Fertilizer,95,0.9,7,58,agricultural
+Ammonium Sulfate (fertilizer),OS(=O)(=O)O,0.6,0,71,3200,Green,Agri Nitrogen Fertilizer,99,0.4,8,0,agricultural
+Di-Ammonium Phosphate,OP(=O)(O)[O-],0.9,0,72,2600,Amber,Agri NPK Fertilizer,99,0.5,7,0,agricultural
+Calcium Ammonium Nitrate,ON(=O)=O,1.0,0,72,2400,Amber,Agri Nitrogen Fertilizer,99,0.5,7,0,agricultural
+Leonardite (humate source),OC(=O)c1ccc(O)c(O)c1,5.5,100,75,520,Green,Agri Humate Source,95,1.0,8,99,agricultural
+Phosphite (potassium phosphonate),OP(O)O,4.5,0,80,520,Green,Agri Systemic Fungicide/Biostimulant,92,0.8,7,0,agricultural
+Mono Potassium Phosphate (agri),OP(=O)([O-])O,2.2,0,72,880,Green,Agri Phosphorus/Potassium Fertil,99,0.4,8,0,agricultural
+Prochloraz (bio alternative),CCOCCN1C(=O)C2=CC(Cl)=CC=C2N=C1Cl,12.5,0,82,180,Amber,Agri Fungicide,72,3.2,5,0,agricultural
+Actinovate (Streptomyces),NC(=O)CNC(=O)CNC(=O)CN,25.0,100,83,80,Green,Agri Biocontrol Streptomyces,96,1.0,9,99,agricultural
+RootShield (Trichoderma harzianum),NC(=O)CNC(=O)CN,22.0,100,83,85,Green,Agri Biocontrol Root,96,1.1,9,99,agricultural
+Surround WP (kaolin agri premium),O=[Al]O[Si](=O)O,1.5,0,74,1800,Green,Agri Kaolin Particle Film,99,0.3,10,0,agricultural
+Cinnamon Oil (agri),COc1ccc(/C=C/C=O)cc1,14.0,100,80,160,Green,Agri Biopesticide/Fungicide,90,1.8,7,99,agricultural
+Oregano Oil (agri),CC(C)c1ccc(C)cc1O,12.5,100,81,180,Green,Agri Antimicrobial/Biopesticide,90,1.8,7,99,agricultural
+Lemon Grass Oil,CC(C)=CCCC(C)=CCO,8.0,100,79,240,Green,Agri Repellent/Biopesticide,92,1.5,7,99,agricultural
+Rosemary Oil (agri),CC1(C)CCCC2(C)C1CC=C(C2=O)C(C)C,12.0,100,79,190,Green,Agri Biopesticide/Antifungal,91,1.7,7,99,agricultural
+Peroxyacetic Acid (agri),CC(=O)OO,3.2,80,90,960,Amber,Agri Disinfectant/Fungicide,98,0.8,6,78,agricultural
+Ethanol (agri grade),CCO,1.0,95,75,4000,Green,Agri Solvent/Disinfectant,99,0.5,9,93,agricultural
+Apple Pomace Extract,OCC(O)CO,5.5,100,74,400,Green,Agri Biostimulant,96,1.0,9,99,agricultural
+Grape Marc Extract,OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,8.5,100,76,280,Green,Agri Biostimulant/Antioxidant,93,1.4,8,99,agricultural
+Moringa Leaf Extract,NC(=O)CNC(=O)CNC(=O)CN,12.0,100,77,200,Green,Agri Plant Growth Stimulant,94,1.4,9,99,agricultural
+Sodium Bicarbonate (agri),OC([O-])=O,0.9,0,73,3800,Green,Agri Fungicide/pH Modifier,99,0.3,9,0,agricultural
+Aluminum Sulfate (agri),OS(=O)(=O)O,1.2,0,72,1600,Amber,Agri Soil Acidifier,99,0.4,7,0,agricultural
+Sulfur Dust (agri),S,1.0,0,79,2000,Green,Agri Sulfur Fungicide/Miticide,99,0.4,7,0,agricultural
+Lime Sulfur (calcium polysulfide),OS(=S)S,2.5,0,80,680,Amber,Agri Dormant Fungicide,90,0.8,5,0,agricultural
+Neonicotinoid-Free Bed Bug,CCCCCCCCCCCC,3.5,75,82,480,Green,Agri Pet Safe Insect Repellent,88,1.9,7,73,agricultural
+Sodium Lauryl Ether Sulfate (laundry),CCCCCCCCCCCCOCCCS(=O)(=O)[O-],4.5,78,86,560,Green,Fabric Primary Surfactant,83,2.3,7,76,fabric_laundry
+C14-16 Olefin Sulfonate,CCCCCCCCCCCCC=CCS(=O)(=O)[O-],4.8,72,86,520,Green,Fabric Anionic Surfactant,83,2.2,7,70,fabric_laundry
+Lauryl Glucoside (fabric),CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.0,97,83,460,Green,Fabric Bio-Nonionic Surfactant,94,1.3,9,95,fabric_laundry
+Coco Betaine (fabric),CCCCCCCCCCCC[N+](CC([O-])=O)(C)C,5.5,82,83,380,Green,Fabric Amphoteric Surfactant,86,2.1,7,80,fabric_laundry
+Disodium Cocoamphodipropionate,CCCCCCCCCCCC(=O)NCCC[N+](CCC([O-])=O)(C)CCC([O-])=O,7.5,82,84,300,Green,Fabric Mild Amphoteric,86,2.0,7,80,fabric_laundry
+Oleyl Alcohol Ethoxylate,CCCCCCCC/C=C\CCCCCCCCOCCO,6.5,85,80,340,Green,Fabric Nonionic Surfactant,83,2.1,7,83,fabric_laundry
+Lauryl Alcohol Ethoxylate,CCCCCCCCCCCCOCCOCCOC,5.8,82,79,400,Green,Fabric Nonionic Surfactant,83,2.1,7,80,fabric_laundry
+SLES 3EO (laundry),CCCCCCCCCCCCOCCOCCCS(=O)(=O)[O-],4.3,78,86,540,Green,Fabric Surfactant 3EO,83,2.3,7,76,fabric_laundry
+SLES 7EO (laundry),CCCCCCCCCCCCOCCOCCOCCCS(=O)(=O)[O-],4.6,78,85,500,Green,Fabric Surfactant 7EO,83,2.2,7,76,fabric_laundry
+Alkyl Polyglucose C12-14 (fabric),CCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.8,96,83,440,Green,Fabric Bio-Surfactant,94,1.3,9,94,fabric_laundry
+Sorbitan Trioleate,CCCCCCCC/C=C\CCCCCCCC(=O)OCC(COC(=O)CCCCCCCC/C=C\CCCCCCCC)OC(=O)CCCCCCCC/C=C\CCCCCCCC,6.8,88,79,300,Green,Fabric Emulsifier,85,2.1,7,86,fabric_laundry
+Dioctyl Sulfosuccinate Sodium (fabric),CCCCCCCC(=O)OCC(CS(=O)(=O)[O-])OC(=O)CCCCCCC,6.5,70,80,300,Amber,Fabric Wetting Agent,78,2.8,6,68,fabric_laundry
+Isopropyl Myristate (fabric),CCCCCCCCCCCCCC(=O)OCC(C)C,5.2,90,77,360,Green,Fabric Emollient/Softener,87,1.9,8,88,fabric_laundry
+Adipic Acid (fabric),OC(=O)CCCCCC(=O)O,3.8,80,71,580,Green,Fabric pH Buffer,93,1.3,8,78,fabric_laundry
+Sodium Acetate (fabric),CC(=O)[O-],1.8,80,70,1200,Green,Fabric pH Buffer,99,0.5,9,78,fabric_laundry
+DTPA (fabric chelation),OC(=O)CN(CCN(CC(=O)O)CC(=O)O)CCN(CC(=O)O)CC(=O)O,7.0,0,77,380,Amber,Fabric Heavy Metal Chelator,68,3.0,6,0,fabric_laundry
+Sodium Tripolyphosphate (fabric),OP(=O)(O)OP(=O)(O)OP(=O)(O)O,2.2,0,83,1000,Amber,Fabric Builder,90,0.9,6,0,fabric_laundry
+Sodium Citrate (fabric),OC(=O)CC(O)(CC(=O)O)C(=O)O,2.0,100,73,1400,Green,Fabric Builder/Chelator,99,0.6,9,99,fabric_laundry
+Potassium Carbonate (fabric),O=C([O-])[O-],0.9,0,79,2600,Green,Fabric Alkaline Builder,99,0.3,9,5,fabric_laundry
+Sodium Sulfate Anhydrous,OS(=O)(=O)O,0.5,0,68,4000,Green,Fabric Filler/Sodium Source,99,0.3,9,0,fabric_laundry
+Sodium Chloride (fabric),ClNa,0.3,0,67,5000,Green,Fabric Viscosity Modifier,99,0.2,10,0,fabric_laundry
+Magnesium Chloride (fabric),ClMgCl,0.8,0,68,2400,Green,Fabric Electrolyte,99,0.3,10,0,fabric_laundry
+Ethanol (fabric grade),CCO,1.1,95,76,3500,Green,Fabric Solvent/Antiseptic,99,0.5,9,93,fabric_laundry
+Isopropanol (fabric),CC(C)O,1.6,80,77,2200,Green,Fabric Solvent/Stain Remover,99,0.6,9,78,fabric_laundry
+Propylene Glycol (fabric),CC(O)CO,2.2,80,73,1400,Green,Fabric Solvent/Coupling Agent,99,0.7,8,78,fabric_laundry
+Glycerol (fabric),OCC(O)CO,1.8,100,70,2600,Green,Fabric Humectant/Softener,98,0.8,9,99,fabric_laundry
+Sorbitol (fabric),OCC(O)C(O)C(O)C(O)CO,2.5,100,72,1600,Green,Fabric Humectant/Coupling,99,0.7,9,99,fabric_laundry
+Propanediol (fabric),CCC(O)CO,5.0,100,74,520,Green,Fabric Bio-Solvent/Humectant,98,0.7,9,99,fabric_laundry
+Methylglycinediacetic Acid (MGDA),OC(=O)CN(C)C(C(=O)O)CC(=O)O,6.5,90,77,300,Green,Fabric Biodeg Chelator,95,1.2,9,88,fabric_laundry
+L-Glutamic Acid Diacetic Acid (GLDA fabric),OC(=O)CN(CC(=O)O)C(CCC(=O)O)C(=O)O,7.5,95,79,260,Green,Fabric Biodeg Chelator,96,1.1,9,93,fabric_laundry
+Iminodisuccinic Acid,OC(=O)CN(CC(=O)O)CC(=O)O,7.0,90,77,280,Green,Fabric Biodeg Chelator,97,1.1,9,88,fabric_laundry
+Amyloglucosidase (laundry),OCC1OC(O)C(O)C(O)C1O,16.5,100,84,90,Green,Fabric Starch Removal Enzyme,96,1.4,9,99,fabric_laundry
+Glucose Oxidase (laundry),OCC1OC(O)C(O)C(O)C1O,28.0,100,83,55,Green,Fabric Bleach-Boosting Enzyme,95,1.6,9,99,fabric_laundry
+Laccase (laundry),NC(=O)CNC(=O)CN,35.0,100,84,48,Green,Fabric Dye Transfer Inhibition Enzyme,94,1.7,9,99,fabric_laundry
+Peroxidase (laundry),OO,32.0,100,83,52,Green,Fabric Color Maintenance Enzyme,95,1.6,9,99,fabric_laundry
+Savinase (protease premium),NC(=O)CNC(=O)CNC(=O)CN,22.0,100,87,80,Green,Fabric Premium Protease,95,1.6,9,99,fabric_laundry
+Natalase (amylase premium),OCC1OC(O)C(O)C(O)C1O,19.0,100,86,88,Green,Fabric Premium Amylase,96,1.4,9,99,fabric_laundry
+Lipolase (lipase premium),CCCCCCCCCCCCCCCC(=O)O,26.0,100,85,62,Green,Fabric Premium Lipase,94,1.7,9,99,fabric_laundry
+Carezyme (cellulase premium),OCC1OC(O)C(O)C(O)C1O,24.0,100,87,68,Green,Fabric Premium Cellulase,95,1.5,9,99,fabric_laundry
+Everlase (protease alkaline),NC(=O)CNC(=O)CNC(=O)CN,25.0,100,87,75,Green,Fabric Alkaline Protease,95,1.6,9,99,fabric_laundry
+Esperase (protease thermostable),NC(=O)CNC(=O)CNC(=O)CN,24.0,100,86,78,Green,Fabric Thermostable Protease,95,1.6,9,99,fabric_laundry
+Buzyme (biosurfactant enzyme),NC(=O)CNC(=O)CN,22.0,100,84,82,Green,Fabric Enzyme/Surfactant,95,1.5,9,99,fabric_laundry
+Dequest 2000 (ATMP),NCP(=O)(O)O,5.5,0,80,520,Amber,Fabric Scale Inhibitor,72,2.8,5,0,fabric_laundry
+Acusol 445 (polyacrylate),OC(=O)C=C,7.0,0,79,340,Green,Fabric Dispersant Polymer,74,2.7,7,0,fabric_laundry
+Sokalan CP5 (copolymer),OC(=O)C=C,6.5,0,78,360,Green,Fabric Soil Anti-redeposition,74,2.7,7,0,fabric_laundry
+Divergan HM (polyvinylimidazole),C=CN1C=NC=C1,8.5,0,77,280,Green,Fabric Dye Transfer Inhibitor,72,2.9,7,0,fabric_laundry
+Polyvinylpyrrolidone (fabric PVP),C1CC(=O)NC1,7.5,0,77,320,Green,Fabric Dye Transfer Inhibitor,70,3.0,7,0,fabric_laundry
+Carboxy Methyl Cellulose (laundry),OCC1OC(O)C(OCC(=O)[O-])C(O)C1O,4.8,100,75,480,Green,Fabric Anti-greying Agent,94,1.2,9,99,fabric_laundry
+Polyethylene Glycol 1500 (fabric),OCCOCCO,4.5,0,73,440,Green,Fabric Binder/Coupling,78,2.4,7,0,fabric_laundry
+Quaternary Silicone (fabric),C[Si](C)(O)[Si](C)(C)CCCN(C)C,14.5,40,84,180,Green,Fabric Premium Softener,70,3.5,6,38,fabric_laundry
+Microencapsulated Fragrance,CC1=CCC(CC1)C(C)=C,15.0,85,76,170,Green,Fabric Long-lasting Fragrance,86,2.0,7,83,fabric_laundry
+Photocatalytic TiO2 (fabric),O=[Ti]=O,8.5,0,79,220,Green,Fabric Self-cleaning Additive,99,0.5,9,0,fabric_laundry
+Silver Zeolite (antimicrobial),O=[Al]O[Si](=O)O,28.0,0,82,120,Green,Fabric Antimicrobial Additive,90,1.5,8,0,fabric_laundry
