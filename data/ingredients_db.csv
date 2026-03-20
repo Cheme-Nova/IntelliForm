@@ -1033,3 +1033,166 @@ Quaternary Silicone (fabric),C[Si](C)(O)[Si](C)(C)CCCN(C)C,14.5,40,84,180,Green,
 Microencapsulated Fragrance,CC1=CCC(CC1)C(C)=C,15.0,85,76,170,Green,Fabric Long-lasting Fragrance,86,2.0,7,83,fabric_laundry
 Photocatalytic TiO2 (fabric),O=[Ti]=O,8.5,0,79,220,Green,Fabric Self-cleaning Additive,99,0.5,9,0,fabric_laundry
 Silver Zeolite (antimicrobial),O=[Al]O[Si](=O)O,28.0,0,82,120,Green,Fabric Antimicrobial Additive,90,1.5,8,0,fabric_laundry
+Tributyl Phosphate (defoamer),CCCCOP(=O)(OCCCC)OCCCC,6.5,0,82,320,Amber,Industrial Defoamer,72,3.0,5,0,industrial
+Polydimethylsiloxane (defoamer),C[Si](C)(C)O[Si](C)(C)C,8.5,0,84,280,Green,Industrial Defoamer,68,3.6,7,0,industrial
+Vegetable Oil Defoamer (industrial),CCCCCCCCCCCCCCCCCC(=O)OCC(O)CO,5.2,95,80,360,Green,Industrial Bio-Defoamer,91,1.5,8,93,industrial
+EO/PO Block Copolymer Defoamer,CC(O)COC(C)CO,7.5,0,81,280,Green,Industrial Defoamer,78,2.5,7,0,industrial
+Hydrophobic Silica Defoamer,O=[Si]=O,9.5,0,83,220,Green,Industrial Defoamer/Antifoam,99,0.5,9,0,industrial
+Wax Emulsion Defoamer,CCCCCCCCCCCCCCCCCCCCC,5.5,80,79,340,Green,Industrial Defoamer,80,2.2,8,78,industrial
+Mineral Oil Antifoam,CCCCCCCCCCCC,3.5,0,78,480,Green,Industrial Antifoam,75,2.5,7,0,industrial
+Acetylenic Diol Surfactant,OCC(C)(C#C)CC(C)(C)CO,12.5,0,88,180,Green,Industrial Superwetter,82,2.8,7,0,industrial
+Fluorosurfactant (short chain),OCC(F)(F)F,35.0,0,90,95,Amber,Industrial Superwetter/Leveling,55,5.5,4,0,industrial
+Gemini Surfactant,CCCCCCCCCCCC[N+](C)(C)CC[N+](C)(C)CCCCCCCCCCCC,14.5,65,88,160,Green,Industrial Wetting Agent,78,3.0,6,63,industrial
+Sodium Lauryl Sulfate (industrial),CCCCCCCCCCCCCOS(=O)(=O)[O-],3.8,78,85,680,Green,Industrial Wetting Agent,82,2.3,7,76,industrial
+Alkylamine Ethoxylate,CCCCCCCCCCCCNCCOC(C)CO,7.5,72,82,320,Green,Industrial Emulsifier/Wetting,80,2.5,7,70,industrial
+Ethoxylated Castor Oil,CCCCCCCC(O)CCCCCCCC(=O)OCC(O)CO,7.2,88,80,340,Green,Industrial Emulsifier,87,2.0,7,86,industrial
+Ethoxylated Sorbitan Monooleate,CCCCCCCC/C=C\CCCCCCCC(=O)OC1CCOC(CO)CO1,7.8,88,82,300,Green,Industrial Emulsifier,85,2.1,7,86,industrial
+Tall Oil Amine Ethoxylate,CCCCCCCCCCCCCCCC(=O)NCCOC(C)CO,8.5,90,81,260,Green,Industrial Emulsifier,86,1.9,7,88,industrial
+Octyl Phenol Ethoxylate (alt),CCCCCCCCOCCO,6.5,65,80,380,Amber,Industrial Nonionic Surfactant,76,2.8,6,63,industrial
+Alkyl Dimethyl Betaine,CCCCCCCCCCCC[N+](C)(C)CC([O-])=O,5.8,78,83,400,Green,Industrial Amphoteric Surfactant,84,2.2,7,76,industrial
+Sodium Cocoyl Sarcosinate,CCCCCCCCCCCC(=O)N(C)CC(=O)[O-],6.2,85,84,340,Green,Industrial Mild Surfactant,89,1.8,8,83,industrial
+Lauroyl Sarcosine,CCCCCCCCCCCC(=O)N(C)CC(=O)O,5.8,85,83,380,Green,Industrial Corrosion Inhibitor/Surfactant,89,1.8,8,83,industrial
+2-Aminoethanol (MEA industrial),NCCO,1.8,0,75,1600,Amber,Industrial Gas Scrubbing Agent,82,1.8,6,0,industrial
+Diethanolamine (DEA industrial),OCCNCCO,2.2,0,74,1400,Amber,Industrial Gas Scrubbing,78,2.0,6,0,industrial
+Methyldiethanolamine (MDEA),OCCN(C)CCO,3.5,0,76,880,Amber,Industrial Gas Treatment,80,2.0,6,0,industrial
+Potassium Carbonate (industrial),O=C([O-])[O-],0.8,0,78,4000,Green,Industrial pH Adjuster/Stripper,99,0.3,9,5,industrial
+Sodium Metabisulfite (industrial),OS(=O)S(=O)O,1.6,0,74,1400,Green,Industrial Reducing Agent/Preserv,95,0.7,7,0,industrial
+Sodium Thiosulfate,OS(=S)(=O)O,1.8,0,73,1200,Green,Industrial Dechlorination Agent,95,0.6,8,0,industrial
+Hydrogen Peroxide 35% (industrial),OO,1.5,0,86,2400,Green,Industrial Oxidant/Bleach,99,0.4,7,0,industrial
+Peracetic Acid 15% (industrial),CC(=O)OO,2.8,80,89,1200,Amber,Industrial Disinfectant,98,0.8,6,78,industrial
+Sodium Dichloroisocyanurate (NaDCC),ClN1C(=O)NC(=O)N(Cl)C1=O,5.5,0,88,480,Amber,Industrial Sanitizer,72,2.5,5,0,industrial
+Chlorine Dioxide (industrial),Cl=O,4.5,0,90,320,Amber,Industrial Disinfectant/Bleach,99,0.5,5,0,industrial
+Iodine (PVP-I industrial),OI,8.5,0,86,280,Amber,Industrial Biocide/Sanitizer,90,1.5,5,0,industrial
+Benzethonium Chloride,CCCCCCCCCC(C)(C)CC(C)(C)c1ccc(OCCO)cc1,9.5,60,85,220,Amber,Industrial Biocide/Surfactant,68,3.2,4,58,industrial
+Didecyl Dimethyl Ammonium Chloride,CCCCCCCCCC[N+](C)(C)CCCCCCCCCC,8.5,0,86,280,Amber,Industrial Biocide,70,3.0,4,0,industrial
+Alkyl Dimethyl Benzyl Ammonium Cl,CCCCCCCCCCCCCC[N+](C)(C)Cc1ccccc1,7.5,60,84,320,Amber,Industrial Quat Biocide,70,3.1,5,58,industrial
+DBNPA (industrial biocide),BrCC(Br)C#N,12.5,0,85,180,Amber,Industrial Biocide (non-oxidizing),65,3.8,4,0,industrial
+Bronopol,OCC(Br)(CO)N(=O)=O,8.5,0,83,220,Amber,Industrial Biocide,68,3.5,4,0,industrial
+Tetrakis Hydroxymethyl Phosphonium,OCP(CCO)(CCO)CCO,6.5,0,82,280,Amber,Industrial Biocide/Scale Inhib,70,3.0,5,0,industrial
+Zinc Phosphate (corrosion),OP(=O)([O-])[O-],4.5,0,80,380,Green,Industrial Corrosion Inhibitor,90,1.0,7,0,industrial
+Tannin (industrial),OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,6.5,100,79,320,Green,Industrial Bio-Corrosion Inhibitor,91,1.5,8,99,industrial
+Phytic Acid (industrial),OC1C(OP(=O)(O)O)C(OP(=O)(O)O)C(OP(=O)(O)O)C(OP(=O)(O)O)C1OP(=O)(O)O,5.8,100,78,280,Green,Industrial Chelating/Corrosion Inhib,97,0.9,8,99,industrial
+Ascorbic Acid (industrial),OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,4.5,100,77,480,Green,Industrial Reducing Agent/Antioxidant,99,0.8,9,99,industrial
+Oxalic Acid,OC(=O)C(=O)O,2.8,75,80,680,Green,Industrial Descaler/Metal Treatment,90,0.9,7,73,industrial
+Tartaric Acid (industrial),OC(C(O)C(=O)O)C(=O)O,3.2,100,75,580,Green,Industrial Chelating Agent,99,0.5,9,99,industrial
+Acetic Acid (industrial),CC(=O)O,0.9,80,74,4000,Green,Industrial Descaler/pH Adjuster,99,0.5,8,78,industrial
+Formic Acid,OC=O,1.2,70,75,2800,Green,Industrial Descaler/Antibacterial,98,0.6,7,68,industrial
+Nitric Acid (industrial),ON(=O)=O,0.8,0,82,2000,Amber,Industrial Descaler/Passivator,99,0.5,5,0,industrial
+Hydrofluoric Acid (glass etch),F,2.5,0,85,480,Amber,Industrial Etching Agent,99,0.6,3,0,industrial
+Ammonium Bifluoride,FN,3.2,0,82,380,Amber,Industrial Metal Cleaner,97,0.8,4,0,industrial
+Sodium Tripolyphosphate (industrial),OP(=O)(O)OP(=O)(O)OP(=O)(O)O,2.5,0,83,1200,Amber,Industrial Builder/Sequestrant,90,0.9,6,0,industrial
+Tripotassium Phosphate,OP(=O)([O-])[O-],2.8,0,82,1000,Amber,Industrial Builder,99,0.4,8,0,industrial
+Disodium Metasilicate,O=[Si]([O-])[O-],0.95,0,86,7000,Green,Industrial Heavy-Duty Cleaner,99,0.4,8,5,industrial
+Potassium Silicate (industrial),O=[Si]([O-])[O-],1.8,0,84,2400,Green,Industrial Builder/Cleaner,99,0.4,8,0,industrial
+Sodium Orthosilicate,O=[Si]([O-])[O-],2.2,0,85,1800,Green,Industrial Cleaner/Builder,99,0.4,8,0,industrial
+Alkyl Glucoside (industrial C8-C16),CCCCCCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O,5.5,95,84,480,Green,Industrial Bio-Surfactant,94,1.3,9,93,industrial
+Methyl Esters Sulfonate (MES),CCCCCCCCCCCCCC(S(=O)(=O)[O-])C(=O)OC,4.8,90,85,420,Green,Industrial Bio-Surfactant,88,1.7,8,88,industrial
+Secondary Alkane Sulfonate (SAS),CCCCCCCCCCCCC(S(=O)(=O)[O-])CCCCCC,4.2,72,84,520,Green,Industrial Anionic Surfactant,82,2.2,7,70,industrial
+Alpha Olefin Sulfonate (AOS),CCCCCCCCCCCC=CCS(=O)(=O)[O-],4.5,72,85,480,Green,Industrial Anionic Surfactant,83,2.2,7,70,industrial
+Fatty Acid Methyl Ester (FAME),CCCCCCCCCCCCCCCCCC(=O)OC,2.5,97,82,1800,Green,Industrial Bio-Solvent/Degreaser,95,0.8,8,95,industrial
+Terpene Blend (bio),CC1=CCC(CC1)C(C)=C,4.2,100,85,680,Green,Industrial Bio-Solvent Blend,93,1.1,7,99,industrial
+Propylene Glycol Phenyl Ether,CC(COc1ccccc1)O,6.8,70,80,320,Green,Industrial Coupling/Cosolvent,82,2.3,7,68,industrial
+Diethylene Glycol Monobutyl Ether,CCCCOCCOCCCO,5.5,0,80,400,Green,Industrial Coupling Solvent,80,2.2,7,0,industrial
+Benzyl Glycol Ether,OCCOCc1ccccc1,6.2,70,79,340,Green,Industrial Cosolvent,82,2.2,7,68,industrial
+Propylene Glycol Diacetate,CC(OC(C)=O)COC(C)=O,4.5,80,78,420,Green,Industrial Solvent,88,1.8,8,78,industrial
+Dimethyl Isosorbide,C1CO[C@@H]2CO[C@@H]1O2,8.5,100,81,280,Green,Industrial Bio-Solvent/Penetrant,98,0.7,9,99,industrial
+Ethyl Acetate (industrial),CCOC(C)=O,2.0,85,80,2800,Green,Industrial Solvent,99,0.7,9,83,industrial
+Isopropyl Acetate (industrial),CC(OC(C)=O)C,2.8,80,79,1200,Green,Industrial Solvent,96,0.9,8,78,industrial
+n-Propyl Acetate (industrial),CCCOC(C)=O,2.5,80,79,1400,Green,Industrial Solvent,97,0.8,8,78,industrial
+Encapsulated Vitamin A,CC1=C(\C=C\C(=C\C=C\C(=C\CO)C)C)C(C)(C)CCC1,35.0,90,80,65,Green,Food Microencapsulated Active,86,2.4,7,88,food
+Encapsulated Vitamin D3,C1CCC2(CC1)CCCC3=CC(=C)CCC23,45.0,90,80,50,Green,Food Microencapsulated Active,87,2.5,7,86,food
+Encapsulated Omega-3,CCCC=CC=CC=CC=CC=CCCCCCC(=O)O,28.0,100,79,80,Green,Food Microencapsulated Oil,89,2.0,8,99,food
+Spray-Dried Probiotic (L. acidophilus),NC(=O)CNC(=O)CN,45.0,100,80,45,Green,Food Probiotic Active,95,1.5,9,99,food
+Spray-Dried Probiotic (B. longum),NC(=O)CNC(=O)CN,48.0,100,80,42,Green,Food Probiotic Active,95,1.5,9,99,food
+Spray-Dried Probiotic (L. rhamnosus),NC(=O)CNC(=O)CN,50.0,100,80,40,Green,Food Probiotic Active,95,1.5,9,99,food
+Fructooligosaccharides (FOS),OCC1OC(OC2C(CO)OC(OCC3OC(O)C(O)C3O)C2O)C(O)C1O,8.5,100,73,320,Green,Food Prebiotic,98,0.8,9,99,food
+Galactooligosaccharides (GOS),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,9.5,100,73,280,Green,Food Prebiotic,98,0.8,9,99,food
+Lactulose,OCC1OC(OC2C(O)C(O)C(CO)O2)C(O)C(O)C1O,12.0,100,72,180,Green,Food Prebiotic/Laxative,99,0.8,9,99,food
+Xylooligosaccharides (XOS),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,15.0,100,73,160,Green,Food Prebiotic,97,0.9,9,99,food
+Isomalto-oligosaccharides (IMO),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,6.5,100,72,320,Green,Food Prebiotic/Sweetener,98,0.8,9,99,food
+Mannan Oligosaccharides (MOS),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,12.0,100,73,200,Green,Food Prebiotic,97,0.9,9,99,food
+Arachidic Acid (food),CCCCCCCCCCCCCCCCCCCC(=O)O,8.5,95,74,180,Green,Food Fatty Acid/Emollient,90,1.6,8,93,food
+Behenic Acid (food),CCCCCCCCCCCCCCCCCCCCCC(=O)O,9.5,90,74,160,Green,Food Fatty Acid,88,1.8,8,88,food
+Capric Acid (food),CCCCCCCCCC(=O)O,4.2,95,75,480,Green,Food Fatty Acid/Antimicrobial,93,1.1,8,93,food
+Caprylic Acid (food),CCCCCCCC(=O)O,4.8,95,76,420,Green,Food Fatty Acid/Antimicrobial,94,1.1,8,93,food
+Medium Chain Fatty Acid Blend,CCCCCCCC(=O)O,5.5,98,80,360,Green,Food MCT Blend,93,1.2,8,96,food
+Conjugated Linoleic Acid (CLA),CCCCCC/C=C\C=C/CCCCCCCC(=O)O,28.0,100,79,80,Green,Food Bioactive FA,91,1.8,8,99,food
+Phytosterols,CC(C)CCC[C@@H](C)[C@H]1CCC2C3CC=C4C[C@@H](O)CCC4(C)C3CCC12C,22.0,100,78,120,Green,Food Cholesterol-lowering Active,89,2.0,8,99,food
+Plant Sterol Esters,CC(C)CCC[C@@H](C)[C@H]1CCC2C3CC=C4C[C@@H](OC(=O)CCCCCCCCC=C)CCC4(C)C3CCC12C,28.0,100,79,90,Green,Food Functional Lipid,89,2.1,8,99,food
+Lycopene (natural),CC(C)=CCC/C(=C/C=C/C(=C/C=C/C(=C/C=C/C=C(\C)/C=C/C=C(\C)/C=C/C1=C(C)CCCC1(C)C)C)C)C,85.0,100,79,25,Green,Food Natural Antioxidant Color,88,2.8,8,99,food
+Lutein (natural),CC(C)=CCC/C(=C/C=C/C(=C/C=C/C=C(\C)/C=C/C=C(\C)/C=C/C1=C(C)C(O)CC(C)(C)C1)C)C,95.0,100,79,20,Green,Food Natural Color/Eye Health,88,2.9,8,99,food
+Zeaxanthin (natural),CC(C)=CCC/C(=C/C=C/C(=C/C=C/C=C(\C)/C=C/C=C(\C)/C=C/C1=C(C)C(O)CC(C)(C)C1)C)C,110.0,100,79,15,Green,Food Natural Color/Antioxidant,88,2.9,8,99,food
+Astaxanthin (food),CC1=C(C(=O)/C=C/C(=C/C=C/C(=C/C=C/C=C(\C)/C=C/C=C(\C)/C=C/C2=C(C)C(=O)CC(O)C2(C)C)C)C)C(O)CC1(C)C,380.0,100,80,8,Green,Food Natural Color/Antioxidant,89,2.8,8,99,food
+Carmine (cochineal),OC1=C2C(=CC(=O)C2=C(O)C(=C1C(=O)O)O)C1=CC=CC=C1,45.0,90,76,50,Amber,Food Natural Red Color,85,2.5,6,88,food
+Chlorophyll (natural),OC(=O)CCC1=C2N=C1CC1=CC(=C(C3=CC4=N[Mg]5N=C4CC3=C21)C(=O)OC)C=C1,28.0,100,75,80,Green,Food Natural Green Color,90,1.8,8,99,food
+Grape Skin Extract,OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,18.5,100,76,130,Green,Food Natural Purple Color/Antioxidant,93,1.5,8,99,food
+Elderberry Extract,OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,22.0,100,76,110,Green,Food Natural Color/Antioxidant,93,1.5,8,99,food
+Red Beet Powder,OCC(O)CO,8.5,100,74,280,Green,Food Natural Red Color/Functional,95,1.1,9,99,food
+Safflower Extract,CC1=C(C(=O)/C=C/C(=C/C=C/C(=C/C=C/C=C(\C)/C=C/C=C(\C)/C=C/C1=O)C)C)C,22.0,100,75,110,Green,Food Natural Yellow Color,91,1.7,8,99,food
+Marigold Extract (lutein source),CC(C)=CCC/C(=C/C=C/C(=C/C=C/C=C(\C)/C=C/C=C(\C)/C=C/C1=C(C)C(O)CC(C)(C)C1)C)C,25.0,100,76,95,Green,Food Natural Color/Nutraceutical,91,1.7,8,99,food
+Sodium Alginate (bread),OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,7.8,100,73,280,Green,Food Bread Improver/Stabilizer,96,1.0,9,99,food
+Ascorbic Acid (bread improver),OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,5.5,100,76,380,Green,Food Dough Conditioner/Oxidant,99,0.8,9,99,food
+Azodicarbonamide (ADA) alt,NC(=O)N=NC(N)=O,3.5,0,78,480,Amber,Food Dough Conditioner,78,2.0,6,0,food
+Ammonium Sulfate (bread),OS(=O)(=O)O,0.8,0,71,2200,Green,Food Yeast Nutrient,99,0.4,8,0,food
+Amylase (bread),OCC1OC(O)C(O)C(O)C1O,18.0,100,84,100,Green,Food Bread Improver Enzyme,96,1.4,9,99,food
+Xylanase (bread),OCC1OC(O)C(O)C(O)C1O,20.0,100,83,90,Green,Food Bread Improver Enzyme,96,1.4,9,99,food
+Lipase (bread),CCCCCCCCCCCCCCCC(=O)O,22.0,100,84,80,Green,Food Bread Improver Enzyme,94,1.7,9,99,food
+Glucose Oxidase (bread),OCC1OC(O)C(O)C(O)C1O,28.0,100,83,65,Green,Food Dough Strengthening Enzyme,95,1.6,9,99,food
+Transglutaminase (food),NC(=O)CNC(=O)CN,45.0,100,84,45,Green,Food Protein Cross-linking Enzyme,94,1.7,9,99,food
+Lipoxygenase (bread),CCCCCC/C=C\C/C=C\CCCCCCCC(=O)O,32.0,100,82,55,Green,Food Bleaching/Dough Enzyme,93,1.8,8,99,food
+Gum Tragacanth (food),OCC1OC(O)C(O)C(O)C1O,22.0,100,70,120,Green,Food Thickener/Stabilizer,96,1.1,9,99,food
+Dammar Gum,OCC1OC(O)C(O)C(O)C1O,18.0,100,71,130,Green,Food Glazing Agent,88,2.0,8,99,food
+Shellac (food grade),OC(=O)c1ccc(O)cc1,20.0,100,76,120,Green,Food Glazing Agent/Film,88,2.0,8,99,food
+Carnauba Wax (food grade),CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OC,9.5,100,74,220,Green,Food Glazing Agent,84,2.4,9,99,food
+Beeswax (food grade),CCCCCCCCCCCCCCCCCCCCCCCCCCCC(=O)OCCCCCCCCCCCCCCCCCCCCCCCCCCC,13.0,100,74,180,Green,Food Glazing/Coating Agent,85,2.2,9,99,food
+Microcrystalline Wax (food),CCCCCCCCCCCCCCCCCCCCC,5.5,0,73,360,Green,Food Glazing Agent,66,3.4,8,0,food
+Mineral Oil (food grade),CCCCCCCCCCCC,4.0,0,73,420,Green,Food Release Agent/Glazing,65,3.5,8,0,food
+Acetylated Starch,OCC1OC(OC(C)=O)C(O)C(O)C1O,4.5,95,72,520,Green,Food Modified Starch,94,1.0,9,93,food
+Octenyl Succinylated Starch,OCC1OC(OC(=O)CC=C)C(O)C(O)C1O,5.2,95,74,440,Green,Food Emulsifying Starch,94,1.1,9,93,food
+Cross-linked Starch,OCC1OC(O)C(O)C(O)C1O,3.8,95,73,580,Green,Food Stabilized Starch,95,0.9,9,93,food
+Hydroxypropyl Starch (food),OCC1OC(OCC(O)CO)C(O)C(O)C1O,4.2,95,72,520,Green,Food Modified Starch,96,0.9,9,93,food
+Oxidized Starch,OCC1OC(O)C(O)C(O)C1O,3.5,95,71,600,Green,Food Modified Starch,95,0.9,9,93,food
+Ethylhydroxyethyl Cellulose (EHEC),OCC1OC(OCC)C(O)C(O)C1O,8.5,100,73,280,Green,Food Thickener,94,1.2,9,99,food
+Curdlan,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,22.0,100,73,130,Green,Food Gelling Agent (heat-set),97,1.1,9,99,food
+Welan Gum,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,25.0,100,73,110,Green,Food Stabilizer,97,1.1,9,99,food
+Rhamsan Gum,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,28.0,100,73,100,Green,Food Stabilizer,97,1.1,9,99,food
+Diutan Gum,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,32.0,100,74,85,Green,Food Stabilizer/Suspending Agent,97,1.1,9,99,food
+Levan (bacterial),OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,18.5,100,73,130,Green,Food Prebiotic/Thickener,97,1.0,9,99,food
+Succinoglycan,OCC1OC(OC2C(CO)OC(O)C(O)C2O)C(O)C(O)C1O,22.0,100,73,120,Green,Food Thickener/Stabilizer,97,1.1,9,99,food
+Reuterin (3-HPA),OCC=O,35.0,100,79,60,Green,Food Natural Antimicrobial,96,1.2,8,99,food
+Lysozyme (food),NC(=O)CNC(=O)CNC(=O)CN,45.0,100,81,50,Green,Food Natural Antimicrobial Enzyme,93,1.8,9,99,food
+Lactoferrin,NC(=O)CNC(=O)CNC(=O)CN,85.0,95,81,25,Green,Food Antimicrobial/Functional,91,2.2,8,93,food
+Epsilon Polylysine,NC(CCCCN)C(=O)NC(CCCCN)C(=O)O,55.0,100,82,40,Green,Food Natural Antimicrobial,93,1.8,8,99,food
+Pediocin,NC(=O)CNC(=O)CNC(=O)CN,65.0,100,81,35,Green,Food Bacteriocin Preservative,93,1.8,8,99,food
+Rosemary Oleoresin Extract,CC1(C)CCCC2(C)C1CC=C(C2=O)C(C)C,24.0,100,76,90,Green,Food Antioxidant Extract,91,1.8,8,99,food
+Green Tea Polyphenols,OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,30.0,100,78,75,Green,Food Antioxidant Extract,93,1.6,9,99,food
+Grape Seed Extract (food),OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,25.0,100,78,85,Green,Food Antioxidant Extract,93,1.5,8,99,food
+Pomegranate Extract (food),OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,28.0,100,78,80,Green,Food Antioxidant Active,93,1.6,9,99,food
+Acerola Extract (Vitamin C),OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,18.5,100,77,120,Green,Food Natural Vitamin C Source,97,1.0,9,99,food
+Sea Buckthorn Extract (food),CCCCCCCC/C=C\CCCCCCCC(=O)OCC(O)CO,32.0,100,79,65,Green,Food Functional Extract,89,2.1,8,99,food
+Moringa Extract (food),NC(=O)CNC(=O)CNC(=O)CN,15.0,100,77,150,Green,Food Functional Extract/Protein,94,1.4,9,99,food
+Chlorella Extract,NC(=O)CNC(=O)CNC(=O)CN,28.0,100,78,80,Green,Food Protein/Chlorophyll Source,93,1.5,9,99,food
+Spirulina Powder,NC(=O)CNC(=O)CNC(=O)CN,32.0,100,79,70,Green,Food Protein/Color/Antioxidant,93,1.6,9,99,food
+Pea Starch,OCC1OC(O)C(O)C(O)C1O,3.2,100,71,680,Green,Food Clean-Label Thickener,97,0.8,9,99,food
+Tapioca Starch,OCC1OC(O)C(O)C(O)C1O,2.8,100,71,780,Green,Food Clean-Label Thickener,98,0.7,9,99,food
+Arrowroot Starch,OCC1OC(O)C(O)C(O)C1O,4.5,100,72,480,Green,Food Clean-Label Thickener,98,0.8,9,99,food
+Sago Starch,OCC1OC(O)C(O)C(O)C1O,3.5,100,71,580,Green,Food Thickener,98,0.8,9,99,food
+Mung Bean Starch,OCC1OC(O)C(O)C(O)C1O,4.8,100,72,420,Green,Food Starch/Thickener,97,0.8,9,99,food
+Bamboo Shoot Extract,OCC(O)CO,8.5,100,74,280,Green,Food Functional Ingredient,95,1.1,9,99,food
+Mushroom Extract (beta-glucan),OCC1OC(OC2C(O)C(O)C(OCC3OC(O)C(O)C(O)C3O)C(O)C2O)C(O)C(O)C1O,22.0,100,76,110,Green,Food Immunomodulatory Active,96,1.2,9,99,food
+Shiitake Extract,OCC1OC(O)C(O)C(O)C1O,18.5,100,76,125,Green,Food Functional Extract,96,1.2,9,99,food
+Reishi Extract,OCC1OC(O)C(O)C(O)C1O,35.0,100,77,65,Green,Food Adaptogenic Extract,95,1.4,9,99,food
+Ashwagandha Extract,CC(C)(O)C1CCC2(C)C1CC=C1C2CCC2(C)C1CCC2=O,22.0,100,77,105,Green,Food Adaptogenic Active,92,1.7,8,99,food
+Rhodiola Extract,OC(=O)c1ccc(O)cc1,28.0,100,77,80,Green,Food Adaptogenic Active,91,1.8,8,99,food
+Maca Extract,NC(=O)CNC(=O)CN,15.0,100,76,150,Green,Food Functional Extract,94,1.4,9,99,food
+Baobab Powder,OC(=O)CC(O)(CC(=O)O)C(=O)O,12.0,100,75,180,Green,Food Functional Powder/Fiber,95,1.2,9,99,food
+Acai Extract,OC1=CC(=C(O)C=C1O)C1OC2=CC(O)=CC(O)=C2C(=O)C1O,28.0,100,78,80,Green,Food Antioxidant/Color,93,1.6,9,99,food
+Goji Extract,OCC(O)C(O)C(O)C(O)C(=O)O,22.0,100,76,105,Green,Food Functional Extract,93,1.5,8,99,food
+Noni Extract (food),OCC(O)C(O)C(O)C(O)C(=O)O,16.0,100,75,140,Green,Food Functional Extract,93,1.4,8,99,food
+Mangosteen Extract,OC1=C2C(=CC(=C1)O)OC1=C(C2=O)C=CC=C1O,35.0,100,79,65,Green,Food Xanthone Antioxidant,91,1.8,8,99,food
+Amla Extract (Indian Gooseberry),OC[C@H](O)[C@H]1OC(=O)C(O)=C1O,18.0,100,78,125,Green,Food Natural Vitamin C/Antioxidant,95,1.3,9,99,food
+Black Garlic Extract,OCC(O)CO,12.5,100,76,175,Green,Food Functional Antimicrobial,93,1.4,8,99,food
+Turmeric Powder (food grade),COc1cc(/C=C/C(=O)/C=C(/O)c2ccc(O)c(OC)c2)ccc1O,8.5,100,76,280,Green,Food Natural Color/Anti-inflam,90,1.9,8,99,food
+Ginger Extract (food),CC(=CCO)CCC(=O)c1ccc(O)c(OC)c1,12.0,100,77,200,Green,Food Functional Flavor Active,90,1.8,7,99,food
+Cinnamon Extract (food),COc1ccc(/C=C/C=O)cc1,10.5,100,77,220,Green,Food Antimicrobial Flavor Active,90,1.8,7,99,food
+Black Pepper Extract (food),O=C(/C=C/C=C/c1ccc2c(c1)OCO2)N1CCCCC1,18.0,100,78,130,Green,Food Bioavailability Enhancer,89,2.0,7,99,food
