@@ -62,9 +62,12 @@ if "vertical_reg"     not in st.session_state: st.session_state.vertical_reg    
 if "pharma_result"    not in st.session_state: st.session_state.pharma_result   = None
 if "compare_blend"    not in st.session_state: st.session_state.compare_blend  = None
 
-@st.cache_data
+@st.cache_data(ttl=3600)
 def load_db():
     df = pd.read_csv("data/ingredients_db.csv")
+    # Ensure Vertical column exists (v4+ database)
+    if "Vertical" not in df.columns:
+        df["Vertical"] = "personal_care"  # fallback for old DB
     return enrich_db(df)
 
 @st.cache_resource
@@ -183,11 +186,18 @@ with st.sidebar:
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11 = st.tabs([
-    "🚀 Agentic Swarm","🌿 EcoMetrics","📋 Regulatory",
+# Dynamic tabs — show Pharma Deep Dive only when pharma vertical selected
+_base_tabs = ["🚀 Agentic Swarm","🌿 EcoMetrics","📋 Regulatory",
     "📈 Pareto Frontier","🔬 Model Card","🧪 Stability & Viscosity",
-    "🌍 Carbon Credits","🔄 Blend Comparison","📊 ROI & History","📄 Proposal",
-    "💊 Pharma Deep Dive"])
+    "🌍 Carbon Credits","🔄 Blend Comparison","📊 ROI & History","📄 Proposal"]
+_show_pharma = selected_vertical == "pharmaceutical"
+if _show_pharma:
+    _all_tabs = _base_tabs + ["💊 Pharma Deep Dive"]
+    t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11 = st.tabs(_all_tabs)
+else:
+    _all_tabs = _base_tabs
+    t1,t2,t3,t4,t5,t6,t7,t8,t9,t10 = st.tabs(_all_tabs)
+    t11 = None
 
 # ── TAB 1: SWARM ─────────────────────────────────────────────────────────────
 with t1:
@@ -708,84 +718,63 @@ Cost: ${latest['cost']}/kg · Bio: {latest['bio']}% · Perf: {latest['perf']}/10
             with st.expander("Preview"):
                 st.markdown(md)
 
-# ── TAB 11: PHARMA DEEP DIVE ─────────────────────────────────────────────────
-with t11:
-    st.subheader("💊 Pharmaceutical Deep Dive")
-    st.caption("Full ICH-compliant formulation intelligence — BCS classification, "
-               "API-excipient compatibility, stability zones, dosage form engineering, "
-               "regulatory pathway guidance.")
+# ── TAB 11: PHARMA DEEP DIVE (only shown when pharma vertical selected) ───────
+if t11:
+    with t11:
+        st.subheader("💊 Pharmaceutical Deep Dive")
+        st.caption("Full ICH-compliant formulation intelligence — BCS classification, "
+                   "API-excipient compatibility, ICH stability zones, dosage form engineering, "
+                   "regulatory pathway guidance.")
 
-    if selected_vertical != "pharmaceutical":
-        st.info("Switch to **Pharmaceutical** vertical in the sidebar to activate pharma intelligence.")
-    else:
         result = st.session_state.last_result
         if not result:
-            st.info("Run a pharmaceutical formulation first.")
+            st.info("Run a pharmaceutical formulation first using the Pharmaceutical vertical.")
         else:
-            # ── Pharma Deep Dive Controls ──
+            # ── Controls ──
             with st.expander("⚙️ Configure Deep Dive", expanded=True):
                 pc1, pc2, pc3 = st.columns(3)
                 with pc1:
-                    bcs_input = st.selectbox(
-                        "BCS Classification",
-                        ["I — High Sol / High Perm",
-                         "II — Low Sol / High Perm",
-                         "III — High Sol / Low Perm",
-                         "IV — Low Sol / Low Perm"],
-                        index=0,
-                        help="Biopharmaceutics Classification System — determines formulation strategy"
-                    )
+                    bcs_input = st.selectbox("BCS Classification",
+                        ["I — High Sol / High Perm","II — Low Sol / High Perm",
+                         "III — High Sol / Low Perm","IV — Low Sol / Low Perm"],
+                        index=0, help="Biopharmaceutics Classification System")
                     bcs_class = bcs_input.split(" ")[0]
                 with pc2:
-                    dosage_form_input = st.selectbox(
-                        "Target Dosage Form",
+                    dosage_form_input = st.selectbox("Target Dosage Form",
                         list(DOSAGE_FORMS.keys()),
-                        format_func=lambda x: DOSAGE_FORMS[x].form,
-                        index=0,
-                    )
+                        format_func=lambda x: DOSAGE_FORMS[x].form, index=0)
                 with pc3:
-                    is_generic = st.checkbox("Generic (ANDA) pathway", value=False)
+                    is_generic   = st.checkbox("Generic (ANDA) pathway", value=False)
                     is_pediatric = st.checkbox("Pediatric formulation", value=False)
-                    target_markets = st.multiselect(
-                        "Target markets",
-                        ["USA", "EU", "India", "Japan", "Southeast Asia", "Sub-Saharan Africa"],
-                        default=["USA", "EU"],
-                    )
+                    target_markets = st.multiselect("Target markets",
+                        ["USA","EU","India","Japan","Southeast Asia","Sub-Saharan Africa"],
+                        default=["USA","EU"])
 
             if st.button("🔬 Run Pharma Deep Dive", type="primary", use_container_width=True):
                 with st.spinner("Running ICH analysis..."):
                     v_db = filter_db_by_vertical(ingredients_db, "pharmaceutical")
                     pharma_result = run_pharma_deep_dive(
-                        blend=result.blend,
-                        db=v_db,
-                        bcs_class=bcs_class,
-                        dosage_form=dosage_form_input,
-                        target_markets=target_markets,
-                        is_generic=is_generic,
-                        is_pediatric=is_pediatric,
-                    )
+                        blend=result.blend, db=v_db, bcs_class=bcs_class,
+                        dosage_form=dosage_form_input, target_markets=target_markets,
+                        is_generic=is_generic, is_pediatric=is_pediatric)
                     st.session_state.pharma_result = pharma_result
 
             pharma = st.session_state.pharma_result
             if pharma:
-                # ── BCS Profile ──
+                # BCS Profile
                 st.divider()
                 st.subheader(f"📊 BCS Class {pharma.bcs_class} — {pharma.bcs_profile.solubility} Solubility / {pharma.bcs_profile.permeability} Permeability")
-                bcs_col1, bcs_col2 = st.columns([2,1])
-                with bcs_col1:
+                bc1, bc2 = st.columns([2,1])
+                with bc1:
                     st.info(pharma.bcs_profile.formulation_strategy)
-                with bcs_col2:
+                with bc2:
                     st.metric("Bioavailability Risk", pharma.bcs_profile.bioavailability_risk)
-                    st.metric("IVIVC Potential", pharma.bcs_profile.ivivc_potential.split("—")[0].strip())
-                    st.metric("ICM Score", f"{pharma.icm_score:.0f}/100",
-                              help="IntelliForm Complexity Metric — higher = more complex formulation")
+                    st.metric("IVIVC", pharma.bcs_profile.ivivc_potential.split("—")[0].strip())
+                    st.metric("ICM Score", f"{pharma.icm_score:.0f}/100")
+                st.caption("**Enabling excipients for this BCS class:** " +
+                           " · ".join(pharma.bcs_profile.enabling_excipients[:4]))
 
-                # BCS enabling excipients
-                st.caption("**Recommended enabling excipients for this BCS class:**")
-                for exc in pharma.bcs_profile.enabling_excipients:
-                    st.caption(f"  • {exc}")
-
-                # ── Dosage Form ──
+                # Dosage Form
                 st.divider()
                 st.subheader(f"💊 {pharma.recommended_dosage_form}")
                 df_prof = pharma.dosage_form_profile
@@ -793,114 +782,93 @@ with t11:
                     st.caption(df_prof.description)
                     d1, d2 = st.columns(2)
                     with d1:
-                        st.subheader("Typical Composition Ranges")
-                        for func, (lo, hi) in df_prof.typical_composition.items():
-                            st.caption(f"**{func}:** {lo:.0f}–{hi:.0f}%")
+                        st.write("**Typical Composition**")
+                        for func,(lo,hi) in df_prof.typical_composition.items():
+                            st.caption(f"• {func}: {lo:.0f}–{hi:.0f}%")
                     with d2:
-                        st.subheader("Critical Quality Attributes")
+                        st.write("**Critical Quality Attributes**")
                         for cqa in df_prof.critical_quality_attributes:
                             st.caption(f"• {cqa}")
-                    st.info(f"**Manufacturing Process:** {df_prof.manufacturing_process}")
-
+                    st.info(f"**Process:** {df_prof.manufacturing_process}")
                 if pharma.alternative_forms:
-                    st.caption(f"**Alternative forms:** {' · '.join(pharma.alternative_forms)}")
+                    st.caption("**Alternative forms:** " + " · ".join(pharma.alternative_forms))
 
-                # ── Manufacturing Route ──
+                # Manufacturing Route
                 st.divider()
-                st.subheader(f"🏭 Recommended Manufacturing Route: {pharma.manufacturing_route}")
+                st.subheader(f"🏭 {pharma.manufacturing_route}")
                 st.info(pharma.manufacturing_rationale)
 
-                # ── API-Excipient Compatibility ──
+                # Compatibility
                 st.divider()
-                st.subheader("⚗️ API-Excipient Compatibility Analysis")
+                st.subheader("⚗️ API-Excipient Compatibility")
                 st.caption(pharma.compatibility_summary)
-
                 if pharma.compatibility_results:
-                    compat_data = []
-                    for c in pharma.compatibility_results:
-                        compat_data.append({
-                            "Ingredient": c.ingredient,
-                            "Severity": c.severity,
-                            "Interaction": c.interaction_type,
-                            "Mechanism": c.mechanism[:80] + "..." if len(c.mechanism) > 80 else c.mechanism,
-                            "Mitigation": c.mitigation[:80] + "..." if len(c.mitigation) > 80 else c.mitigation,
-                        })
-                    import pandas as pd
-                    st.dataframe(pd.DataFrame(compat_data), use_container_width=True, hide_index=True)
-
+                    compat_df = pd.DataFrame([{
+                        "Ingredient": c.ingredient,
+                        "Severity": c.severity,
+                        "Interaction": c.interaction_type,
+                        "Mechanism": c.mechanism[:70]+"..." if len(c.mechanism)>70 else c.mechanism,
+                        "Mitigation": c.mitigation[:70]+"..." if len(c.mitigation)>70 else c.mitigation,
+                    } for c in pharma.compatibility_results])
+                    st.dataframe(compat_df, use_container_width=True, hide_index=True)
                     for c in pharma.compatibility_results:
                         if c.severity == "Severe":
-                            st.error(f"🚨 **{c.ingredient}** — {c.mechanism}")
-                            st.error(f"   Mitigation: {c.mitigation}")
+                            st.error(f"🚨 {c.ingredient}: {c.mechanism}")
                         elif c.severity == "Moderate":
-                            st.warning(f"⚠️ **{c.ingredient}** — {c.mechanism[:120]}")
+                            st.warning(f"⚠️ {c.ingredient}: {c.mechanism[:100]}")
                 else:
-                    st.success("✅ No significant API-excipient incompatibilities detected in this blend.")
+                    st.success("✅ No significant incompatibilities detected.")
 
-                # ── ICH Stability ──
+                # ICH Stability
                 st.divider()
-                st.subheader(f"🌡️ ICH Q1A Stability — Zone {pharma.stability_zone}")
+                st.subheader(f"🌡️ ICH Q1A — Zone {pharma.stability_zone}")
                 if pharma.stability_profile:
                     sp = pharma.stability_profile
-                    s1, s2, s3 = st.columns(3)
+                    s1,s2,s3 = st.columns(3)
                     s1.metric("Long-term", sp.long_term)
                     s2.metric("Accelerated", sp.accelerated)
                     s3.metric("Regions", ", ".join(sp.regions[:2]))
                     st.info(f"**Packaging:** {pharma.packaging_recommendation}")
-                    if sp.intermediate:
-                        st.caption(f"**Intermediate:** {sp.intermediate}")
+                for concern in pharma.stability_concerns:
+                    st.warning(concern)
+                if not pharma.stability_concerns:
+                    st.success("✅ No excipient-driven stability concerns.")
 
-                if pharma.stability_concerns:
-                    st.subheader("⚠️ Stability Concerns")
-                    for concern in pharma.stability_concerns:
-                        st.warning(concern)
-                else:
-                    st.success("✅ No excipient-driven stability concerns identified.")
-
-                # ── Regulatory Pathway ──
+                # Regulatory Pathway
                 st.divider()
                 st.subheader("📋 Regulatory Pathway")
                 if pharma.pathway_profile:
                     rp = pharma.pathway_profile
-                    r1, r2 = st.columns(2)
-                    r1.metric("Pathway", rp.pathway.split("—")[0].strip())
-                    r2.metric("Timeline", rp.timeline)
+                    rp1,rp2 = st.columns(2)
+                    rp1.metric("Pathway", rp.pathway.split("—")[0].strip()[:30])
+                    rp2.metric("Timeline", rp.timeline)
                     st.info(rp.description)
-                    with st.expander("Key Required Studies"):
-                        for study in rp.key_studies:
-                            st.caption(f"• {study}")
-                    with st.expander("Requirements"):
-                        for req in rp.requirements:
-                            st.caption(f"• {req}")
+                    with st.expander("Key Studies Required"):
+                        for s in rp.key_studies: st.caption(f"• {s}")
 
-                # ── Development Risks & Recommendations ──
+                # Risks & Recommendations
                 st.divider()
-                r_col, rec_col = st.columns(2)
-                with r_col:
+                risk_col, rec_col = st.columns(2)
+                with risk_col:
                     st.subheader("⚠️ Development Risks")
-                    if pharma.development_risks:
-                        for risk in pharma.development_risks:
-                            st.error(risk)
-                    else:
-                        st.success("Low development risk profile")
+                    for risk in pharma.development_risks: st.error(risk)
+                    if not pharma.development_risks: st.success("Low risk profile")
                 with rec_col:
                     st.subheader("✅ Recommendations")
-                    for rec in pharma.development_recommendations[:5]:
-                        st.success(rec)
+                    for rec in pharma.development_recommendations[:5]: st.success(rec)
 
-                # ── Excipient Recommendations ──
+                # Excipient Recommendations
                 if pharma.excipient_recommendations:
                     st.divider()
                     st.subheader("💡 Excipient Recommendations")
-                    for exc_rec in pharma.excipient_recommendations:
-                        with st.expander(f"**{exc_rec.function}**"):
-                            e1, e2, e3 = st.columns(3)
-                            e1.metric("Primary Choice", exc_rec.primary_choice[:25])
-                            e2.metric("Alternative 1", exc_rec.alternative_1[:25])
-                            e3.metric("Alternative 2", exc_rec.alternative_2[:25])
-                            st.caption(f"**Rationale:** {exc_rec.rationale}")
-                            st.caption(f"**Typical loading:** {exc_rec.typical_loading}")
-                            st.caption(f"**Compatibility note:** {exc_rec.compatibility_note}")
-
+                    for er in pharma.excipient_recommendations:
+                        with st.expander(f"**{er.function}**"):
+                            ec1,ec2,ec3 = st.columns(3)
+                            ec1.metric("Primary", er.primary_choice[:30])
+                            ec2.metric("Alt 1", er.alternative_1[:30])
+                            ec3.metric("Alt 2", er.alternative_2[:30])
+                            st.caption(f"**Rationale:** {er.rationale}")
+                            st.caption(f"**Loading:** {er.typical_loading}")
+                            st.caption(f"**Note:** {er.compatibility_note}")
 
 st.caption("IntelliForm v1.2 · github.com/chemenova/intelliform · ChemeNova x ChemRich · Makani S.S., ChemRxiv 2026 · NJIT & UIC")
