@@ -1,3 +1,60 @@
+
+"""
+IntelliForm v1.5 — Agentic Green Chemistry Formulation Platform
+ChemeNova LLC x ChemRich Global
+
+New in v1.0:
+  Concentration slider · Blend comparison · Stability & viscosity prediction
+  Carbon credit calculator · Version history · White-label PDF · Email notifications
+  Dynamic reformulation trigger · Multi-LLM support
+"""
+import os
+from datetime import datetime
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from modules.analytics        import track, identify_user, get_session_id
+from modules.llm_parser       import parse_request
+from modules.tiers import get_tier, gate, TIERS
+from modules.certification_oracle import run_certification_oracle, CertificationReport, CERTIFICATION_PROFILES
+from modules.carbon_passport import generate_carbon_passport, passport_to_json
+from modules.memory_network import get_memory_network, FormulationMemoryNetwork
+from modules.reformulation_intelligence import (run_reformulation_intelligence,
+    FAILURE_TYPES, ReformulationReport)
+from modules.optimizer        import run_optimization
+from modules.pareto_optimizer import run_pareto_optimization, pareto_frontier_dataframe
+from modules.agents           import run_agent_swarm
+from modules.chem_utils       import draw_mol, enrich_db
+from modules.ecometrics       import compute_ecometrics, ecometrics_radar_data
+from modules.qsar             import initialize_models, predict_properties, submit_feedback
+from modules.regulatory       import get_blend_report, regulatory_table_df
+from modules.persistence      import (save_project, load_projects, save_booking,
+                                      save_feedback as db_save_feedback,
+                                      is_connected, MIGRATION_SQL)
+from modules.pdf_proposal     import generate_proposal_pdf
+from modules.stability        import predict_stability
+from modules.carbon_credits   import calculate_carbon_credits
+from modules.notifications    import send_pilot_booking_confirmation, send_proposal_email
+# Tier detection
+try:
+    _tier_name = st.secrets.get("INTELLIFORM_TIER", "free")
+except Exception:
+    import os as _os
+    _tier_name = _os.environ.get("INTELLIFORM_TIER", "free")
+TIER = get_tier(_tier_name)
+from modules.verticals import VERTICAL_OPTIONS, get_profile, filter_db_by_vertical, get_vertical_constraints
+from modules.vertical_regulatory import generate_vertical_regulatory_report
+from modules.bayesian_optimizer import run_bayesian_optimization, BayesianState, BAYES_OK
+from modules.pharma import (run_pharma_deep_dive, BCS_STRATEGIES, DOSAGE_FORMS,
+                             REGULATORY_PATHWAYS, ICH_STABILITY_ZONES)
+
+st.set_page_config(page_title="IntelliForm v1.5", page_icon="🧪", layout="wide")
+
 # ── Enterprise UI CSS injection ───────────────────────────────────────────────
 _CSS = """
 <style>
@@ -395,61 +452,6 @@ hr {
 """
 st.markdown(_CSS, unsafe_allow_html=True)
 
-"""
-IntelliForm v1.5 — Agentic Green Chemistry Formulation Platform
-ChemeNova LLC x ChemRich Global
-
-New in v1.0:
-  Concentration slider · Blend comparison · Stability & viscosity prediction
-  Carbon credit calculator · Version history · White-label PDF · Email notifications
-  Dynamic reformulation trigger · Multi-LLM support
-"""
-import os
-from datetime import datetime
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-import streamlit as st
-from dotenv import load_dotenv
-
-load_dotenv()
-
-from modules.analytics        import track, identify_user, get_session_id
-from modules.llm_parser       import parse_request
-from modules.tiers import get_tier, gate, TIERS
-from modules.certification_oracle import run_certification_oracle, CertificationReport, CERTIFICATION_PROFILES
-from modules.carbon_passport import generate_carbon_passport, passport_to_json
-from modules.memory_network import get_memory_network, FormulationMemoryNetwork
-from modules.reformulation_intelligence import (run_reformulation_intelligence,
-    FAILURE_TYPES, ReformulationReport)
-from modules.optimizer        import run_optimization
-from modules.pareto_optimizer import run_pareto_optimization, pareto_frontier_dataframe
-from modules.agents           import run_agent_swarm
-from modules.chem_utils       import draw_mol, enrich_db
-from modules.ecometrics       import compute_ecometrics, ecometrics_radar_data
-from modules.qsar             import initialize_models, predict_properties, submit_feedback
-from modules.regulatory       import get_blend_report, regulatory_table_df
-from modules.persistence      import (save_project, load_projects, save_booking,
-                                      save_feedback as db_save_feedback,
-                                      is_connected, MIGRATION_SQL)
-from modules.pdf_proposal     import generate_proposal_pdf
-from modules.stability        import predict_stability
-from modules.carbon_credits   import calculate_carbon_credits
-from modules.notifications    import send_pilot_booking_confirmation, send_proposal_email
-# Tier detection
-try:
-    _tier_name = st.secrets.get("INTELLIFORM_TIER", "free")
-except Exception:
-    import os as _os
-    _tier_name = _os.environ.get("INTELLIFORM_TIER", "free")
-TIER = get_tier(_tier_name)
-from modules.verticals import VERTICAL_OPTIONS, get_profile, filter_db_by_vertical, get_vertical_constraints
-from modules.vertical_regulatory import generate_vertical_regulatory_report
-from modules.bayesian_optimizer import run_bayesian_optimization, BayesianState, BAYES_OK
-from modules.pharma import (run_pharma_deep_dive, BCS_STRATEGIES, DOSAGE_FORMS,
-                             REGULATORY_PATHWAYS, ICH_STABILITY_ZONES)
-
-st.set_page_config(page_title="IntelliForm v1.5", page_icon="🧪", layout="wide")
 st.markdown("""<style>
 .pareto-rec{background:#1a2e1a;border-left:4px solid #00C853;padding:12px 18px;border-radius:6px;margin-bottom:12px}
 .carbon-card{background:#0a2e1a;border-left:4px solid #059669;padding:12px 18px;border-radius:6px;margin-bottom:12px}
