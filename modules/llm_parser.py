@@ -88,7 +88,7 @@ def _parse_with_anthropic(text: str) -> Optional[ParseResult]:
     try:
         import anthropic
         client = anthropic.Anthropic(api_key=api_key)
-        model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+        model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-5")
         response = client.messages.create(
             model=model,
             max_tokens=300,
