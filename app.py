@@ -167,11 +167,6 @@ t1,t2,t3,t4,t5,t6,t7,t8,t9 = st.tabs([
 with t1:
     if st.button("🚀 Launch Agentic Swarm Optimization",type="primary",use_container_width=True):
 
-        # Gate free tier run limit
-        if not can_run():
-            show_upgrade_banner()
-            st.stop()
-
         with st.spinner("🧠 Parsing…"):
             parsed = parse_request(nl_input)
         st.session_state.last_parsed = parsed
