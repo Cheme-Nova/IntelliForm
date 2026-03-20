@@ -603,7 +603,9 @@ with st.sidebar:
     st.divider()
 
     st.header("⚙️ Optimization")
-    use_pareto = st.radio("Mode",["Single-Objective (fast)","Multi-Objective Pareto"],index=0) == "Multi-Objective Pareto"
+    _opt_mode = st.radio("Mode",["Single-Objective (fast)","Multi-Objective Pareto","Bayesian (GP)"],index=0)
+    use_pareto = _opt_mode == "Multi-Objective Pareto"
+    use_bayes  = _opt_mode == "Bayesian (GP)"
     n_gen = st.slider("Optimization depth",50,200,100,25) if use_pareto else 100
     st.divider()
 
