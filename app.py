@@ -33,6 +33,11 @@ from modules.pdf_proposal     import generate_proposal_pdf
 from modules.stability        import predict_stability
 from modules.carbon_credits   import calculate_carbon_credits
 from modules.notifications    import send_pilot_booking_confirmation, send_proposal_email
+from modules.tiers            import (get_tier, is_free, is_pro, can_run, increment_run_count,
+                                      runs_remaining, show_upgrade_banner, show_watermark,
+                                      tier_badge, gate_pareto, gate_pdf, gate_carbon,
+                                      gate_stability, gate_comparison, gate_llm_switch,
+                                      gate_pilot_booking, show_locked_feature, FREE_RUN_LIMIT)
 
 st.set_page_config(page_title="IntelliForm v1.0", page_icon="🧪", layout="wide")
 st.markdown("""<style>
@@ -86,6 +91,9 @@ h3.metric("Certifications", "EU Ecolabel · EPA · COSMOS")
 mc = st.session_state.model_card
 qsar_ok = mc and mc.sklearn_version != "unavailable"
 h4.metric("Optimization", "NSGA-III Pareto + LP")
+# Tier badge
+st.caption(f"🏷️ **{tier_badge()}** · [Upgrade to Pro](mailto:shehan@chemenova.com?subject=IntelliForm Pro Upgrade)"
+           if is_free() else f"✅ **{tier_badge()}**")
 
 # ── LLM availability detection ────────────────────────────────────────────────
 _available_llms = []
@@ -115,9 +123,14 @@ with st.sidebar:
     st.divider()
 
     st.header("🤖 LLM Provider")
-    selected_llm = st.selectbox("Active model", options=_available_llms, index=0,
-        help="Select which AI model parses your request.")
-    os.environ["LLM_PROVIDER"] = _llm_to_provider.get(selected_llm, "auto")
+    if gate_llm_switch():
+        selected_llm = st.selectbox("Active model", options=_available_llms, index=0,
+            help="Select which AI model parses your request.")
+        os.environ["LLM_PROVIDER"] = _llm_to_provider.get(selected_llm, "auto")
+    else:
+        selected_llm = _available_llms[0]  # Groq only for free
+        os.environ["LLM_PROVIDER"] = "groq"
+        st.caption("⚡ Groq (free tier) · Upgrade to Pro to access Anthropic & OpenAI")
     _provider_info = {
         "groq": "⚡ Fast · Free · Best for most requests",
         "anthropic": "🧠 Best reasoning · Complex multi-constraint requests",
@@ -129,8 +142,14 @@ with st.sidebar:
     st.divider()
 
     st.header("⚙️ Optimization")
-    use_pareto = st.radio("Mode",["Single-Objective (fast)","Multi-Objective Pareto"],index=0) == "Multi-Objective Pareto"
-    n_gen = st.slider("Optimization depth",50,200,100,25) if use_pareto else 100
+    if gate_pareto():
+        use_pareto = st.radio("Mode",["Single-Objective (fast)","Multi-Objective Pareto"],index=0) == "Multi-Objective Pareto"
+        n_gen = st.slider("Optimization depth",50,200,100,25) if use_pareto else 100
+    else:
+        use_pareto = False
+        n_gen = 100
+        st.radio("Mode",["Single-Objective (fast)","🔒 Multi-Objective Pareto (Pro)"],index=0,disabled=True)
+        st.caption("Upgrade to Pro for Pareto optimization")
     st.divider()
 
     st.header("🎛️ Formulation Controls")
@@ -163,11 +182,25 @@ t1,t2,t3,t4,t5,t6,t7,t8,t9 = st.tabs([
 
 # ── TAB 1: SWARM ─────────────────────────────────────────────────────────────
 with t1:
+    # Show run counter for free tier
+    if is_free():
+        remaining = runs_remaining()
+        if remaining > 0:
+            st.caption(f"🆓 Free tier · {remaining} run{'s' if remaining != 1 else ''} remaining this session · [Upgrade to Pro](mailto:shehan@chemenova.com?subject=IntelliForm Pro Upgrade)")
+        else:
+            show_upgrade_banner()
+
     if st.button("🚀 Launch Agentic Swarm Optimization",type="primary",use_container_width=True):
+
+        # Gate free tier run limit
+        if not can_run():
+            show_upgrade_banner()
+            st.stop()
 
         with st.spinner("🧠 Parsing…"):
             parsed = parse_request(nl_input)
         st.session_state.last_parsed = parsed
+        increment_run_count()
 
         with st.expander("🧠 Parse Result",expanded=False):
             c1,c2,c3,c4 = st.columns(4)
@@ -261,25 +294,28 @@ with t1:
                     if img: st.image(img,width=180)
 
             st.divider()
-            if st.button("📤 Book ChemRich NJ Pilot",type="primary",use_container_width=True):
-                quote = round(result.cost_per_kg*batch_size*1.12,0)
-                save_booking(get_session_id(),result.blend,result.cost_per_kg,batch_size,quote,parsed.application_type)
-                track("pilot_button_clicked",{"cost_per_kg":result.cost_per_kg,"quote_usd":quote,"batch_kg":batch_size})
-                st.balloons()
-                st.success(f"✅ Booking submitted! Quote: **${quote:,.0f}** ({batch_size}kg + 12% fee) · 5 days · shehan@chemenova.com")
-                # Send confirmation email if customer provided email
-                if uemail and send_confirmation:
-                    email_result = send_pilot_booking_confirmation(
-                        customer_email=uemail,
-                        customer_name=uname or "Valued Customer",
-                        blend=result.blend,
-                        cost_per_kg=result.cost_per_kg,
-                        batch_kg=batch_size,
-                        quote_usd=quote,
-                        application=parsed.application_type,
-                    )
-                    if email_result.sent:
-                        st.info(f"📧 Confirmation sent to {uemail}")
+            if gate_pilot_booking():
+                if st.button("📤 Book ChemRich NJ Pilot",type="primary",use_container_width=True):
+                    quote = round(result.cost_per_kg*batch_size*1.12,0)
+                    save_booking(get_session_id(),result.blend,result.cost_per_kg,batch_size,quote,parsed.application_type)
+                    track("pilot_button_clicked",{"cost_per_kg":result.cost_per_kg,"quote_usd":quote,"batch_kg":batch_size})
+                    st.balloons()
+                    st.success(f"✅ Booking submitted! Quote: **${quote:,.0f}** ({batch_size}kg + 12% fee) · 5 days · shehan@chemenova.com")
+                    if uemail and send_confirmation:
+                        email_result = send_pilot_booking_confirmation(
+                            customer_email=uemail,
+                            customer_name=uname or "Valued Customer",
+                            blend=result.blend,
+                            cost_per_kg=result.cost_per_kg,
+                            batch_kg=batch_size,
+                            quote_usd=quote,
+                            application=parsed.application_type,
+                        )
+                        if email_result.sent:
+                            st.info(f"📧 Confirmation sent to {uemail}")
+            else:
+                st.button("🔒 Book ChemRich NJ Pilot (Pro only)", disabled=True, use_container_width=True)
+                st.caption("[Upgrade to Pro](mailto:shehan@chemenova.com?subject=IntelliForm Pro Upgrade) to book pilot batches")
 
         fig = px.bar(pd.DataFrame([
             {"M":"Cost ($)","V":result.cost_per_kg},{"M":"Bio (%)","V":result.bio_pct},
@@ -429,6 +465,10 @@ with t5:
 # ── TAB 6: STABILITY & VISCOSITY ─────────────────────────────────────────────
 with t6:
     st.subheader("🧪 Stability & Viscosity Prediction")
+    if not gate_stability():
+        show_locked_feature("Stability & Viscosity Prediction",
+            "Predict shelf life (months), viscosity (cP), pH range, and optimal packaging for your formulation.")
+    else:
     st.caption("Rule-based predictions calibrated against published formulation literature.")
     stab = st.session_state.last_stability
     if not stab:
@@ -454,6 +494,10 @@ with t6:
 # ── TAB 7: CARBON CREDITS ─────────────────────────────────────────────────────
 with t7:
     st.subheader("🌍 Carbon Credit Calculator")
+    if not gate_carbon():
+        show_locked_feature("Carbon Credit Calculator",
+            "Quantify CO2 displacement vs petrochemical baseline and calculate voluntary carbon market credit value per batch.")
+    else:
     st.caption("Carbon displacement vs petrochemical baseline. Based on GHG Protocol & Voluntary Carbon Market 2026 rates.")
     carbon = st.session_state.last_carbon
     if not carbon:
@@ -492,6 +536,10 @@ with t7:
 # ── TAB 8: BLEND COMPARISON ───────────────────────────────────────────────────
 with t8:
     st.subheader("🔄 Blend Comparison")
+    if not gate_comparison():
+        show_locked_feature("Blend Comparison",
+            "Compare multiple formulations side by side with delta metrics, ingredient bar charts, and CSV export.")
+    else:
     st.caption("Compare formulations across runs side by side.")
     history = st.session_state.blend_history
     if len(history) < 2:
