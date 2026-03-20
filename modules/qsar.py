@@ -307,10 +307,16 @@ def _feature_names(used_mordred: bool = False) -> List[str]:
 def _train_models(db: pd.DataFrame) -> Optional[Tuple[Dict, bool, int]]:
     """
     Train three GBR models. Uses Mordred if available, else Morgan FP.
+    Caps at 400 samples to avoid Streamlit Cloud memory limits.
     Returns (models_dict, used_mordred, n_train_samples).
     """
     if not SKLEARN_OK:
         return None
+
+    # Cap training samples — Mordred x 1197 rows risks OOM on free tier
+    MAX_TRAIN = 400
+    if len(db) > MAX_TRAIN:
+        db = db.sample(n=MAX_TRAIN, random_state=42)
 
     X_rows, y_bio, y_etox, y_perf = [], [], [], []
     used_mordred_flag = False
