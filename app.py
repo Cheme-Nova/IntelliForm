@@ -176,6 +176,13 @@ with t1:
             c3.metric("Min Perf",str(parsed.min_perf))
             c4.metric("Application",parsed.application_type.replace("_"," ").title())
             st.caption(f"**{parsed.parser_backend.upper()}**: {parsed.reasoning}")
+            # Debug: show LLM errors if any
+            import os as _os
+            if _os.path.exists("/tmp/intelliform_llm_errors.txt"):
+                with open("/tmp/intelliform_llm_errors.txt") as _f:
+                    _errs = _f.read()
+                if _errs:
+                    st.error(f"LLM Debug:\n{_errs[-2000:]}")
 
         if use_pareto:
             with st.spinner(f"📈 Pareto optimization ({n_gen} gen)…"):

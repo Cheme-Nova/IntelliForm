@@ -102,7 +102,15 @@ def _parse_with_anthropic(text: str) -> Optional[ParseResult]:
         data = json.loads(raw)
         return _build_result(data, f"anthropic/{model}", text)
     except Exception as e:
-        print(f"[llm_parser] Anthropic failed: {e}")
+        import traceback
+        err = f"[llm_parser] Anthropic failed: {type(e).__name__}: {e}\n{traceback.format_exc()}"
+        print(err)
+        # Write to a temp file so we can read it from Streamlit
+        try:
+            with open("/tmp/intelliform_llm_errors.txt", "a") as f:
+                f.write(err + "\n---\n")
+        except Exception:
+            pass
         return None
 
 
@@ -126,7 +134,14 @@ def _parse_with_openai(text: str) -> Optional[ParseResult]:
         data = json.loads(response.choices[0].message.content)
         return _build_result(data, f"openai/{model}", text)
     except Exception as e:
-        print(f"[llm_parser] OpenAI failed: {e}")
+        import traceback
+        err = f"[llm_parser] OpenAI failed: {type(e).__name__}: {e}\n{traceback.format_exc()}"
+        print(err)
+        try:
+            with open("/tmp/intelliform_llm_errors.txt", "a") as f:
+                f.write(err + "\n---\n")
+        except Exception:
+            pass
         return None
 
 
