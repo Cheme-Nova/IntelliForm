@@ -467,127 +467,131 @@ with t6:
     st.subheader("🧪 Stability & Viscosity Prediction")
     if not gate_stability():
         show_locked_feature("Stability & Viscosity Prediction",
-            "Predict shelf life (months), viscosity (cP), pH range, and optimal packaging for your formulation.")
+            "Predict shelf life, viscosity, pH range and packaging for your blend. Available on Pro.")
     else:
-    st.caption("Rule-based predictions calibrated against published formulation literature.")
-    stab = st.session_state.last_stability
-    if not stab:
-        st.info("Run a formulation first.")
-    else:
-        col1,col2,col3,col4 = st.columns(4)
-        col1.metric("Shelf Life", stab.shelf_life_range)
-        col2.metric("Viscosity", stab.viscosity_range)
-        col3.metric("pH Range", f"{stab.ph_min:.1f} – {stab.ph_max:.1f}")
-        col4.metric("Stability Rating", stab.overall_rating)
-        st.divider()
-        c1,c2 = st.columns(2)
-        with c1:
-            st.subheader("Stability Risks")
-            for risk in stab.stability_risks: st.warning(risk)
-        with c2:
-            st.subheader("Stability Boosters")
-            for boost in stab.stability_boosters: st.success(boost)
-        st.divider()
-        st.subheader("Packaging Recommendation")
-        st.info(stab.recommended_packaging)
+        st.caption("Rule-based predictions calibrated against published formulation literature.")
+        stab = st.session_state.last_stability
+        if not stab:
+            st.info("Run a formulation first.")
+        else:
+            c1,c2,c3,c4 = st.columns(4)
+            c1.metric("Shelf Life", stab.shelf_life_range)
+            c2.metric("Viscosity", stab.viscosity_range)
+            c3.metric("pH Range", f"{stab.ph_min:.1f} – {stab.ph_max:.1f}")
+            c4.metric("Stability Rating", stab.overall_rating)
+            st.divider()
+            r1,r2 = st.columns(2)
+            with r1:
+                st.subheader("Stability Risks")
+                for risk in stab.stability_risks:
+                    st.warning(risk)
+            with r2:
+                st.subheader("Stability Boosters")
+                for boost in stab.stability_boosters:
+                    st.success(boost)
+            st.divider()
+            st.subheader("Packaging Recommendation")
+            st.info(stab.recommended_packaging)
 
 # ── TAB 7: CARBON CREDITS ─────────────────────────────────────────────────────
 with t7:
     st.subheader("🌍 Carbon Credit Calculator")
     if not gate_carbon():
         show_locked_feature("Carbon Credit Calculator",
-            "Quantify CO2 displacement vs petrochemical baseline and calculate voluntary carbon market credit value per batch.")
+            "Quantify CO2 displacement vs petrochemical baseline and calculate voluntary carbon market credit value. Available on Pro.")
     else:
-    st.caption("Carbon displacement vs petrochemical baseline. Based on GHG Protocol & Voluntary Carbon Market 2026 rates.")
-    carbon = st.session_state.last_carbon
-    if not carbon:
-        st.info("Run a formulation first.")
-    else:
-        c1,c2,c3,c4 = st.columns(4)
-        c1.metric("Green Formula", f"{carbon.green_co2_per_kg:.2f} kgCO2eq/kg")
-        c2.metric("Petrochem Baseline", f"{carbon.baseline_co2_per_kg:.1f} kgCO2eq/kg")
-        c3.metric("CO2 Displaced", f"{carbon.co2_displaced_kg:.1f} kg/batch")
-        c4.metric("Credits/batch", f"{carbon.credits_per_batch:.4f}")
-        st.divider()
-        st.markdown(f'<div class="carbon-card">{carbon.summary}</div>', unsafe_allow_html=True)
-        st.divider()
-        cr1,cr2,cr3 = st.columns(3)
-        cr1.metric("Credit Value (floor $15/t)", f"${carbon.credit_value_low:.2f}")
-        cr2.metric("Credit Value (mid $45/t)", f"${carbon.credit_value_mid:.2f}")
-        cr3.metric("Credit Value (premium $85/t)", f"${carbon.credit_value_high:.2f}")
-        st.divider()
-        st.subheader("Annual Projection (12 batches/year)")
-        a1,a2 = st.columns(2)
-        a1.metric("Annual CO2 Displaced", f"{carbon.annual_co2_tonnes:.2f} tonnes")
-        a2.metric("Annual Credit Value", f"${carbon.annual_credit_value_mid:,.0f}", "at mid-market rate")
-        fig_c = px.bar(
-            pd.DataFrame([
-                {"Metric": "This Formulation", "kgCO2eq/kg": carbon.green_co2_per_kg, "Type": "Green"},
-                {"Metric": "Petrochem Baseline", "kgCO2eq/kg": carbon.baseline_co2_per_kg, "Type": "Baseline"},
-            ]),
-            x="Metric", y="kgCO2eq/kg", color="Type",
-            color_discrete_map={"Green": "#059669", "Baseline": "#dc2626"},
-            title="Carbon Footprint Comparison"
-        )
-        fig_c.update_layout(plot_bgcolor="#1E1E1E", paper_bgcolor="#1E1E1E",
-                            font_color="#FFFFFF", showlegend=False)
-        st.plotly_chart(fig_c, use_container_width=True)
+        st.caption("Based on GHG Protocol & Voluntary Carbon Market 2026 rates.")
+        carbon = st.session_state.last_carbon
+        if not carbon:
+            st.info("Run a formulation first.")
+        else:
+            c1,c2,c3,c4 = st.columns(4)
+            c1.metric("Green Formula", f"{carbon.green_co2_per_kg:.2f} kgCO2eq/kg")
+            c2.metric("Petrochem Baseline", f"{carbon.baseline_co2_per_kg:.1f} kgCO2eq/kg")
+            c3.metric("CO2 Displaced", f"{carbon.co2_displaced_kg:.1f} kg/batch")
+            c4.metric("Credits/batch", f"{carbon.credits_per_batch:.4f}")
+            st.divider()
+            st.markdown(f'<div class="carbon-card">{carbon.summary}</div>', unsafe_allow_html=True)
+            st.divider()
+            cr1,cr2,cr3 = st.columns(3)
+            cr1.metric("Credit Value (floor $15/t)", f"${carbon.credit_value_low:.2f}")
+            cr2.metric("Credit Value (mid $45/t)", f"${carbon.credit_value_mid:.2f}")
+            cr3.metric("Credit Value (premium $85/t)", f"${carbon.credit_value_high:.2f}")
+            st.divider()
+            st.subheader("Annual Projection (12 batches/year)")
+            a1,a2 = st.columns(2)
+            a1.metric("Annual CO2 Displaced", f"{carbon.annual_co2_tonnes:.2f} tonnes")
+            a2.metric("Annual Credit Value", f"${carbon.annual_credit_value_mid:,.0f}", "at mid-market rate")
+            fig_c = px.bar(
+                pd.DataFrame([
+                    {"Metric": "This Formulation", "kgCO2eq/kg": carbon.green_co2_per_kg, "Type": "Green"},
+                    {"Metric": "Petrochem Baseline", "kgCO2eq/kg": carbon.baseline_co2_per_kg, "Type": "Baseline"},
+                ]),
+                x="Metric", y="kgCO2eq/kg", color="Type",
+                color_discrete_map={"Green": "#059669", "Baseline": "#dc2626"},
+                title="Carbon Footprint Comparison"
+            )
+            fig_c.update_layout(plot_bgcolor="#1E1E1E", paper_bgcolor="#1E1E1E",
+                                font_color="#FFFFFF", showlegend=False)
+            st.plotly_chart(fig_c, use_container_width=True)
 
 # ── TAB 8: BLEND COMPARISON ───────────────────────────────────────────────────
 with t8:
     st.subheader("🔄 Blend Comparison")
     if not gate_comparison():
         show_locked_feature("Blend Comparison",
-            "Compare multiple formulations side by side with delta metrics, ingredient bar charts, and CSV export.")
+            "Compare formulations side by side with delta metrics, ingredient charts and CSV export. Available on Pro.")
     else:
-    st.caption("Compare formulations across runs side by side.")
-    history = st.session_state.blend_history
-    if len(history) < 2:
-        st.info("Run at least 2 formulations to compare.")
-        if len(history) == 1:
-            st.success(f"1 formulation saved: {history[0]['label']}")
-    else:
-        labels = [h["label"] for h in history]
-        col_a, col_b = st.columns(2)
-        with col_a: sel_a = st.selectbox("Formulation A", labels, index=0)
-        with col_b: sel_b = st.selectbox("Formulation B", labels, index=min(1,len(labels)-1))
-        blend_a = next(h for h in history if h["label"] == sel_a)
-        blend_b = next(h for h in history if h["label"] == sel_b)
-        st.divider()
-        m1,m2,m3 = st.columns(3)
-        m1.metric("Cost/kg", f"${blend_b['cost']}", f"{round(blend_b['cost']-blend_a['cost'],2):+.2f} vs A", delta_color="inverse")
-        m2.metric("Bio-based %", f"{blend_b['bio']}%", f"{round(blend_b['bio']-blend_a['bio'],1):+.1f}% vs A")
-        m3.metric("Performance", f"{blend_b['perf']}/100", f"{round(blend_b['perf']-blend_a['perf'],1):+.1f} vs A")
-        st.divider()
-        c1,c2 = st.columns(2)
-        with c1:
-            st.subheader(f"A")
-            st.caption(blend_a["input"][:80])
-            for ing,pct in blend_a["blend"].items():
-                st.progress(int(min(pct,100)), text=f"{ing}: {pct}%")
-        with c2:
-            st.subheader(f"B")
-            st.caption(blend_b["input"][:80])
-            for ing,pct in blend_b["blend"].items():
-                st.progress(int(min(pct,100)), text=f"{ing}: {pct}%")
-        st.divider()
-        all_ings = sorted(set(list(blend_a["blend"].keys()) + list(blend_b["blend"].keys())))
-        vals_a = [blend_a["blend"].get(ing, 0) for ing in all_ings]
-        vals_b = [blend_b["blend"].get(ing, 0) for ing in all_ings]
-        fig_comp = go.Figure()
-        fig_comp.add_trace(go.Bar(name="Blend A", x=all_ings, y=vals_a, marker_color="#00C853"))
-        fig_comp.add_trace(go.Bar(name="Blend B", x=all_ings, y=vals_b, marker_color="#0D9488"))
-        fig_comp.update_layout(barmode="group", plot_bgcolor="#1E1E1E", paper_bgcolor="#1E1E1E",
-                               font_color="#FFFFFF", title="Ingredient Comparison (%)", xaxis_tickangle=-30)
-        st.plotly_chart(fig_comp, use_container_width=True)
-        comp_df = pd.DataFrame({"Ingredient": all_ings, "Blend A %": vals_a, "Blend B %": vals_b})
-        st.download_button("📥 Download Comparison CSV", comp_df.to_csv(index=False),
-                          "IntelliForm_Comparison.csv", "text/csv")
+        st.caption("Compare formulations across runs side by side.")
+        history = st.session_state.blend_history
+        if len(history) < 2:
+            st.info("Run at least 2 formulations to compare.")
+            if len(history) == 1:
+                st.success(f"1 formulation saved: {history[0]['label']}")
+        else:
+            labels = [h["label"] for h in history]
+            col_a, col_b = st.columns(2)
+            with col_a:
+                sel_a = st.selectbox("Formulation A", labels, index=0)
+            with col_b:
+                sel_b = st.selectbox("Formulation B", labels, index=min(1,len(labels)-1))
+            blend_a = next(h for h in history if h["label"] == sel_a)
+            blend_b = next(h for h in history if h["label"] == sel_b)
+            st.divider()
+            m1,m2,m3 = st.columns(3)
+            m1.metric("Cost/kg", f"${blend_b['cost']}", f"{round(blend_b['cost']-blend_a['cost'],2):+.2f} vs A", delta_color="inverse")
+            m2.metric("Bio-based %", f"{blend_b['bio']}%", f"{round(blend_b['bio']-blend_a['bio'],1):+.1f}% vs A")
+            m3.metric("Performance", f"{blend_b['perf']}/100", f"{round(blend_b['perf']-blend_a['perf'],1):+.1f} vs A")
+            st.divider()
+            cc1,cc2 = st.columns(2)
+            with cc1:
+                st.subheader("Blend A")
+                st.caption(blend_a["input"][:80])
+                for ing,pct in blend_a["blend"].items():
+                    st.progress(int(min(pct,100)), text=f"{ing}: {pct}%")
+            with cc2:
+                st.subheader("Blend B")
+                st.caption(blend_b["input"][:80])
+                for ing,pct in blend_b["blend"].items():
+                    st.progress(int(min(pct,100)), text=f"{ing}: {pct}%")
+            st.divider()
+            all_ings = sorted(set(list(blend_a["blend"].keys()) + list(blend_b["blend"].keys())))
+            vals_a = [blend_a["blend"].get(ing, 0) for ing in all_ings]
+            vals_b = [blend_b["blend"].get(ing, 0) for ing in all_ings]
+            fig_comp = go.Figure()
+            fig_comp.add_trace(go.Bar(name="Blend A", x=all_ings, y=vals_a, marker_color="#00C853"))
+            fig_comp.add_trace(go.Bar(name="Blend B", x=all_ings, y=vals_b, marker_color="#0D9488"))
+            fig_comp.update_layout(barmode="group", plot_bgcolor="#1E1E1E", paper_bgcolor="#1E1E1E",
+                                   font_color="#FFFFFF", title="Ingredient Comparison (%)", xaxis_tickangle=-30)
+            st.plotly_chart(fig_comp, use_container_width=True)
+            comp_df = pd.DataFrame({"Ingredient": all_ings, "Blend A %": vals_a, "Blend B %": vals_b})
+            st.download_button("📥 Download Comparison CSV", comp_df.to_csv(index=False),
+                              "IntelliForm_Comparison.csv", "text/csv")
 
 # ── TAB 9: ROI & HISTORY ──────────────────────────────────────────────────────
 with t9:
     st.subheader("💰 ROI & Formulation History")
-    st.caption(f"Storage: {'Supabase (persistent)' if is_connected() else 'Session memory — set up Supabase for persistence'}")
+    st.caption(f"Storage: {'Supabase (persistent)' if is_connected() else 'Session memory'}")
     if not st.session_state.projects:
         st.info("Run a formulation first.")
     else:
@@ -604,6 +608,5 @@ with t9:
         st.divider()
         with st.expander("Set Up Supabase — View migration SQL"):
             st.code(MIGRATION_SQL, language="sql")
-        st.caption("Add SUPABASE_URL + SUPABASE_ANON_KEY to secrets then restart.")
 
 st.caption("IntelliForm v1.0 · github.com/chemenova/intelliform · ChemeNova x ChemRich · Makani S.S., ChemRxiv 2026 · NJIT & UIC")
