@@ -1,5 +1,5 @@
 """
-IntelliForm v1.0 — Agentic Green Chemistry Formulation Platform
+IntelliForm v1.1 — Agentic Green Chemistry Formulation Platform
 ChemeNova LLC x ChemRich Global
 
 New in v1.0:
@@ -35,8 +35,9 @@ from modules.carbon_credits   import calculate_carbon_credits
 from modules.notifications    import send_pilot_booking_confirmation, send_proposal_email
 # Tiers: all features free — upsell via pilot batch booking
 from modules.verticals import VERTICAL_OPTIONS, get_profile, filter_db_by_vertical, get_vertical_constraints
+from modules.vertical_regulatory import generate_vertical_regulatory_report
 
-st.set_page_config(page_title="IntelliForm v1.0", page_icon="🧪", layout="wide")
+st.set_page_config(page_title="IntelliForm v1.1", page_icon="🧪", layout="wide")
 st.markdown("""<style>
 .pareto-rec{background:#1a2e1a;border-left:4px solid #00C853;padding:12px 18px;border-radius:6px;margin-bottom:12px}
 .carbon-card{background:#0a2e1a;border-left:4px solid #059669;padding:12px 18px;border-radius:6px;margin-bottom:12px}
@@ -44,7 +45,7 @@ st.markdown("""<style>
 </style>""", unsafe_allow_html=True)
 
 # ── Bootstrap ─────────────────────────────────────────────────────────────────
-if "session_id"       not in st.session_state: get_session_id(); track("session_started",{"version":"1.0"})
+if "session_id"       not in st.session_state: get_session_id(); track("session_started",{"version":"1.1"})
 if "projects"         not in st.session_state: st.session_state.projects       = []
 if "last_result"      not in st.session_state: st.session_state.last_result    = None
 if "last_parsed"      not in st.session_state: st.session_state.last_parsed    = None
@@ -55,6 +56,7 @@ if "last_stability"   not in st.session_state: st.session_state.last_stability =
 if "last_carbon"      not in st.session_state: st.session_state.last_carbon    = None
 if "model_card"       not in st.session_state: st.session_state.model_card     = None
 if "blend_history"    not in st.session_state: st.session_state.blend_history  = []
+if "vertical_reg"     not in st.session_state: st.session_state.vertical_reg    = None
 if "compare_blend"    not in st.session_state: st.session_state.compare_blend  = None
 
 @st.cache_data
@@ -81,7 +83,7 @@ if not st.session_state.projects and is_connected():
 # ── Header ────────────────────────────────────────────────────────────────────
 h1,h2,h3,h4 = st.columns([3,1,1,1])
 with h1:
-    st.title("🧪 IntelliForm v1.0")
+    st.title("🧪 IntelliForm v1.1")
     st.caption("AI-powered formulation intelligence — describe what you need, get a certified, pilot-ready blend in seconds.")
 h2.metric("Ingredients", len(ingredients_db))
 h3.metric("Certifications", "EU Ecolabel · EPA · COSMOS")
@@ -174,7 +176,7 @@ with st.sidebar:
         if st.button("Save identity"):
             identify_user(email=uemail or None, name=uname or None, company=uco or None)
             st.success("✅ Linked")
-    st.caption("IntelliForm v1.0 · [GitHub](https://github.com/chemenova/intelliform) · ChemeNova x ChemRich")
+    st.caption("IntelliForm v1.1 · [GitHub](https://github.com/chemenova/intelliform) · ChemeNova x ChemRich")
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
 # ── Tabs ──────────────────────────────────────────────────────────────────────
@@ -247,6 +249,9 @@ with t1:
         st.session_state.last_eco = eco
         reg = get_blend_report(result.blend)
         st.session_state.last_reg = reg
+        # Vertical-specific regulatory report
+        v_reg = generate_vertical_regulatory_report(result.blend, v_db, selected_vertical)
+        st.session_state.vertical_reg = v_reg
 
         # Stability and carbon — new in v1.0
         stability = predict_stability(result.blend, ingredients_db)
@@ -270,6 +275,21 @@ with t1:
             s2.metric("Viscosity", f"{stability.viscosity_cp:,.0f} cP")
             s3.metric("CO2 Displaced", f"{carbon.co2_displaced_kg:.1f} kg/batch")
             s4.metric("Carbon Value", f"${carbon.credit_value_mid:.2f}/batch")
+
+        # Vertical validation results
+        if result.vertical_validation:
+            vv = result.vertical_validation
+            v_status = vv.get("overall_status", vv.get("ich_compliant", True))
+            if result.compliance_flags:
+                for cf in result.compliance_flags:
+                    st.error(f"🚨 {cf}")
+            if result.warnings:
+                for w in result.warnings:
+                    st.warning(f"⚠️ {w}")
+            if result.manufacturing_route:
+                st.info(f"🏭 Manufacturing Route: **{result.manufacturing_route}**")
+            for p in vv.get("passes", [])[:3]:
+                st.success(f"✅ {p}")
 
         with st.expander("📋 Formulation Details + Structures",expanded=True):
             for ing,pct in result.blend.items():
@@ -355,7 +375,50 @@ with t2:
 # ── TAB 3: REGULATORY ─────────────────────────────────────────────────────────
 with t3:
     st.subheader("📋 Regulatory Intelligence")
-    reg = st.session_state.last_reg
+    v_reg = st.session_state.get("vertical_reg")
+    reg   = st.session_state.last_reg
+
+    # Show vertical regulatory report first if available
+    if v_reg and v_reg.vertical != "all":
+        st.caption(f"**Regulatory Framework:** {v_reg.framework}")
+        status_map = {"✅ Clear": "success", "⚠️ Review Required": "warning", "❌ Blocked": "error"}
+        getattr(st, status_map.get(v_reg.overall_status, "info"))(
+            f"**{v_reg.overall_status}** — {v_reg.vertical.replace('_',' ').title()} Vertical")
+
+        if v_reg.certifications:
+            st.subheader("🏆 Achievable Certifications")
+            for cert in v_reg.certifications:
+                st.success(cert)
+
+        if v_reg.flags:
+            st.subheader("🚨 Blocking Issues")
+            for f in v_reg.flags:
+                st.error(f)
+
+        if v_reg.warnings:
+            st.subheader("⚠️ Warnings")
+            for w in v_reg.warnings:
+                st.warning(w)
+
+        if v_reg.passes:
+            st.subheader("✅ Passed Checks")
+            for p in v_reg.passes:
+                st.success(p)
+
+        if v_reg.notes:
+            with st.expander("📋 Regulatory Notes"):
+                for n in v_reg.notes:
+                    st.caption(f"• {n}")
+
+        if v_reg.per_ingredient:
+            st.subheader("Per-Ingredient Regulatory Detail")
+            import pandas as pd
+            pi_df = pd.DataFrame(v_reg.per_ingredient)
+            cols = [c for c in ["ingredient","pct","status","notes"] if c in pi_df.columns]
+            st.dataframe(pi_df[cols], use_container_width=True, hide_index=True)
+
+        st.divider()
+
     if not reg: st.info("Run a formulation first.")
     else:
         status_map = {"✅ Clear":"success","⚠️ Review Required":"warning","❌ Blocked":"error"}
@@ -609,7 +672,7 @@ with t10:
                         st.download_button("📥 Download PDF", data=pdf_bytes,
                             file_name=f"IntelliForm_Proposal_{datetime.now().strftime('%Y%m%d')}.pdf",
                             mime="application/pdf", use_container_width=True)
-                        track("export_proposal", {"format":"pdf","version":"1.0","eco_score":latest.get("eco_score")})
+                        track("export_proposal", {"format":"pdf","version":"1.1","eco_score":latest.get("eco_score")})
                         st.success("✅ PDF ready — click above to download.")
                         # Send email if customer provided address
                         if uemail:
@@ -641,4 +704,4 @@ Cost: ${latest['cost']}/kg · Bio: {latest['bio']}% · Perf: {latest['perf']}/10
             with st.expander("Preview"):
                 st.markdown(md)
 
-st.caption("IntelliForm v1.0 · github.com/chemenova/intelliform · ChemeNova x ChemRich · Makani S.S., ChemRxiv 2026 · NJIT & UIC")
+st.caption("IntelliForm v1.1 · github.com/chemenova/intelliform · ChemeNova x ChemRich · Makani S.S., ChemRxiv 2026 · NJIT & UIC")
