@@ -1,196 +1,166 @@
 """
 modules/tiers.py
-Tier enforcement for IntelliForm v1.0.
+IntelliForm Tier System — honest version
 
-Tiers:
-  free        — 3 runs/session, basic features, watermarked output
-  pro         — $299/month, unlimited, all features
-  team        — $899/month, 5 seats, custom ingredients, priority booking
-  enterprise  — custom, white-label, API access
+Gate ONLY on things that actually cost ChemeNova money:
+  - Anthropic / OpenAI API calls (per-token cost)
+  - Custom DB upload (storage cost, support burden)
+  - API access (infrastructure cost)
+  - SSO (implementation cost)
+  - Dedicated support (time cost)
 
-Set INTELLIFORM_TIER=free|pro|team|enterprise in Streamlit secrets.
-Default is 'free' if not set.
+Everything that costs $0 to provide is FREE on all tiers:
+  - All optimization modes (LP, Pareto, Bayesian) — free libraries
+  - All 7 verticals + constraints — code only
+  - Pharma deep dive — code only
+  - Mordred 1613 descriptors — free library
+  - PubChemPy enrichment — free API
+  - Carbon credits, EcoMetrics, stability — code only
+  - Regulatory reports — code only
+  - PDF export — reportlab is free
+  - Groq LLM — free tier
+  - PostHog analytics — free tier
+  - Supabase persistence — free tier
 """
+from __future__ import annotations
 import os
-import streamlit as st
+from dataclasses import dataclass
+from typing import List, Optional
 
-# ── Constants ─────────────────────────────────────────────────────────────────
-FREE_RUN_LIMIT = 3
 
-TIER_CONFIG = {
-    "free": {
-        "name": "Free",
-        "color": "#64748b",
-        "price": "$0",
-        "run_limit": FREE_RUN_LIMIT,
-        "features": {
-            "pareto":         False,
-            "pdf":            False,
-            "carbon":         False,
-            "stability":      False,
-            "comparison":     False,
-            "llm_switch":     False,
-            "pilot_booking":  False,
-            "multi_llm":      False,
-        }
-    },
-    "pro": {
-        "name": "Professional",
-        "color": "#0D9488",
-        "price": "$299/mo",
-        "run_limit": None,  # unlimited
-        "features": {
-            "pareto":         True,
-            "pdf":            True,
-            "carbon":         True,
-            "stability":      True,
-            "comparison":     True,
-            "llm_switch":     True,
-            "pilot_booking":  True,
-            "multi_llm":      True,
-        }
-    },
-    "team": {
-        "name": "Team",
-        "color": "#D97706",
-        "price": "$899/mo",
-        "run_limit": None,
-        "features": {
-            "pareto":         True,
-            "pdf":            True,
-            "carbon":         True,
-            "stability":      True,
-            "comparison":     True,
-            "llm_switch":     True,
-            "pilot_booking":  True,
-            "multi_llm":      True,
-            "custom_ingredients": True,
-            "priority_booking":   True,
-        }
-    },
-    "enterprise": {
-        "name": "Enterprise",
-        "color": "#0A1628",
-        "price": "Custom",
-        "run_limit": None,
-        "features": {
-            "pareto":         True,
-            "pdf":            True,
-            "carbon":         True,
-            "stability":      True,
-            "comparison":     True,
-            "llm_switch":     True,
-            "pilot_booking":  True,
-            "multi_llm":      True,
-            "custom_ingredients": True,
-            "priority_booking":   True,
-            "white_label":        True,
-            "api_access":         True,
-        }
-    }
+@dataclass
+class TierConfig:
+    name: str
+    display_name: str
+    color: str
+    emoji: str
+    price: str
+    # What actually costs money to provide
+    llms_allowed: List[str]       # Anthropic/OpenAI cost per token
+    max_batch_kg: int             # affects proposal PDF complexity only
+    white_label: bool             # custom branding = support time
+    api_access: bool              # needs infrastructure
+    custom_db_upload: bool        # storage + validation support
+    sso_enabled: bool             # implementation cost
+    dedicated_support: bool       # time cost
+    export_formats: List[str]
+    features_summary: List[str]
+
+
+TIERS = {
+    "free": TierConfig(
+        name="free",
+        display_name="Free",
+        color="#0D9488",
+        emoji="🌱",
+        price="$0 · MIT License · Deploy anywhere",
+        llms_allowed=["groq"],          # Groq is free
+        max_batch_kg=5000,
+        white_label=False,
+        api_access=False,
+        custom_db_upload=False,
+        sso_enabled=False,
+        dedicated_support=False,
+        export_formats=["csv", "pdf"],
+        features_summary=[
+            "✅ 1,197+ ingredient database",
+            "✅ LP + Pareto + Bayesian optimization",
+            "✅ All 7 verticals + specific constraints",
+            "✅ Pharma deep dive (ICH/BCS/USP/NF)",
+            "✅ QSAR ML — Mordred 1613 descriptors",
+            "✅ PubChem auto-enrichment",
+            "✅ Regulatory intelligence (7 frameworks)",
+            "✅ Carbon credit calculator",
+            "✅ EcoMetrics + stability prediction",
+            "✅ PDF + CSV export",
+            "✅ Groq LLM — free inference",
+            "✅ Supabase persistence",
+            "✅ MIT license — fork and deploy",
+        ],
+    ),
+
+    "pro": TierConfig(
+        name="pro",
+        display_name="Pro",
+        color="#D97706",
+        emoji="⚡",
+        price="$99 / month",
+        llms_allowed=["groq", "anthropic", "openai"],  # these cost money
+        max_batch_kg=50000,
+        white_label=True,
+        api_access=False,
+        custom_db_upload=True,          # needs validation + storage
+        sso_enabled=False,
+        dedicated_support=False,
+        export_formats=["csv", "pdf", "json", "excel"],
+        features_summary=[
+            "✅ Everything in Free",
+            "✅ Claude 3.5 Sonnet + GPT-4o LLMs",
+            "✅ Custom ingredient DB upload",
+            "✅ White-label PDF branding",
+            "✅ Excel + JSON export",
+            "✅ 50,000 kg batch size",
+            "✅ Priority email support",
+        ],
+    ),
+
+    "enterprise": TierConfig(
+        name="enterprise",
+        display_name="Enterprise",
+        color="#0A1628",
+        emoji="🏢",
+        price="Custom — contact shehan@chemenova.com",
+        llms_allowed=["groq", "anthropic", "openai", "azure", "custom"],
+        max_batch_kg=10_000_000,
+        white_label=True,
+        api_access=True,                # needs infra
+        custom_db_upload=True,
+        sso_enabled=True,               # needs implementation
+        dedicated_support=True,         # needs time
+        export_formats=["csv", "pdf", "json", "excel", "xml", "edi"],
+        features_summary=[
+            "✅ Everything in Pro",
+            "✅ REST API access",
+            "✅ SSO / SAML authentication",
+            "✅ Dedicated cloud infrastructure",
+            "✅ ERP / LIMS / SAP connectors",
+            "✅ On-premise deployment",
+            "✅ SLA 99.9% uptime",
+            "✅ Dedicated Customer Success Manager",
+            "✅ Custom vertical development",
+            "✅ IP indemnification",
+            "✅ Audit log (21 CFR Part 11)",
+            "✅ Unlimited seats",
+        ],
+    ),
 }
 
-UPGRADE_URL = "mailto:shehan@chemenova.com?subject=IntelliForm Pro Upgrade"
+
+def get_tier(name: Optional[str] = None) -> TierConfig:
+    if name is None:
+        name = os.environ.get("INTELLIFORM_TIER", "free").lower()
+    return TIERS.get(name, TIERS["free"])
 
 
-# ── Core tier helpers ─────────────────────────────────────────────────────────
-
-def get_tier() -> str:
-    """Get current tier from environment. Default free."""
-    return os.getenv("INTELLIFORM_TIER", "free").lower()
-
-
-def is_free() -> bool:
-    return get_tier() == "free"
-
-
-def is_pro() -> bool:
-    return get_tier() in ["pro", "team", "enterprise"]
-
-
-def has_feature(feature: str) -> bool:
-    tier = get_tier()
-    config = TIER_CONFIG.get(tier, TIER_CONFIG["free"])
-    return config["features"].get(feature, False)
-
-
-# ── Run count management ──────────────────────────────────────────────────────
-
-def get_run_count() -> int:
-    return st.session_state.get("run_count", 0)
-
-
-def increment_run_count():
-    st.session_state["run_count"] = get_run_count() + 1
-
-
-def runs_remaining() -> int:
-    if not is_free():
-        return 999
-    return max(0, FREE_RUN_LIMIT - get_run_count())
-
-
-def can_run() -> bool:
-    if not is_free():
-        return True
-    return get_run_count() < FREE_RUN_LIMIT
-
-
-# ── Gate functions (return True if allowed) ───────────────────────────────────
-
-def gate_pareto() -> bool:       return has_feature("pareto")
-def gate_pdf() -> bool:          return has_feature("pdf")
-def gate_carbon() -> bool:       return has_feature("carbon")
-def gate_stability() -> bool:    return has_feature("stability")
-def gate_comparison() -> bool:   return has_feature("comparison")
-def gate_llm_switch() -> bool:   return has_feature("llm_switch")
-def gate_pilot_booking() -> bool:return has_feature("pilot_booking")
-
-
-# ── UI Components ─────────────────────────────────────────────────────────────
-
-def tier_badge() -> str:
-    tier = get_tier()
-    config = TIER_CONFIG.get(tier, TIER_CONFIG["free"])
-    return f"{config['name']} ({config['price']})"
-
-
-def show_upgrade_banner():
-    """Show upgrade prompt when free user hits run limit."""
-    st.error(f"""
-**You've used all {FREE_RUN_LIMIT} free formulation runs for this session.**
-
-Upgrade to **IntelliForm Professional** for unlimited runs, PDF proposals,
-Pareto optimization, stability prediction, carbon credits, and pilot batch booking.
-
-📧 [Contact us to upgrade]({UPGRADE_URL}) · $299/month · Cancel anytime
-""")
-
-
-def show_watermark():
-    """Show free tier watermark."""
-    if is_free():
-        st.caption(
-            "🆓 Free tier — [Upgrade to Pro]({}) for PDF export, Pareto, "
-            "stability prediction, carbon credits & more".format(UPGRADE_URL)
+def gate(tier: TierConfig, feature: str, label: str = "") -> bool:
+    """
+    Returns True if feature available on this tier.
+    Shows upgrade prompt if not.
+    Only gates features that actually cost money to provide.
+    """
+    ok = getattr(tier, feature, True)  # default True — don't gate by default
+    if not ok and label:
+        import streamlit as st
+        next_t = _next_tier(tier)
+        st.warning(
+            f"🔒 **{label}** requires **{next_t}**. "
+            f"[Upgrade →](mailto:shehan@chemenova.com"
+            f"?subject=IntelliForm%20{next_t}%20Upgrade)"
         )
+    return ok
 
 
-def show_locked_feature(feature_name: str, description: str = ""):
-    """Show locked feature placeholder with upgrade prompt."""
-    st.info(
-        f"🔒 **{feature_name}** is available on IntelliForm Professional ($299/mo)\n\n"
-        f"{description}\n\n"
-        f"[Contact us to upgrade]({UPGRADE_URL})"
-    )
-
-
-def show_run_counter():
-    """Show remaining runs for free tier."""
-    if is_free():
-        remaining = runs_remaining()
-        if remaining > 0:
-            st.caption(f"🆓 Free tier · {remaining} run{'s' if remaining != 1 else ''} remaining this session")
-        else:
-            show_upgrade_banner()
-            st.stop()
+def _next_tier(tier: TierConfig) -> str:
+    order = ["free", "pro", "enterprise"]
+    idx = order.index(tier.name) if tier.name in order else 0
+    return TIERS[order[min(idx + 1, len(order) - 1)]].display_name
