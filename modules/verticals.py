@@ -254,13 +254,23 @@ def filter_db_by_vertical(db, vertical_key: str):
         return db
     if "Vertical" not in db.columns:
         return db
-    # Include ingredients tagged for this vertical + multi-vertical common ingredients
-    filtered = db[db["Vertical"] == vertical_key]
-    # Always include common ingredients that work across verticals
-    common_functions = ["pH Adjuster", "Chelating Agent", "Preservative",
-                       "Thickener", "Emulsifier", "Solvent"]
-    common = db[db["Function"].str.contains("|".join(common_functions), na=False)]
-    combined = pd.concat([filtered, common]).drop_duplicates(subset=["Ingredient"])
+
+    # Primary: ingredients tagged for this vertical
+    filtered = db[db["Vertical"] == vertical_key].copy()
+
+    # Secondary: only pull truly universal ingredients — water, basic salts, citric acid
+    # Do NOT include industrial solvents, pharma vehicles, etc. as "common"
+    UNIVERSAL = [
+        "Water", "Citric Acid", "Lactic Acid", "Sodium Chloride",
+        "Glycerol", "Ethanol", "Sodium Bicarbonate", "Sodium Citrate",
+        "Potassium Citrate", "Malic Acid", "Tartaric Acid",
+    ]
+    universal_mask = db["Ingredient"].apply(
+        lambda x: any(u.lower() in x.lower() for u in UNIVERSAL)
+    )
+    universal = db[universal_mask]
+
+    combined = pd.concat([filtered, universal]).drop_duplicates(subset=["Ingredient"])
     return combined.reset_index(drop=True)
 
 

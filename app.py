@@ -71,13 +71,15 @@ def load_db():
     return enrich_db(df)
 
 @st.cache_resource
-def load_models(n):
+def load_models(n, db_hash):
+    """Retrain QSAR models. Cache key includes DB size + hash to force retraining on new DB."""
     db = load_db()
     return initialize_models(db)
 
 ingredients_db = load_db()
+_db_hash = str(len(ingredients_db)) + str(ingredients_db["Ingredient"].iloc[0] if len(ingredients_db) > 0 else "")
 if st.session_state.model_card is None:
-    st.session_state.model_card = load_models(len(ingredients_db))
+    st.session_state.model_card = load_models(len(ingredients_db), _db_hash)
 
 # Load persisted projects
 if not st.session_state.projects and is_connected():
@@ -92,10 +94,10 @@ with h1:
     st.title("🧪 IntelliForm v1.2")
     st.caption("AI-powered formulation intelligence — describe what you need, get a certified, pilot-ready blend in seconds.")
 h2.metric("Ingredients", len(ingredients_db))
-h3.metric("Certifications", "EU Ecolabel · EPA · COSMOS")
+h3.metric("Certifications", "EU · EPA · COSMOS")
 mc = st.session_state.model_card
 qsar_ok = mc and mc.sklearn_version != "unavailable"
-h4.metric("Optimization", "NSGA-III Pareto + LP")
+h4.metric("Optimizer", "Pareto + LP")
 
 
 # ── LLM availability detection ────────────────────────────────────────────────
@@ -489,14 +491,18 @@ with t5:
     mc = st.session_state.model_card
     if mc:
         ci1,ci2,ci3,ci4 = st.columns(4)
-        ci1.metric("Training Set",mc.n_training); ci2.metric("Data Hash",mc.training_hash)
-        ci3.metric("scikit-learn",mc.sklearn_version); ci4.metric("Active Learning Rounds",mc.active_learning_rounds)
+        ci1.metric("N Ingredients", mc.n_training)
+        ci2.metric("DB Hash", mc.training_hash[:8] if mc.training_hash else "—")
+        ci3.metric("sklearn", mc.sklearn_version[:8] if mc.sklearn_version else "—")
+        ci4.metric("AL Rounds", mc.active_learning_rounds)
         st.divider()
         for target,bench in mc.benchmarks.items():
-            with st.expander(f"**{target}** — R²={bench['cv_r2']} · RMSE={bench['cv_rmse']} {bench['unit']}",expanded=True):
+            with st.expander(f"**{target}** — R²={bench['cv_r2']} · RMSE={bench['cv_rmse']}",expanded=True):
                 bc1,bc2,bc3,bc4 = st.columns(4)
-                bc1.metric("5-fold R²",bench["cv_r2"]); bc2.metric("CV RMSE",f"{bench['cv_rmse']} {bench['unit']}")
-                bc3.metric("N train",bench["n_train"]); bc4.metric("Algorithm","Gradient Boosting")
+                bc1.metric("5-fold R²", bench["cv_r2"])
+                bc2.metric("CV RMSE", f"{bench['cv_rmse']}")
+                bc3.metric("Unit", bench["unit"][:12] if bench.get("unit") else "—")
+                bc4.metric("Algorithm", "XGBoost")
                 st.caption(f"**Model**: {bench['model']} · **Descriptors**: {bench['descriptor']}")
         st.divider()
         st.subheader("🔬 Live Prediction")
