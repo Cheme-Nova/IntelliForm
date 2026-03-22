@@ -86,6 +86,9 @@ html, body, [data-testid="stAppViewContainer"] {
     font-family: 'DM Sans', sans-serif !important;
 }
 [data-testid="stHeader"]  { background: rgba(5,14,31,0.95) !important; }
+[data-testid="stAppViewContainer"] > section:first-child { padding-top: 0 !important; }
+.stApp > header { height: 0px !important; visibility: hidden !important; }
+.block-container { padding-top: 1.2rem !important; }
 footer                    { visibility: hidden !important; }
 .block-container          { padding: 1rem 1.5rem 2rem !important; max-width: 1400px !important; }
 
@@ -267,7 +270,12 @@ label { color: #94a3b8 !important; font-size: 0.85rem !important; }
 # If a module fails to import, a clear error is shown rather than silent fallback.
 
 from modules.analytics        import track, identify_user, get_session_id
-from modules.tiers             import detect_tier
+try:
+    from modules.tiers import get_tier as detect_tier
+except ImportError:
+    # tiers.py missing — fall back to env var
+    def detect_tier():
+        return type('T', (), {'name': os.getenv('INTELLIFORM_TIER', 'free')})()
 from modules.llm_parser        import parse_request
 from modules.optimizer         import run_optimization
 from modules.pareto_optimizer  import run_pareto_optimization, pareto_frontier_dataframe
@@ -373,9 +381,9 @@ current_tier = detect_tier()
 # ── POSTHOG SESSION START (fires once per session) ────────────────────────────
 if "session_tracked" not in st.session_state:
     session_id = get_session_id()
-    identify_user(session_id, {"tier": current_tier, "vertical": "unset",
+    identify_user(session_id, {"tier": current_tier.name, "vertical": "unset",
                                 "app_version": "2.1", "db_size": len(ingredients_db)})
-    track("session_started", {"tier": current_tier, "app_version": "2.1",
+    track("session_started", {"tier": current_tier.name, "app_version": "2.1",
                                "db_size": len(ingredients_db),
                                "mordred": bool(_mordred_on)})
     st.session_state["session_tracked"] = True
