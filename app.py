@@ -86,8 +86,6 @@ html, body, [data-testid="stAppViewContainer"] {
     font-family: 'DM Sans', sans-serif !important;
 }
 [data-testid="stHeader"]  { background: rgba(5,14,31,0.95) !important; }
-.stApp > header { height: 0px !important; visibility: hidden !important; }
-.block-container { padding-top: 1.2rem !important; }
 [data-testid="stAppViewContainer"] > section:first-child { padding-top: 0 !important; }
 .stApp > header { height: 0px !important; visibility: hidden !important; }
 .block-container { padding-top: 1.2rem !important; }
@@ -326,7 +324,12 @@ def load_db() -> pd.DataFrame:
     df = pd.read_csv("data/ingredients_db.csv")
     if "Vertical" not in df.columns:
         df["Vertical"] = "personal_care"
-    return enrich_db(df)
+    # Only enrich rows that are actually missing SMILES — avoids blocking PubChem
+    # API calls on cold start for an already-enriched DB.
+    missing_smiles = "SMILES" not in df.columns or df["SMILES"].isna().any() or (df["SMILES"] == "").any()
+    if missing_smiles:
+        df = enrich_db(df)
+    return df
 
 @st.cache_resource
 def load_models(n: int, db_hash: str):
@@ -836,14 +839,20 @@ with t_cert:
         with st.expander("📚 Certification Profiles Reference — All 8 Standards"):
             ref_rows = []
             for cert_key, profile in CERTIFICATION_PROFILES.items():
+                def _g(p, *keys):
+                    for k in keys:
+                        v = p.get(k, None) if isinstance(p, dict) else getattr(p, k, None)
+                        if v is not None:
+                            return v
+                    return "—"
                 ref_rows.append({
                     "Certification":  cert_key,
-                    "Min Bio%":       profile.get("min_bio_based", "—"),
-                    "Max Petrochem%": profile.get("max_petrochemical", "—"),
-                    "Testing Cost":   profile.get("testing_cost", "—"),
-                    "Timeline":       profile.get("timeline", "—"),
-                    "Body":           profile.get("certifying_body", "—"),
-                    "Scope":          str(profile.get("scope", "—"))[:50],
+                    "Min Bio%":       _g(profile, "min_bio_based", "min_bio"),
+                    "Max Petrochem%": _g(profile, "max_petrochemical", "max_petro"),
+                    "Testing Cost":   _g(profile, "testing_cost", "cost"),
+                    "Timeline":       _g(profile, "timeline"),
+                    "Body":           _g(profile, "certifying_body", "body"),
+                    "Scope":          str(_g(profile, "scope", "description"))[:50],
                 })
             if ref_rows:
                 st.dataframe(pd.DataFrame(ref_rows), use_container_width=True, hide_index=True)
@@ -1629,13 +1638,16 @@ if t_pharma:
                 with st.expander("📋 Regulatory Pathway Guide — USA / EU / Japan"):
                     rp_rows = []
                     for pathway_key, pathway in REGULATORY_PATHWAYS.items():
+                        def _rg(p, k, default="—"):
+                            return p.get(k, default) if isinstance(p, dict) else getattr(p, k, default)
+                        stds = _rg(pathway, "key_standards", [])
                         rp_rows.append({
                             "Pathway":    pathway_key,
-                            "Agency":     pathway.get("agency", "—"),
-                            "Timeline":   pathway.get("timeline", "—"),
-                            "Cost Est.":  pathway.get("cost_estimate", "—"),
-                            "Key Stds":   ", ".join(pathway.get("key_standards", []))[:60],
-                            "Notes":      str(pathway.get("notes", "—"))[:80],
+                            "Agency":     _rg(pathway, "agency"),
+                            "Timeline":   _rg(pathway, "timeline"),
+                            "Cost Est.":  _rg(pathway, "cost_estimate"),
+                            "Key Stds":   ", ".join(stds if isinstance(stds, list) else [str(stds)])[:60],
+                            "Notes":      str(_rg(pathway, "notes"))[:80],
                         })
                     if rp_rows:
                         st.dataframe(pd.DataFrame(rp_rows), use_container_width=True, hide_index=True)
@@ -1644,12 +1656,15 @@ if t_pharma:
                 with st.expander("🌡 ICH Q1A Stability Zones — All 5 Zones"):
                     sz_rows = []
                     for zone_key, zone in ICH_STABILITY_ZONES.items():
+                        def _zg(p, k, default="—"):
+                            return p.get(k, default) if isinstance(p, dict) else getattr(p, k, default)
+                        regions = _zg(zone, "regions", [])
                         sz_rows.append({
                             "Zone":        zone_key,
-                            "Long-term":   zone.get("long_term", "—"),
-                            "Accelerated": zone.get("accelerated", "—"),
-                            "Regions":     ", ".join(zone.get("regions", []))[:60],
-                            "Notes":       str(zone.get("notes", "—"))[:80],
+                            "Long-term":   _zg(zone, "long_term"),
+                            "Accelerated": _zg(zone, "accelerated"),
+                            "Regions":     ", ".join(regions if isinstance(regions, list) else [str(regions)])[:60],
+                            "Notes":       str(_zg(zone, "notes"))[:80],
                         })
                     if sz_rows:
                         st.dataframe(pd.DataFrame(sz_rows), use_container_width=True, hide_index=True)
