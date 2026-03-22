@@ -86,6 +86,8 @@ html, body, [data-testid="stAppViewContainer"] {
     font-family: 'DM Sans', sans-serif !important;
 }
 [data-testid="stHeader"]  { background: rgba(5,14,31,0.95) !important; }
+.stApp > header { height: 0px !important; visibility: hidden !important; }
+.block-container { padding-top: 1.2rem !important; }
 [data-testid="stAppViewContainer"] > section:first-child { padding-top: 0 !important; }
 .stApp > header { height: 0px !important; visibility: hidden !important; }
 .block-container { padding-top: 1.2rem !important; }
