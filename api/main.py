@@ -1,3 +1,6 @@
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from api.models import (
@@ -5,8 +8,8 @@ from api.models import (
     QSARRequest, ReformulateRequest, HealthResponse
 )
 from api.memory import memory
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ingredients_db.csv")
 
 app = FastAPI(title="IntelliForm API", version="2.1.0")
 
@@ -24,9 +27,9 @@ def health():
         "status": "ok",
         "version": "2.1.0",
         "modules": [
-            "optimizer", "pareto", "bayesian", "eco",
-            "qsar", "regulatory", "stability", "carbon",
-            "certifications", "agents", "nlp"
+            "optimizer", "pareto_optimizer", "bayesian_optimizer", "ecometrics",
+            "qsar", "regulatory", "vertical_regulatory", "stability",
+            "carbon_credits", "certification_oracle", "agents", "llm_parser"
         ]
     }
 
@@ -46,12 +49,10 @@ def get_memory(n: int = 10):
 async def formulate(req: FormulateRequest):
     try:
         from api.controller import controller
-        import pandas as pd
-        db = pd.read_csv("data/ingredients.csv")
         return controller.run(
             req.input_text, req.vertical,
             req.batch_size, req.opt_mode,
-            req.constraints, db
+            req.constraints
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -59,9 +60,9 @@ async def formulate(req: FormulateRequest):
 @app.post("/api/v1/optimize/pareto")
 async def optimize_pareto(req: ParetoRequest):
     try:
-        from modules.pareto import run_pareto_optimization
         import pandas as pd
-        db = pd.read_csv("data/ingredients.csv")
+        from modules.pareto_optimizer import run_pareto_optimization
+        db = pd.read_csv(DB_PATH)
         result = run_pareto_optimization(db, req.constraints, req.n_solutions)
         return result
     except Exception as e:
@@ -70,9 +71,9 @@ async def optimize_pareto(req: ParetoRequest):
 @app.post("/api/v1/optimize/bayesian")
 async def optimize_bayesian(req: BayesianRequest):
     try:
-        from modules.bayesian import run_bayesian_optimization
         import pandas as pd
-        db = pd.read_csv("data/ingredients.csv")
+        from modules.bayesian_optimizer import run_bayesian_optimization
+        db = pd.read_csv(DB_PATH)
         result = run_bayesian_optimization(db, req.constraints, req.n_iterations)
         return result
     except Exception as e:
@@ -90,9 +91,9 @@ async def predict_qsar(req: QSARRequest):
 @app.post("/api/v1/reformulate")
 async def reformulate(req: ReformulateRequest):
     try:
-        from modules.reformulation import run_reformulation
         import pandas as pd
-        db = pd.read_csv("data/ingredients.csv")
+        from modules.reformulation_intelligence import run_reformulation
+        db = pd.read_csv(DB_PATH)
         result = run_reformulation(req.blend, req.failure_type, req.vertical, db, req.constraints)
         return result
     except Exception as e:
