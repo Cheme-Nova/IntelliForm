@@ -3,6 +3,8 @@
 **Agentic AI Green Chemistry Formulation Platform**  
 ChemeNova LLC × ChemRich Global
 
+https://chemenova.com/intelliform/
+
 > Natural language → RDKit cheminformatics → Multi-objective Pareto optimization → EcoMetrics™ sustainability scoring → Regulatory intelligence → ChemRich NJ pilot batch
 
 [![MIT License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
