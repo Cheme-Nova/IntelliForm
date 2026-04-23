@@ -1,0 +1,29 @@
+# IntelliForm (v0.9)
+> Agentic AI Green Chemistry Formulation Platform
+
+IntelliForm is an industrial-strength agentic platform for designing sustainable chemical formulations. It bridges the gap between natural language intent and pilot-ready manufacturing by integrating cheminformatics, multi-objective optimization, and regulatory intelligence.
+
+## System Capabilities
+- **Agentic Swarm:** Orchestrates NL parsing, optimization, and QSAR modeling into a single "Software-to-Steel" pipeline.
+- **Cheminformatics Engine:** Powered by RDKit for SMILES validation and molecular descriptor enrichment.
+- **Optimization Suite:** - **PuLP LP Solver:** For cost-basis ingredient blending.
+    - **NSGA-III Pareto Optimizer:** Multi-objective optimization across performance, cost, and EcoMetrics™.
+- **Predictive ML (QSAR/QSPR):** XGBoost-based property prediction using Mordred descriptors and PubChemPy enrichment.
+- **Regulatory Intelligence:** Real-time screening against REACH, EPA Safer Choice, COSMOS, and EU Ecolabel.
+
+## Technical Stack
+- **Interface:** Streamlit (Dark Theme) with specialized tabs for ROI, Pareto Frontiers, and Model Cards.
+- **Backend:** Python 3.11 with Conda/RDKit environment.
+- **Data & Persistence:** Supabase (PostgreSQL) for project history and active learning feedback loops.
+- **Analytics:** PostHog integration for usage funnel analysis.
+
+## Core Pillars
+- **Green Chemistry:** Focuses on bio-based ingredients and carbon footprint reduction (EcoMetrics™).
+- **Safe-by-Design:** Automated regulatory flagging at the concept stage.
+- **Manufacturing Ready:** Outputs calibrated for ChemRich NJ pilot batching.
+
+## Repository Structure
+- `/modules`: Core engines (QSAR, Pareto, Regulatory, EcoMetrics).
+- `/data`: Curated bio-based ingredient database (SMILES validated).
+- `/migrations`: Supabase SQL schemas for persistent project memory.
+- `agents.py`: LLM agent swarm orchestration logic.
