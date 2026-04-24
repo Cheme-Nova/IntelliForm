@@ -11,6 +11,7 @@ import Pareto from './pages/Pareto'
 import QSAR from './pages/QSAR'
 import Reformulation from './pages/Reformulation'
 import Memory from './pages/Memory'
+import { useAuth } from './auth/AuthContext'
 
 const queryClient = new QueryClient()
 
@@ -28,6 +29,7 @@ const PAGES = {
 }
 
 export default function App() {
+  const auth = useAuth()
   const [activePage, setActivePage] = useState('formulate')
   const PageComponent = PAGES[activePage] || Formulate
   const publicMode = import.meta.env.VITE_PUBLIC_MODE !== '0'
@@ -35,7 +37,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div style={{ display: 'flex', minHeight: '100vh', background: '#0A1628', color: '#fff', fontFamily: 'Inter, sans-serif' }}>
-        <Sidebar activePage={activePage} setActivePage={setActivePage} />
+        <Sidebar activePage={activePage} setActivePage={setActivePage} auth={auth} />
         <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
           {publicMode ? (
             <div style={{

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { api } from '../api/client'
 import { PUBLIC_VERTICAL_GUIDES, VERTICAL_OPTIONS } from '../constants'
+import { useAuth } from '../auth/AuthContext'
 
 const shell = {
   panel: {
@@ -76,6 +77,7 @@ function formatVertical(value) {
 }
 
 export default function Formulate() {
+  const auth = useAuth()
   const [inputText, setInputText] = useState('')
   const [vertical, setVertical] = useState('personal_care')
   const [batchSize, setBatchSize] = useState(1000)
@@ -95,6 +97,10 @@ export default function Formulate() {
   const verticalGuide = PUBLIC_VERTICAL_GUIDES[vertical] || { status: 'beta', label: 'Beta', message: 'No public starter prompts configured for this vertical yet.', prompts: [] }
 
   async function handleSubmit() {
+    if (auth?.supabaseEnabled && !auth?.user) {
+      await auth.signInWithGoogle()
+      return
+    }
     setLoading(true)
     setError(null)
     setResult(null)
@@ -154,6 +160,34 @@ export default function Formulate() {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 420px) minmax(0, 1fr)', gap: '1rem' }}>
         <div>
           <Section eyebrow="Brief Builder" title="Describe the product target">
+            {auth?.supabaseEnabled && !auth?.user ? (
+              <div style={{
+                ...shell.panel,
+                padding: '0.95rem 1rem',
+                background: 'rgba(217, 119, 6, 0.10)',
+                border: '1px solid rgba(245, 158, 11, 0.28)',
+                marginBottom: '1rem',
+              }}>
+                <div style={{ color: '#f8fafc', fontWeight: 700, marginBottom: '0.35rem' }}>Sign in to generate</div>
+                <div style={{ color: '#9fb0c8', fontSize: '0.84rem', lineHeight: 1.6, marginBottom: '0.75rem' }}>
+                  The public edition stays browseable, but live formulation generation is tied to a signed-in free account so usage, history, and future upgrades belong to you.
+                </div>
+                <button
+                  onClick={() => auth.signInWithGoogle()}
+                  style={{
+                    background: '#0D9488',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '0.7rem 1rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Continue with Google
+                </button>
+              </div>
+            ) : null}
             <label style={{ display: 'block', textAlign: 'left', marginBottom: '0.55rem', color: '#94a3b8', fontSize: '0.82rem' }}>
               Natural-language formulation brief
             </label>

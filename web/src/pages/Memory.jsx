@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api/client'
+import { useAuth } from '../auth/AuthContext'
 
 export default function Memory() {
+  const auth = useAuth()
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(false)
   const [n, setN] = useState(20)
@@ -9,7 +11,7 @@ export default function Memory() {
   async function fetchMemory() {
     setLoading(true)
     try {
-      const res = await api.memory(n)
+      const res = auth?.user ? await api.projects(n) : await api.memory(n)
       setRecords(res.data || [])
     } catch (err) {
       setRecords([])
@@ -18,7 +20,7 @@ export default function Memory() {
     }
   }
 
-  useEffect(() => { fetchMemory() }, [])
+  useEffect(() => { fetchMemory() }, [auth?.user])
 
   return (
     <div style={{ maxWidth: '800px' }}>
@@ -26,7 +28,9 @@ export default function Memory() {
         🧠 Memory
       </h1>
       <p style={{ color: '#64748b', marginBottom: '2rem', fontSize: '0.9rem' }}>
-        Formulation run history — every optimization recorded automatically
+        {auth?.user
+          ? 'Your saved formulation runs from the public free account'
+          : 'Anonymous local memory feed. Sign in to save account-linked formulation history.'}
       </p>
 
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', marginBottom: '1.5rem' }}>

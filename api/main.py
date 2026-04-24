@@ -14,6 +14,8 @@ from api.public_access import (
     get_client_id,
     validate_public_access,
 )
+from api.auth import REQUIRE_SIGNIN, extract_bearer_token, is_auth_enabled, verify_supabase_user
+from modules.persistence import load_projects_for_user, load_recent_usage_count, record_usage, save_project
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ingredients_db.csv")
 _EXTRA_ORIGINS = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "").split(",") if origin.strip()]
@@ -69,6 +71,16 @@ def root():
         "health": "/health",
     }
 
+
+def _require_user(request: Request):
+    if not REQUIRE_SIGNIN or not is_auth_enabled():
+        return None
+    token = extract_bearer_token(request)
+    user = verify_supabase_user(token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Sign in required to generate formulations.")
+    return user
+
 @app.get("/health", response_model=HealthResponse)
 def health():
     return {
@@ -101,15 +113,61 @@ def get_failure_types():
 def get_memory(n: int = 10):
     return memory.recent(n)
 
+
+@app.get("/api/v1/me")
+def get_me(request: Request):
+    user = _require_user(request)
+    if not user:
+        return {"auth_enabled": is_auth_enabled(), "signed_in": False}
+    usage_count = load_recent_usage_count(user.get("id", ""))
+    return {
+        "auth_enabled": is_auth_enabled(),
+        "signed_in": True,
+        "user": {
+            "id": user.get("id"),
+            "email": user.get("email"),
+            "name": (user.get("user_metadata") or {}).get("full_name") or user.get("email"),
+            "avatar_url": (user.get("user_metadata") or {}).get("avatar_url"),
+        },
+        "usage": {
+            "last_24h_formulations": usage_count,
+        },
+    }
+
+
+@app.get("/api/v1/projects")
+def get_projects(request: Request, limit: int = 25):
+    user = _require_user(request)
+    if not user:
+        return []
+    return load_projects_for_user(user.get("email", ""), limit=limit)
+
 @app.post("/api/v1/formulate")
-async def formulate(req: FormulateRequest):
+async def formulate(req: FormulateRequest, request: Request):
     try:
+        user = _require_user(request)
         from api.controller import controller
-        return controller.run(
+        result = controller.run(
             req.input_text, req.vertical,
             req.batch_size, req.opt_mode,
             req.constraints
         )
+        if user and result.get("result", {}).get("success"):
+            record_usage(user.get("id", ""), user.get("email", ""), "formulate")
+            save_project({
+                "application": req.vertical,
+                "blend": result.get("result", {}).get("blend", {}),
+                "cost": result.get("result", {}).get("cost_per_kg"),
+                "bio": result.get("result", {}).get("bio_pct"),
+                "perf": result.get("result", {}).get("perf_score"),
+                "eco_score": (result.get("eco") or {}).get("eco_score") if isinstance(result.get("eco"), dict) else None,
+                "eco_grade": (result.get("eco") or {}).get("grade") if isinstance(result.get("eco"), dict) else None,
+                "optimizer": req.opt_mode,
+                "parser": (result.get("parsed") or {}).get("parser_backend"),
+                "relaxed": (result.get("result") or {}).get("relaxed", False),
+                "input": req.input_text,
+            }, session_id=user.get("id", ""), user_email=user.get("email", ""))
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -10,11 +10,21 @@ const client = axios.create({
   }
 })
 
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('intelliform_access_token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 export const api = {
   health: () => client.get('/health'),
   verticals: () => client.get('/api/v1/verticals'),
   failureTypes: () => client.get('/api/v1/failure-types'),
   memory: (n = 10) => client.get(`/api/v1/memory?n=${n}`),
+  me: () => client.get('/api/v1/me'),
+  projects: (limit = 25) => client.get(`/api/v1/projects?limit=${limit}`),
   formulate: (data) => client.post('/api/v1/formulate', data),
   pareto: (data) => client.post('/api/v1/optimize/pareto', data),
   bayesian: (data) => client.post('/api/v1/optimize/bayesian', data),

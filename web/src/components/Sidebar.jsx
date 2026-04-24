@@ -11,7 +11,7 @@ const NAV = [
   { id: 'memory', label: '🧠 Memory' },
 ]
 
-export default function Sidebar({ activePage, setActivePage }) {
+export default function Sidebar({ activePage, setActivePage, auth }) {
   return (
     <aside style={{
       width: '220px',
@@ -54,6 +54,48 @@ export default function Sidebar({ activePage, setActivePage }) {
         ))}
       </nav>
       <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #1e3a5f', color: '#334155', fontSize: '0.7rem' }}>
+        {auth?.supabaseEnabled ? (
+          <div style={{ marginBottom: '0.75rem' }}>
+            {auth.user ? (
+              <>
+                <div style={{ color: '#94a3b8', fontSize: '0.72rem', marginBottom: '0.35rem' }}>{auth.user.email}</div>
+                <button
+                  onClick={auth.signOut}
+                  style={{
+                    background: 'transparent',
+                    color: '#94a3b8',
+                    border: '1px solid #1e3a5f',
+                    borderRadius: '8px',
+                    padding: '0.45rem 0.7rem',
+                    fontSize: '0.72rem',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                  }}
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={auth.signInWithGoogle}
+                style={{
+                  background: '#0D9488',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.5rem 0.75rem',
+                  fontSize: '0.72rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                }}
+              >
+                Sign in with Google
+              </button>
+            )}
+          </div>
+        ) : null}
         v2.1.0 · ChemeNova LLC
       </div>
     </aside>

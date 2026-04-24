@@ -63,6 +63,7 @@ _MEMORY_STORE: Dict[str, List] = {
     "projects": [],
     "feedback": [],
     "bookings": [],
+    "usage": [],
 }
 
 
@@ -88,13 +89,14 @@ def is_connected() -> bool:
 
 # ── Project storage ───────────────────────────────────────────────────────────
 
-def save_project(project: Dict, session_id: str) -> bool:
+def save_project(project: Dict, session_id: str, user_email: str = "") -> bool:
     """
     Persist a formulation project.
     Returns True on success, False on error (never raises).
     """
     record = {
         "session_id":  session_id,
+        "user_email":  user_email,
         "created_at":  datetime.utcnow().isoformat(),
         "application": project.get("application"),
         "blend":       project.get("blend", {}),
@@ -120,6 +122,71 @@ def save_project(project: Dict, session_id: str) -> bool:
     # Fallback to memory
     _MEMORY_STORE["projects"].append(record)
     return False  # indicates memory fallback
+
+
+def load_projects_for_user(user_email: str, limit: int = 50) -> List[Dict]:
+    client = _get_client()
+    if client:
+        try:
+            resp = (
+                client.table("intelliform_projects")
+                .select("*")
+                .eq("user_email", user_email)
+                .order("created_at", desc=True)
+                .limit(limit)
+                .execute()
+            )
+            return resp.data or []
+        except Exception as e:
+            print(f"[persistence] Supabase user load failed: {e}")
+
+    return [p for p in reversed(_MEMORY_STORE["projects"])
+            if p.get("user_email") == user_email][:limit]
+
+
+def record_usage(user_id: str, user_email: str = "", action: str = "formulate") -> bool:
+    record = {
+        "user_id": user_id,
+        "user_email": user_email,
+        "action": action,
+        "created_at": datetime.utcnow().isoformat(),
+    }
+    client = _get_client()
+    if client:
+        try:
+            client.table("intelliform_user_usage").insert(record).execute()
+            return True
+        except Exception as e:
+            print(f"[persistence] Usage save failed: {e}")
+
+    _MEMORY_STORE["usage"].append(record)
+    return False
+
+
+def load_recent_usage_count(user_id: str, hours: int = 24, action: str = "formulate") -> int:
+    cutoff = datetime.utcnow().timestamp() - (hours * 3600)
+    client = _get_client()
+    if client:
+        try:
+            iso_cutoff = datetime.utcfromtimestamp(cutoff).isoformat()
+            resp = (
+                client.table("intelliform_user_usage")
+                .select("user_id", count="exact")
+                .eq("user_id", user_id)
+                .eq("action", action)
+                .gte("created_at", iso_cutoff)
+                .execute()
+            )
+            return resp.count or 0
+        except Exception as e:
+            print(f"[persistence] Usage count failed: {e}")
+
+    return len([
+        item for item in _MEMORY_STORE["usage"]
+        if item.get("user_id") == user_id
+        and item.get("action") == action
+        and datetime.fromisoformat(item.get("created_at")).timestamp() >= cutoff
+    ])
 
 
 def load_projects(session_id: str, limit: int = 50) -> List[Dict]:
@@ -280,8 +347,17 @@ CREATE TABLE IF NOT EXISTS intelliform_pilot_bookings (
     status      TEXT DEFAULT 'pending'
 );
 
+CREATE TABLE IF NOT EXISTS intelliform_user_usage (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     TEXT NOT NULL,
+    user_email  TEXT,
+    action      TEXT NOT NULL DEFAULT 'formulate',
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Index for fast session lookups
 CREATE INDEX IF NOT EXISTS idx_projects_session  ON intelliform_projects(session_id);
 CREATE INDEX IF NOT EXISTS idx_feedback_session  ON intelliform_feedback(session_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_session  ON intelliform_pilot_bookings(session_id);
+CREATE INDEX IF NOT EXISTS idx_usage_user       ON intelliform_user_usage(user_id);
 """

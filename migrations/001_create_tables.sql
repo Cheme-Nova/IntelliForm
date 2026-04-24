@@ -48,12 +48,22 @@ CREATE TABLE IF NOT EXISTS intelliform_pilot_bookings (
     status      TEXT DEFAULT 'pending' CHECK (status IN ('pending','confirmed','completed','cancelled'))
 );
 
+CREATE TABLE IF NOT EXISTS intelliform_user_usage (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     TEXT NOT NULL,
+    user_email  TEXT,
+    action      TEXT NOT NULL DEFAULT 'formulate',
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ── Indexes ────────────────────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_projects_session   ON intelliform_projects(session_id);
 CREATE INDEX IF NOT EXISTS idx_projects_created   ON intelliform_projects(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_feedback_session   ON intelliform_feedback(session_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_session   ON intelliform_pilot_bookings(session_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_status    ON intelliform_pilot_bookings(status);
+CREATE INDEX IF NOT EXISTS idx_usage_user         ON intelliform_user_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_usage_created      ON intelliform_user_usage(created_at DESC);
 
 -- ── Row-level security (enable in Supabase dashboard after running this) ───────
 -- ALTER TABLE intelliform_projects      ENABLE ROW LEVEL SECURITY;

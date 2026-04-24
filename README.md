@@ -51,6 +51,8 @@ Frontend environment:
 
 - `VITE_API_URL=https://your-intelliform-api.onrender.com`
 - `VITE_PUBLIC_MODE=1`
+- `VITE_SUPABASE_URL=https://your-project.supabase.co`
+- `VITE_SUPABASE_ANON_KEY=your_supabase_anon_key`
 - `VITE_PUBLIC_API_KEY=...` (optional, if you turn on public API key mode)
 
 ## Quick Start
@@ -116,7 +118,31 @@ Recommended first deployment:
 
 1. Import the `web/` directory as a Vercel project.
 2. Set `VITE_API_URL` to your Render API URL.
-3. Deploy.
+3. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+4. Enable Google auth in Supabase Auth and add your public site URL plus localhost redirect URLs.
+5. Deploy.
+
+## Google Sign-In For Free Accounts
+
+The public edition now supports a better free-product flow:
+
+- anyone can browse the site
+- signed-in users can generate formulations
+- signed-in users get account-linked saved history
+- generation still runs server-side, so model keys are not exposed in the browser
+
+To enable this properly:
+
+1. Create a Supabase project
+2. Run [migrations/001_create_tables.sql](/Users/makani/IntelliForm/migrations/001_create_tables.sql)
+3. In Supabase Auth, enable Google
+4. Add these env vars to Render:
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+   - `INTELLIFORM_REQUIRE_SIGNIN=1`
+5. Add these env vars to the frontend:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
 
 ## Product Recommendation
 
