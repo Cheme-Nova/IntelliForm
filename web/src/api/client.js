@@ -1,8 +1,13 @@
 import axios from 'axios'
 
+const publicApiKey = import.meta.env.VITE_PUBLIC_API_KEY
+
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
-  headers: { 'Content-Type': 'application/json' }
+  headers: {
+    'Content-Type': 'application/json',
+    ...(publicApiKey ? { 'X-API-Key': publicApiKey } : {}),
+  }
 })
 
 export const api = {

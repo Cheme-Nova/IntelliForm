@@ -1,25 +1,73 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from api.models import (
     FormulateRequest, ParetoRequest, BayesianRequest,
     QSARRequest, ReformulateRequest, HealthResponse
 )
 from api.memory import memory
+from api.public_access import (
+    FREE_TIER_ENABLED,
+    get_client_id,
+    validate_public_access,
+)
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ingredients_db.csv")
+_EXTRA_ORIGINS = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "").split(",") if origin.strip()]
 
 app = FastAPI(title="IntelliForm API", version="2.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://chemenova.com"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "https://chemenova.com",
+        "https://www.chemenova.com",
+        *_EXTRA_ORIGINS,
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def public_quota_middleware(request: Request, call_next):
+    protected_routes = {
+        "/api/v1/formulate": "formulate",
+        "/api/v1/optimize/pareto": "optimize",
+        "/api/v1/optimize/bayesian": "optimize",
+        "/api/v1/predict/qsar": "qsar",
+        "/api/v1/reformulate": "reformulate",
+    }
+    bucket = protected_routes.get(request.url.path)
+    if bucket and request.method.upper() == "POST":
+        allowed, retry_after, error = validate_public_access(request, bucket=bucket)
+        if not allowed:
+            payload = {
+                "detail": error,
+                "retry_after_seconds": retry_after,
+                "free_tier_enabled": FREE_TIER_ENABLED,
+            }
+            headers = {"Retry-After": str(retry_after)} if retry_after else {}
+            return JSONResponse(status_code=429, content=payload, headers=headers)
+    response = await call_next(request)
+    response.headers["X-IntelliForm-Free-Tier"] = "true" if FREE_TIER_ENABLED else "false"
+    response.headers["X-Client-Id"] = get_client_id(request)
+    return response
+
+@app.get("/")
+def root():
+    return {
+        "name": "IntelliForm API",
+        "version": "2.1.0",
+        "free_tier_enabled": FREE_TIER_ENABLED,
+        "docs": "/docs",
+        "health": "/health",
+    }
 
 @app.get("/health", response_model=HealthResponse)
 def health():

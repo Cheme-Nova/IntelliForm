@@ -1,152 +1,142 @@
-# IntelliForm™ v0.9
+# IntelliForm
 
-**Agentic AI Green Chemistry Formulation Platform**  
-ChemeNova LLC × ChemRich Global
+Open-source AI formulation intelligence for specialty chemical R&D teams.
 
-https://chemenova.com/intelliform/
+This repo now supports two modes:
 
-> Natural language → RDKit cheminformatics → Multi-objective Pareto optimization → EcoMetrics™ sustainability scoring → Regulatory intelligence → ChemRich NJ pilot batch
+- `web/` + `api/`: the public free product shape
+- `app.py`: the original Streamlit lab app for demos, research, and internal workflows
 
-[![MIT License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](https://python.org)
-[![Streamlit](https://img.shields.io/badge/streamlit-1.32+-red)](https://streamlit.io)
+## What To Deploy
 
----
+If you want a public version that people can actually use, deploy:
 
-## What IntelliForm Does
+- `web/` to Vercel
+- `api/` to Render or Railway
 
-IntelliForm is an open-source agentic AI platform for designing sustainable chemical formulations. It combines:
+Do not treat Streamlit as the long-term public product surface. Keep Streamlit for:
 
-- **AI-powered NL parsing** — describe your formulation need in plain English
-- **PuLP LP optimizer** — finds the optimal blend from 35+ bio-based ingredients
-- **NSGA-III Pareto optimizer** — multi-objective optimization across cost, sustainability, and performance
-- **EcoMetrics™ scoring** — 5-axis sustainability radar vs. petrochemical baseline
-- **QSAR/QSPR models** — XGBoost-based property prediction from molecular fingerprints
-- **Regulatory intelligence** — REACH, EPA Safer Choice, EU Ecolabel, COSMOS status per ingredient
-- **Branded PDF proposals** — one-click professional deliverable
-- **Supabase persistence** — project history and active learning feedback loop
-- **PostHog analytics** — usage tracking and funnel analysis
+- internal chemistry workbench usage
+- demos and investor screenshots
+- rapid module prototyping
 
----
+## Why This Split
+
+The React + FastAPI stack is a better public free product because it gives you:
+
+- a cleaner product UX than a monolithic Streamlit app
+- easier auth and rate limiting
+- better control over API costs
+- a path to separate public and enterprise editions
+
+## Public Free Tier Features
+
+The API now includes a lightweight free-tier protection layer:
+
+- hourly request limits for public generation endpoints
+- separate QSAR request budget
+- optional public API key support
+- CORS configured for local dev plus deploy-time custom origins
+
+Environment variables:
+
+- `INTELLIFORM_FREE_TIER=1`
+- `INTELLIFORM_FREE_TIER_MAX_REQUESTS_PER_HOUR=8`
+- `INTELLIFORM_FREE_TIER_MAX_QSAR_PER_HOUR=20`
+- `INTELLIFORM_FREE_TIER_REQUIRE_API_KEY=0`
+- `INTELLIFORM_PUBLIC_API_KEY=...` (optional)
+- `ALLOWED_ORIGINS=https://your-vercel-app.vercel.app,https://yourdomain.com`
+
+Frontend environment:
+
+- `VITE_API_URL=https://your-intelliform-api.onrender.com`
+- `VITE_PUBLIC_MODE=1`
+- `VITE_PUBLIC_API_KEY=...` (optional, if you turn on public API key mode)
 
 ## Quick Start
 
-```bash
-# 1. Clone
-git clone https://github.com/chemenova/intelliform.git
-cd intelliform
+### 1. Streamlit Lab App
 
-# 2. Create environment (RDKit requires conda)
+```bash
 conda create -n intelliform python=3.11 -y
 conda activate intelliform
 conda install -c conda-forge rdkit -y
-
-# 3. Install dependencies
 pip install -r requirements.txt
-
-# 4. Configure (all optional for first run)
-cp .env.example .env
-# Add GROQ_API_KEY for full NL understanding (free at console.groq.com)
-
-# 5. Run
 streamlit run app.py
 ```
 
----
+### 2. API
+
+```bash
+pip install -r requirements.txt
+uvicorn api.main:app --reload
+```
+
+API runs at `http://localhost:8000`.
+
+### 3. Web
+
+```bash
+cd web
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Web runs at `http://localhost:5173`.
+
+## Deployment
+
+### Backend on Render
+
+This repo includes:
+
+- [render.yaml](/Users/makani/IntelliForm/render.yaml)
+- [Procfile](/Users/makani/IntelliForm/Procfile)
+- [runtime.txt](/Users/makani/IntelliForm/runtime.txt)
+
+Recommended first deployment:
+
+1. Create a new Render Web Service from this repo.
+2. Use the existing `render.yaml`.
+3. Add your env vars:
+   - `GROQ_API_KEY`
+   - `ALLOWED_ORIGINS`
+   - optional Supabase/PostHog keys
+4. Deploy and verify `/health`.
+
+### Frontend on Vercel
+
+This repo includes:
+
+- [web/vercel.json](/Users/makani/IntelliForm/web/vercel.json)
+- [web/.env.example](/Users/makani/IntelliForm/web/.env.example)
+
+Recommended first deployment:
+
+1. Import the `web/` directory as a Vercel project.
+2. Set `VITE_API_URL` to your Render API URL.
+3. Deploy.
+
+## Product Recommendation
+
+Best structure going forward:
+
+- `IntelliForm Public`: free, rate-limited, showcase-focused, lighter feature set
+- `IntelliForm Streamlit Lab`: internal R&D cockpit
+- `IntelliForm Enterprise`: paid product with auth, persistence, workflows, and higher-trust outputs
+
+That lets you grow without forcing one codebase surface to do everything.
 
 ## Reliability Upgrades
 
-This repo now includes a tighter parser-and-controller path inspired by the FormulAI build:
+This repo already includes the public-controller hardening work:
 
-- model output is normalized locally instead of trusting brittle provider JSON enforcement
-- parsed brief constraints are propagated into optimization instead of being discarded
-- vertical aliases are canonicalized across parser, API, optimizer, and web UI
-- the web formulation page now exposes parsed intent, constraint posture, and showcase prompts more clearly
-
----
-
-## Repo Structure
-
-```
-intelliform/
-├── app.py                          ← Main UI (7 tabs)
-├── requirements.txt
-├── .env.example
-├── .streamlit/
-│   └── config.toml                 ← Dark theme
-├── data/
-│   └── ingredients_db.csv          ← 35 bio-based ingredients
-├── modules/
-│   ├── llm_parser.py               ← Groq / Ollama / regex NL parser
-│   ├── optimizer.py                ← PuLP LP solver
-│   ├── pareto_optimizer.py         ← NSGA-III multi-objective optimizer
-│   ├── ecometrics.py               ← EcoMetrics™ 5-axis scoring
-│   ├── qsar.py                     ← QSAR/QSPR ML models (XGBoost)
-│   ├── regulatory.py               ← Regulatory intelligence engine
-│   ├── persistence.py              ← Supabase / in-memory storage
-│   ├── pdf_proposal.py             ← Branded PDF generation (ReportLab)
-│   ├── agents.py                   ← LLM agent swarm
-│   ├── chem_utils.py               ← RDKit helpers
-│   └── analytics.py                ← PostHog wrapper
-├── migrations/
-│   └── 001_create_tables.sql       ← Run in Supabase SQL editor
-└── tests/
-    └── test_optimizer.py
-```
-
----
-
-## Tabs
-
-| Tab | Description |
-|-----|-------------|
-| 🚀 Agentic Swarm | NL parse → optimize → EcoMetrics → Regulatory → QSAR |
-| 🌿 EcoMetrics™ | Sustainability radar + petrochemical baseline |
-| 📋 Regulatory | REACH, EPA Safer Choice, COSMOS, EU Ecolabel per ingredient |
-| 📈 Pareto Frontier | 3D multi-objective scatter + TOPSIS recommendation |
-| 🔬 Model Card | QSAR benchmarks, live prediction, active learning |
-| 📊 ROI & History | Project history + Supabase migration SQL |
-| 📄 Proposal | Branded PDF or Markdown download |
-
----
-
-## Supabase Setup (optional)
-
-1. Create a project at [supabase.com](https://supabase.com)
-2. Run `migrations/001_create_tables.sql` in the SQL editor
-3. Add `SUPABASE_URL` and `SUPABASE_ANON_KEY` to `.env`
-
-Without Supabase, IntelliForm falls back to in-memory storage (session-only).
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). Chemistry contributions (new ingredients, SMILES corrections) are as welcome as code contributions.
-
-## Showcase Results
-
-Proof-style tested outputs from the upgraded controller are in [examples/showcase/README.md](./examples/showcase/README.md). The showcase pack includes:
-
-- successful agricultural and food-vertical runs
-- an explicit infeasible industrial case that demonstrates honest constraint handling
-- raw JSON captures with parsed brief, resolved vertical, constraints used, and result data
-
----
-
-## Citation
-
-If you use IntelliForm in research:
-
-```
-Makani, S. et al. "IntelliForm: An Agentic AI Platform for Green Chemistry Formulation."
-ChemRxiv (2026). DOI: 10.26434/chemrxiv.15000857
-```
-
----
+- local JSON normalization instead of brittle provider-only enforcement
+- canonical vertical mapping across parser, controller, and UI
+- brief-aware contradiction filtering
+- proof-style showcase examples under [examples/showcase/README.md](/Users/makani/IntelliForm/examples/showcase/README.md)
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
-
-**ChemeNova LLC × ChemRich Global | shehan@chemenova.com | Pearl River, NJ**
+MIT — see [LICENSE](/Users/makani/IntelliForm/LICENSE)

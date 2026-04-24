@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: intelliform-api
+    runtime: python
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: INTELLIFORM_FREE_TIER
+        value: "1"
+      - key: INTELLIFORM_FREE_TIER_MAX_REQUESTS_PER_HOUR
+        value: "8"
+      - key: INTELLIFORM_FREE_TIER_MAX_QSAR_PER_HOUR
+        value: "20"
