@@ -173,13 +173,36 @@ def _build_result(data: dict, backend: str, raw_input: str) -> ParseResult:
     default_bio = profile.default_min_bio if profile else 90.0
     default_perf = profile.default_min_perf if profile else 82.0
 
+    high_bio_verticals = {"personal_care", "food"}
+    medium_bio_verticals = {"fabric_laundry", "agricultural"}
+    lower_bio_verticals = {"industrial", "paint_coatings"}
+
     if any(token in raw_text for token in ["100%", "99%", "98%", "fully bio"]):
         default_bio = max(default_bio, 98.0)
     elif any(token in raw_text for token in ["bio-based", "biobased", "naturally derived", "plant-based", "renewable"]):
-        default_bio = max(default_bio, min(95.0, default_bio + 5.0))
+        if application_type in high_bio_verticals:
+            default_bio = max(default_bio, min(95.0, default_bio + 10.0))
+        elif application_type in medium_bio_verticals:
+            default_bio = max(default_bio, min(85.0, default_bio + 8.0))
+        elif application_type in lower_bio_verticals:
+            default_bio = max(default_bio, min(70.0, default_bio + 10.0))
+        else:
+            default_bio = max(default_bio, min(85.0, default_bio + 5.0))
 
     if any(token in raw_text for token in ["industrial", "degreaser", "cleaner", "mild", "skin", "conditioner", "shampoo"]):
         default_perf = max(default_perf, 85.0)
+
+    if any(token in raw_text for token in ["release agent", "release coating", "concrete release", "demold"]):
+        default_bio = min(default_bio, 70.0)
+        default_perf = max(default_perf, 78.0)
+
+    if any(token in raw_text for token in ["fabric softener", "softener"]):
+        default_bio = min(max(default_bio, 55.0), 75.0)
+        default_perf = max(default_perf, 72.0)
+
+    if any(token in raw_text for token in ["detergent", "laundry liquid", "stain remover"]):
+        default_bio = min(max(default_bio, 50.0), 80.0)
+        default_perf = max(default_perf, 75.0)
 
     max_cost = _clamp(_to_float(data.get("max_cost"), default_cost), 0.5, 100.0)
     min_bio = _clamp(_to_float(data.get("min_bio"), default_bio), 0.0, 100.0)
@@ -304,21 +327,41 @@ def _parse_with_regex(text: str) -> ParseResult:
     app = _infer_application_type(text)
     profile = get_profile(app) if app != "unknown" else None
     max_cost = float(m.group(1)) if m else (profile.default_max_cost if profile else 5.0)
+    base_bio = profile.default_min_bio if profile else 90.0
+    base_perf = profile.default_min_perf if profile else 82.0
 
     if any(x in t for x in ["100%", "99%", "98%", "fully bio", "fully natural"]):
         min_bio = 98.0
     elif any(x in t for x in ["bio-based", "biobased", "naturally derived", "high bio", "sustainable", "plant-based"]):
-        base = profile.default_min_bio if profile else 90.0
-        min_bio = min(95.0, base + 5.0)
+        if app in {"personal_care", "food"}:
+            min_bio = min(95.0, base_bio + 10.0)
+        elif app in {"fabric_laundry", "agricultural"}:
+            min_bio = min(85.0, base_bio + 8.0)
+        elif app in {"industrial", "paint_coatings"}:
+            min_bio = min(70.0, base_bio + 10.0)
+        else:
+            min_bio = min(85.0, base_bio + 5.0)
     else:
-        min_bio = profile.default_min_bio if profile else 90.0
+        min_bio = base_bio
+
+    if any(x in t for x in ["release agent", "release coating", "concrete release", "demold"]):
+        min_bio = min(min_bio, 70.0)
+        base_perf = max(base_perf, 78.0)
+
+    if any(x in t for x in ["fabric softener", "softener"]):
+        min_bio = min(max(min_bio, 55.0), 75.0)
+        base_perf = max(base_perf, 72.0)
+
+    if any(x in t for x in ["detergent", "laundry liquid", "stain remover"]):
+        min_bio = min(max(min_bio, 50.0), 80.0)
+        base_perf = max(base_perf, 75.0)
 
     if any(x in t for x in ["foaming", "high foam", "surfactant"]):
         min_perf = 88.0
     elif any(x in t for x in ["skin", "cosmetics", "personal care", "mild", "industrial", "degreaser", "conditioner", "shampoo"]):
         min_perf = 85.0
     else:
-        min_perf = profile.default_min_perf if profile else 82.0
+        min_perf = base_perf
 
     return ParseResult(
         max_cost=round(max_cost, 2),

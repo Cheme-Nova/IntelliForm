@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { api } from '../api/client'
-import { SHOWCASE_PROMPTS, VERTICAL_OPTIONS } from '../constants'
+import { PUBLIC_VERTICAL_GUIDES, VERTICAL_OPTIONS } from '../constants'
 
 const shell = {
   panel: {
@@ -92,6 +92,7 @@ export default function Formulate() {
     () => Object.entries(metrics?.blend || {}).sort((a, b) => b[1] - a[1]),
     [metrics],
   )
+  const verticalGuide = PUBLIC_VERTICAL_GUIDES[vertical] || { status: 'beta', label: 'Beta', message: 'No public starter prompts configured for this vertical yet.', prompts: [] }
 
   async function handleSubmit() {
     setLoading(true)
@@ -213,29 +214,66 @@ export default function Formulate() {
             </button>
           </Section>
 
-          <Section eyebrow="Proof Prompts" title="Market-relevant showcase briefs">
-            <div style={{ display: 'grid', gap: '0.8rem' }}>
-              {SHOWCASE_PROMPTS.map((example) => (
-                <button
-                  key={example.title}
-                  type="button"
-                  onClick={() => loadPrompt(example)}
-                  style={{
-                    ...shell.panel,
-                    padding: '0.95rem 1rem',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    background: 'rgba(8, 18, 35, 0.86)',
-                  }}
-                >
-                  <div style={{ color: '#f8fafc', fontWeight: 700, marginBottom: '0.25rem' }}>{example.title}</div>
-                  <div style={{ color: '#7dd3c8', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.4rem' }}>
-                    {formatVertical(example.vertical)}
-                  </div>
-                  <div style={{ color: '#93a4bd', fontSize: '0.84rem', lineHeight: 1.6 }}>{example.text}</div>
-                </button>
-              ))}
+          <Section eyebrow="Starter Prompts" title={`${formatVertical(vertical)} public demo prompts`}>
+            <div style={{
+              ...shell.panel,
+              padding: '0.95rem 1rem',
+              background: verticalGuide.status === 'validated' ? 'rgba(13, 148, 136, 0.10)' : 'rgba(217, 119, 6, 0.10)',
+              border: verticalGuide.status === 'validated'
+                ? '1px solid rgba(125, 211, 200, 0.28)'
+                : '1px solid rgba(245, 158, 11, 0.28)',
+              marginBottom: '0.9rem',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', marginBottom: '0.45rem' }}>
+                <div style={{ color: '#f8fafc', fontWeight: 700 }}>{formatVertical(vertical)}</div>
+                <div style={{
+                  color: verticalGuide.status === 'validated' ? '#7dd3c8' : '#fbbf24',
+                  fontSize: '0.72rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.12em',
+                  fontWeight: 700,
+                }}>
+                  {verticalGuide.label}
+                </div>
+              </div>
+              <div style={{ color: '#9fb0c8', fontSize: '0.84rem', lineHeight: 1.6 }}>
+                {verticalGuide.message}
+              </div>
             </div>
+
+            {verticalGuide.prompts.length > 0 ? (
+              <div style={{ display: 'grid', gap: '0.8rem' }}>
+                {verticalGuide.prompts.map((example) => (
+                  <button
+                    key={example.title}
+                    type="button"
+                    onClick={() => loadPrompt(example)}
+                    style={{
+                      ...shell.panel,
+                      padding: '0.95rem 1rem',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      background: 'rgba(8, 18, 35, 0.86)',
+                    }}
+                  >
+                    <div style={{ color: '#f8fafc', fontWeight: 700, marginBottom: '0.25rem' }}>{example.title}</div>
+                    <div style={{ color: '#7dd3c8', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.4rem' }}>
+                      {formatVertical(example.vertical)}
+                    </div>
+                    <div style={{ color: '#93a4bd', fontSize: '0.84rem', lineHeight: 1.6, marginBottom: '0.5rem' }}>{example.text}</div>
+                    {example.note ? (
+                      <div style={{ color: '#64748b', fontSize: '0.76rem', lineHeight: 1.5 }}>
+                        {example.note}
+                      </div>
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div style={{ color: '#94a3b8', fontSize: '0.86rem', lineHeight: 1.6 }}>
+                No validated public starter prompts for this vertical yet. For a first successful demo, switch to Agricultural, Food & Beverage, or Fabric & Laundry.
+              </div>
+            )}
           </Section>
         </div>
 
