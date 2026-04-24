@@ -3,6 +3,7 @@
 # Core UI
 streamlit>=1.32.0
 python-dotenv>=1.0.0
+fastapi>=0.115.0            # public API backend
 
 # Data & ML
 pandas>=2.0.0
