@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { api } from '../api/client'
 import { PUBLIC_VERTICAL_GUIDES, VERTICAL_OPTIONS } from '../constants'
 import { useAuth } from '../auth/AuthContext'
+import { saveLastRun } from '../lib/session'
 
 const shell = {
   panel: {
@@ -113,6 +114,15 @@ export default function Formulate() {
         constraints: {},
       })
       setResult(res.data)
+      saveLastRun({
+        request: {
+          inputText,
+          vertical,
+          batchSize,
+          optMode,
+        },
+        response: res.data,
+      })
     } catch (err) {
       setError(err.response?.data?.detail || err.message)
     } finally {

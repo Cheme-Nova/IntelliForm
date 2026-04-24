@@ -22,6 +22,37 @@ export default function Memory() {
 
   useEffect(() => { fetchMemory() }, [auth?.user])
 
+  function normalizeRecord(rec) {
+    if (auth?.user) {
+      const payload = {
+        application: rec.application,
+        blend: rec.blend,
+        cost_per_kg: rec.cost_per_kg,
+        bio_pct: rec.bio_pct,
+        perf_score: rec.perf_score,
+        eco_score: rec.eco_score,
+        eco_grade: rec.eco_grade,
+        optimizer: rec.optimizer,
+        parser: rec.parser,
+        relaxed: rec.relaxed,
+        nl_input: rec.nl_input,
+      }
+      return {
+        label: rec.application || 'project',
+        timestamp: rec.created_at || '',
+        vertical: rec.application,
+        payload,
+      }
+    }
+
+    return {
+      label: rec.type || 'event',
+      timestamp: rec.timestamp || '',
+      vertical: rec.vertical,
+      payload: rec.payload || {},
+    }
+  }
+
   return (
     <div style={{ maxWidth: '800px' }}>
       <h1 style={{ color: '#0D9488', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.25rem' }}>
@@ -69,7 +100,10 @@ export default function Memory() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {records.slice().reverse().map((rec, i) => (
+          {records.slice().reverse().map((rec, i) => {
+            const item = normalizeRecord(rec)
+            const preview = JSON.stringify(item.payload, null, 2) || ''
+            return (
             <div key={i} style={{
               background: '#0D1F3C', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '1rem'
             }}>
@@ -78,21 +112,21 @@ export default function Memory() {
                   background: '#0D948822', color: '#0D9488', padding: '2px 8px',
                   borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600
                 }}>
-                  {rec.type}
+                  {item.label}
                 </span>
-                <span style={{ color: '#334155', fontSize: '0.75rem' }}>{rec.timestamp}</span>
+                <span style={{ color: '#334155', fontSize: '0.75rem' }}>{item.timestamp}</span>
               </div>
-              {rec.vertical && (
+              {item.vertical && (
                 <div style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '4px' }}>
-                  Vertical: {rec.vertical}
+                  Vertical: {item.vertical}
                 </div>
               )}
               <pre style={{ color: '#475569', fontSize: '0.75rem', overflow: 'auto', margin: 0 }}>
-                {JSON.stringify(rec.payload, null, 2).slice(0, 200)}
-                {JSON.stringify(rec.payload).length > 200 ? '...' : ''}
+                {preview.slice(0, 400)}
+                {preview.length > 400 ? '...' : ''}
               </pre>
             </div>
-          ))}
+          )})}
         </div>
       )}
     </div>

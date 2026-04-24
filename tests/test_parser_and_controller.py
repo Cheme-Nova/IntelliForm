@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 
 import pandas as pd
 
@@ -100,3 +101,43 @@ def test_controller_uses_parsed_constraints_and_filters_vertical(monkeypatch):
     assert captured["min_bio"] >= 92.0
     assert captured["min_perf"] >= 84.0
     assert response["meta"]["resolved_vertical"] == "fabric_laundry"
+
+
+def test_public_api_helpers_return_expected_shapes():
+    from api.main import optimize_pareto, predict_qsar, reformulate
+    from api.models import ParetoRequest, QSARRequest, ReformulateRequest
+
+    async def run_checks():
+        pareto = await optimize_pareto(
+            ParetoRequest(
+                vertical="agricultural",
+                constraints={"max_cost": 8, "min_bio": 70, "min_perf": 75},
+                n_solutions=6,
+            )
+        )
+        assert "frontier" in pareto
+        assert "recommended" in pareto
+        assert len(pareto["frontier"]) > 0
+
+        qsar = await predict_qsar(
+            QSARRequest(
+                smiles=["CCO", "O=C(O)c1ccccc1"],
+                properties=["biodegradability", "ecotox", "performance"],
+            )
+        )
+        assert "predictions" in qsar
+        assert len(qsar["predictions"]) == 2
+        assert "biodegradability" in qsar["predictions"][0]
+
+        reform = await reformulate(
+            ReformulateRequest(
+                blend={"SLS": 12, "Cocamide DEA": 3, "Water": 85},
+                failure_type="viscosity",
+                vertical="personal_care",
+                constraints={},
+            )
+        )
+        assert "root_cause" in reform
+        assert "best_suggestion" in reform
+
+    asyncio.run(run_checks())

@@ -16,6 +16,8 @@ from api.public_access import (
 )
 from api.auth import REQUIRE_SIGNIN, extract_bearer_token, is_auth_enabled, verify_supabase_user
 from modules.persistence import load_projects_for_user, load_recent_usage_count, record_usage, save_project
+from api.controller import _canonicalize_vertical, _merge_constraints, _serialize
+from modules.verticals import filter_db_by_vertical
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ingredients_db.csv")
 _EXTRA_ORIGINS = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "").split(",") if origin.strip()]
@@ -174,22 +176,47 @@ async def formulate(req: FormulateRequest, request: Request):
 @app.post("/api/v1/optimize/pareto")
 async def optimize_pareto(req: ParetoRequest):
     try:
-        import pandas as pd
         from modules.pareto_optimizer import run_pareto_optimization
+        import pandas as pd
         db = pd.read_csv(DB_PATH)
-        result = run_pareto_optimization(db, req.constraints, req.n_solutions)
-        return result
+        vertical = _canonicalize_vertical(req.vertical)
+        filtered_db = filter_db_by_vertical(db, vertical)
+        max_cost, min_bio, min_perf = _merge_constraints(
+            type("Parsed", (), {"max_cost": 999.0, "min_bio": 0.0, "min_perf": 0.0})(),
+            req.constraints,
+            vertical,
+        )
+        result = run_pareto_optimization(filtered_db, max_cost, min_bio, min_perf, req.n_solutions)
+        return _serialize(result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/optimize/bayesian")
 async def optimize_bayesian(req: BayesianRequest):
     try:
-        import pandas as pd
         from modules.bayesian_optimizer import run_bayesian_optimization
+        import pandas as pd
         db = pd.read_csv(DB_PATH)
-        result = run_bayesian_optimization(db, req.constraints, req.n_iterations)
-        return result
+        vertical = _canonicalize_vertical(req.vertical)
+        filtered_db = filter_db_by_vertical(db, vertical)
+        max_cost, min_bio, min_perf = _merge_constraints(
+            type("Parsed", (), {"max_cost": 999.0, "min_bio": 0.0, "min_perf": 0.0})(),
+            req.constraints,
+            vertical,
+        )
+        result, state = run_bayesian_optimization(
+            filtered_db,
+            max_cost,
+            min_bio,
+            min_perf,
+            state=req.state,
+            n_random_init=max(5, req.n_iterations),
+            vertical=vertical,
+        )
+        return {
+            "result": _serialize(result),
+            "state": _serialize(state),
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -197,8 +224,11 @@ async def optimize_bayesian(req: BayesianRequest):
 async def predict_qsar(req: QSARRequest):
     try:
         from modules.qsar import predict_properties
-        result = predict_properties(req.smiles, req.properties)
-        return result
+        predictions = [predict_properties(smiles) for smiles in req.smiles]
+        return {
+            "predictions": _serialize(predictions),
+            "properties": req.properties,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -206,9 +236,33 @@ async def predict_qsar(req: QSARRequest):
 async def reformulate(req: ReformulateRequest):
     try:
         import pandas as pd
-        from modules.reformulation_intelligence import run_reformulation
+        from modules.reformulation_intelligence import run_reformulation_intelligence
         db = pd.read_csv(DB_PATH)
-        result = run_reformulation(req.blend, req.failure_type, req.vertical, db, req.constraints)
-        return result
+        failure_map = {
+            "viscosity": "viscosity_too_high",
+            "stability": "stability_failure",
+            "pH": "ph_too_high",
+            "color": "colour_complaint",
+            "odor": "odour_complaint",
+            "certification": "certification_rejection",
+            "eco_score": "performance_shortfall",
+        }
+        normalized_failure = failure_map.get(req.failure_type, req.failure_type)
+        default_test_data = {
+            "viscosity_too_high": {"measured_viscosity_cP": 8500, "target_viscosity_max_cP": 5000},
+            "stability_failure": {"stability_condition": "40C / 75% RH", "failure_timepoint_weeks": 4, "failure_observation": "phase drift"},
+            "ph_too_high": {"measured_ph": 8.8, "target_ph_min": 5.0, "target_ph_max": 6.5},
+            "colour_complaint": {"observed_colour": "yellow shift", "target_colour": "clear"},
+            "odour_complaint": {"odour_description": "sharp solvent note"},
+            "certification_rejection": {"certification_name": "Public demo certification screen", "rejected_ingredient": next(iter(req.blend.keys()), "unknown"), "rejection_reason": "Requires cleaner input profile"},
+            "performance_shortfall": {"measured_performance": 62, "target_performance": 80, "performance_metric": "eco score proxy"},
+        }
+        result = run_reformulation_intelligence(
+            req.blend,
+            db,
+            normalized_failure,
+            default_test_data.get(normalized_failure, {}),
+        )
+        return _serialize(result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

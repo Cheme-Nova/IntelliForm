@@ -1,155 +1,83 @@
-import { useState } from 'react'
-import { api } from '../api/client'
+import { useMemo } from 'react'
+import { loadLastRun } from '../lib/session'
 
-const CERTS = ['ECOCERT', 'COSMOS', 'USDA_BIO', 'EU_ECOLABEL', 'CRADLE_TO_CRADLE', 'NSF']
-
-const Badge = ({ name, status }) => {
-  const color = status === 'pass' ? '#0D9488' : status === 'fail' ? '#ef4444' : '#D97706'
-  const bg = status === 'pass' ? '#0D948822' : status === 'fail' ? '#ef444422' : '#D9770622'
-  const label = status === 'pass' ? '✅ Pass' : status === 'fail' ? '❌ Fail' : '⚠️ Review'
+const Badge = ({ name, verdict, confidence }) => {
+  const isPass = String(verdict || '').includes('Pass')
+  const isWarn = String(verdict || '').includes('Partial') || String(verdict || '').includes('Borderline')
+  const color = isPass ? '#0D9488' : isWarn ? '#D97706' : '#ef4444'
+  const bg = isPass ? '#0D948822' : isWarn ? '#D9770622' : '#ef444422'
   return (
     <div style={{
       background: bg, border: `1px solid ${color}`, borderRadius: '8px',
-      padding: '1rem', flex: 1, minWidth: '140px'
+      padding: '1rem', flex: 1, minWidth: '180px'
     }}>
       <div style={{ color: '#94a3b8', fontSize: '0.7rem', marginBottom: '4px' }}>{name}</div>
-      <div style={{ color, fontWeight: 700, fontSize: '1rem' }}>{label}</div>
+      <div style={{ color, fontWeight: 700, fontSize: '1rem' }}>{verdict || 'Review'}</div>
+      <div style={{ color: '#64748b', fontSize: '0.75rem', marginTop: '0.25rem' }}>{confidence || '—'} confidence</div>
     </div>
   )
 }
 
 export default function Certifications() {
-  const [blend, setBlend] = useState('{"SLS": 12, "Cocamide DEA": 3, "Water": 85}')
-  const [vertical, setVertical] = useState('personal_care')
-  const [bioPct, setBioPct] = useState(80)
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState(null)
-  const [error, setError] = useState(null)
+  const session = useMemo(() => loadLastRun(), [])
+  const result = session?.response?.cert
 
-  async function handleRun() {
-    setLoading(true)
-    setError(null)
-    try {
-      const parsedBlend = JSON.parse(blend)
-      const res = await api.formulate({
-        input_text: 'check certifications',
-        vertical,
-        batch_size: 1000,
-        opt_mode: 'single',
-        constraints: { blend: parsedBlend, bio_pct: bioPct }
-      })
-      setResult(res.data?.cert)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+  if (!result) {
+    return (
+      <div style={{ maxWidth: '800px' }}>
+        <h1 style={{ color: '#0D9488', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.25rem' }}>
+          ✅ Certifications
+        </h1>
+        <p style={{ color: '#64748b', marginBottom: '2rem', fontSize: '0.9rem' }}>
+          Certification posture from the most recent formulation session
+        </p>
+        <div style={{
+          padding: '2rem', background: '#0D1F3C', border: '1px solid #1e3a5f',
+          borderRadius: '8px', color: '#94a3b8', textAlign: 'center', fontSize: '0.9rem', lineHeight: 1.7
+        }}>
+          Run a formulation first to populate certification predictions.
+        </div>
+      </div>
+    )
   }
 
+  const predictions = Object.entries(result.predictions || {})
+
   return (
-    <div style={{ maxWidth: '800px' }}>
+    <div style={{ maxWidth: '900px' }}>
       <h1 style={{ color: '#0D9488', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.25rem' }}>
         ✅ Certifications
       </h1>
       <p style={{ color: '#64748b', marginBottom: '2rem', fontSize: '0.9rem' }}>
-        Check blend eligibility against ECOCERT, COSMOS, USDA, EU Ecolabel and more
+        Certification predictions for the latest formulation session
       </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div>
-          <label style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '4px' }}>BLEND (JSON)</label>
-          <textarea
-            value={blend}
-            onChange={e => setBlend(e.target.value)}
-            rows={4}
-            style={{
-              width: '100%', background: '#0D1F3C', border: '1px solid #1e3a5f',
-              borderRadius: '8px', color: '#fff', padding: '1rem', fontSize: '0.85rem',
-              fontFamily: 'monospace', boxSizing: 'border-box', resize: 'vertical'
-            }}
-          />
-        </div>
-
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <div>
-            <label style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '4px' }}>VERTICAL</label>
-            <select
-              value={vertical}
-              onChange={e => setVertical(e.target.value)}
-              style={{
-                background: '#0D1F3C', border: '1px solid #1e3a5f',
-                borderRadius: '6px', color: '#fff', padding: '0.5rem', fontSize: '0.85rem'
-              }}
-            >
-              {['personal_care','home_care','industrial','pharma','food','agriculture'].map(v => (
-                <option key={v} value={v}>{v.replace('_',' ')}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '4px' }}>BIO-BASED %</label>
-            <input
-              type="number"
-              value={bioPct}
-              onChange={e => setBioPct(Number(e.target.value))}
-              min={0} max={100}
-              style={{
-                width: '80px', background: '#0D1F3C', border: '1px solid #1e3a5f',
-                borderRadius: '6px', color: '#fff', padding: '0.5rem', fontSize: '0.85rem'
-              }}
-            />
-          </div>
-          <button
-            onClick={handleRun}
-            disabled={loading}
-            style={{
-              background: loading ? '#334155' : '#0D9488', color: '#fff',
-              border: 'none', borderRadius: '8px', padding: '0.6rem 1.5rem',
-              fontSize: '0.9rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? 'Checking...' : 'Check Certs →'}
-          </button>
+      <div style={{ marginBottom: '1rem', background: '#0D1F3C', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '1rem' }}>
+        <div style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '0.35rem' }}>TOP CERTIFICATION PATH</div>
+        <div style={{ color: '#f8fafc', fontWeight: 700, fontSize: '1.1rem' }}>{result.top_certification || '—'}</div>
+        <div style={{ color: '#94a3b8', marginTop: '0.4rem', fontSize: '0.85rem' }}>
+          Bio-based: {typeof result.bio_based_pct === 'number' ? `${result.bio_based_pct.toFixed(1)}%` : '—'} · Overall green score: {typeof result.overall_green_score === 'number' ? result.overall_green_score.toFixed(1) : '—'}
         </div>
       </div>
 
-      {error && (
-        <div style={{
-          padding: '1rem', background: '#450a0a', border: '1px solid #7f1d1d',
-          borderRadius: '8px', color: '#fca5a5', fontSize: '0.85rem', marginBottom: '1rem'
-        }}>
-          {error}
-        </div>
-      )}
+      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+        {predictions.map(([name, prediction]) => (
+          <Badge key={name} name={name} verdict={prediction.verdict} confidence={prediction.confidence} />
+        ))}
+      </div>
 
-      {result ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            {CERTS.map(cert => (
-              <Badge
-                key={cert}
-                name={cert.replace(/_/g, ' ')}
-                status={result[cert.toLowerCase()]?.status || 'review'}
-              />
-            ))}
+      {result.recommended_certs?.length ? (
+        <div style={{ background: '#0D1F3C', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '1rem' }}>
+          <div style={{ color: '#D97706', fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.85rem' }}>
+            Recommended next certifications
           </div>
-          {result.notes && (
-            <div style={{
-              padding: '1rem', background: '#0D1F3C', border: '1px solid #1e3a5f',
-              borderRadius: '8px', color: '#94a3b8', fontSize: '0.85rem'
-            }}>
-              {result.notes}
+          {result.recommended_certs.map((item) => (
+            <div key={item} style={{ color: '#cbd5e1', fontSize: '0.86rem', marginBottom: '0.35rem' }}>
+              · {item}
             </div>
-          )}
+          ))}
         </div>
-      ) : (
-        <div style={{
-          padding: '2rem', background: '#0D1F3C', border: '1px solid #1e3a5f',
-          borderRadius: '8px', color: '#334155', textAlign: 'center', fontSize: '0.85rem'
-        }}>
-          Enter a blend above and click Check Certs
-        </div>
-      )}
+      ) : null}
     </div>
   )
 }

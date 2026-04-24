@@ -12,14 +12,28 @@ export const PUBLIC_VERTICAL_GUIDES = {
   personal_care: {
     status: 'beta',
     label: 'Beta',
-    message: 'Personal care is available in the public edition, but the current engine still needs stronger conditioner and cleanser architecture logic before we recommend it as a first-click demo vertical.',
-    prompts: [],
+    message: 'Personal care runs in the public edition and usually returns a feasible first-pass blend, but the architecture still needs refinement before we would treat it as showcase-ready for premium cosmetic claims.',
+    prompts: [
+      {
+        title: 'Clear Mild Body Wash',
+        vertical: 'personal_care',
+        text: 'Sulfate-free clear body wash with mild foam and rinse-clean feel under $5/kg.',
+        note: 'Currently the cleanest public personal-care starter. Use as a beta demo rather than a final cosmetic claim set.',
+      },
+    ],
   },
   industrial: {
     status: 'beta',
     label: 'Beta',
-    message: 'Industrial prompts remain available, but the public ingredient set still struggles with realistic low-VOC and release-agent targets. We do not recommend industrial as a first demo click yet.',
-    prompts: [],
+    message: 'Industrial remains a beta public vertical. This starter is included because it fails honestly under the current public ingredient set, which is still better than bluffing a fake industrial blend.',
+    prompts: [
+      {
+        title: 'Low-Odor Hard-Surface Cleaner',
+        vertical: 'industrial',
+        text: 'General-purpose hard-surface cleaner concentrate for industrial maintenance, low odor, under $6/kg.',
+        note: 'Currently a parser-and-feasibility test prompt. Expect an honest infeasible result more often than a polished final blend.',
+      },
+    ],
   },
   agricultural: {
     status: 'validated',
@@ -43,8 +57,15 @@ export const PUBLIC_VERTICAL_GUIDES = {
   pharmaceutical: {
     status: 'beta',
     label: 'Beta',
-    message: 'Pharmaceutical logic is present, but the public edition still needs more trustworthy excipient architecture before it should be showcased as a first-use vertical.',
-    prompts: [],
+    message: 'Pharmaceutical remains a beta public vertical. The starter below is kept for transparent testing, but the public excipient architecture is not yet ready for claim-heavy showcase use.',
+    prompts: [
+      {
+        title: 'Tablet Film Coating System',
+        vertical: 'pharmaceutical',
+        text: 'Immediate-release tablet film coating system, water-based, pilot-friendly.',
+        note: 'Useful for testing parser and feasibility behavior, but not yet a strong public success case.',
+      },
+    ],
   },
   food: {
     status: 'validated',
@@ -87,7 +108,14 @@ export const PUBLIC_VERTICAL_GUIDES = {
   paint_coatings: {
     status: 'beta',
     label: 'Beta',
-    message: 'Paint and coatings remains a beta vertical in the public edition. We recommend testing it later, after the public formulation architecture is tuned further.',
-    prompts: [],
+    message: 'Paint and coatings is still a beta public vertical. This starter is included for transparent testing while the architecture and ingredient coverage are tuned further.',
+    prompts: [
+      {
+        title: 'Waterborne Coating Aid',
+        vertical: 'paint_coatings',
+        text: 'Waterborne coating aid for interior paint with low odor and easy application.',
+        note: 'Currently best used as a public beta feasibility check rather than a proof-quality optimization case.',
+      },
+    ],
   },
 }

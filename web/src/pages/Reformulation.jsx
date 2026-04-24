@@ -24,7 +24,7 @@ export default function Reformulation() {
       })
       setResult(res.data)
     } catch (err) {
-      setError(err.message)
+      setError(err.response?.data?.detail || err.message)
     } finally {
       setLoading(false)
     }
@@ -79,7 +79,7 @@ export default function Reformulation() {
                 borderRadius: '6px', color: '#fff', padding: '0.5rem', fontSize: '0.85rem'
               }}
             >
-              {['personal_care','home_care','industrial','pharma','food','agriculture'].map(v => (
+              {['personal_care','industrial','agricultural','pharmaceutical','food','fabric_laundry','paint_coatings'].map(v => (
                 <option key={v} value={v}>{v.replace('_',' ')}</option>
               ))}
             </select>
@@ -115,10 +115,10 @@ export default function Reformulation() {
               borderRadius: '8px'
             }}>
               <div style={{ color: '#D97706', fontWeight: 600, marginBottom: '4px', fontSize: '0.85rem' }}>Root Cause</div>
-              <div style={{ color: '#fbbf24', fontSize: '0.85rem' }}>{result.root_cause}</div>
+              <div style={{ color: '#fbbf24', fontSize: '0.85rem' }}>{result.root_cause.root_cause}</div>
             </div>
           )}
-          {result.recommendations?.map((rec, i) => (
+          {(result.suggestions?.length ? result.suggestions : [result.best_suggestion]).filter(Boolean).map((rec, i) => (
             <div key={i} style={{
               background: '#0D1F3C', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '1rem',
               display: 'flex', gap: '1rem', alignItems: 'flex-start'
@@ -131,7 +131,9 @@ export default function Reformulation() {
                 {i + 1}
               </div>
               <div>
-                <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem' }}>{rec.action}</div>
+                <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem' }}>
+                  {rec.action_type} {rec.ingredient} → {rec.suggested_pct}%
+                </div>
                 {rec.rationale && <div style={{ color: '#64748b', fontSize: '0.8rem', marginTop: '2px' }}>{rec.rationale}</div>}
               </div>
             </div>

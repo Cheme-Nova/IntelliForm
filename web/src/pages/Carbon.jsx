@@ -1,134 +1,77 @@
-import { useState } from 'react'
-import { api } from '../api/client'
+import { useMemo } from 'react'
+import { loadLastRun } from '../lib/session'
+
+function card(label, value, unit, color = '#fff') {
+  return (
+    <div key={label} style={{
+      background: '#0D1F3C', border: '1px solid #1e3a5f', borderRadius: '8px',
+      padding: '1.25rem', flex: 1, minWidth: '160px'
+    }}>
+      <div style={{ color: '#64748b', fontSize: '0.7rem', marginBottom: '4px' }}>{label}</div>
+      <div style={{ color, fontSize: '1.4rem', fontWeight: 700 }}>{value ?? '—'}</div>
+      <div style={{ color: '#475569', fontSize: '0.7rem' }}>{unit}</div>
+    </div>
+  )
+}
 
 export default function Carbon() {
-  const [blend, setBlend] = useState('{"SLS": 12, "Cocamide DEA": 3, "Water": 85}')
-  const [batchSize, setBatchSize] = useState(1000)
-  const [vertical, setVertical] = useState('personal_care')
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState(null)
-  const [error, setError] = useState(null)
+  const session = useMemo(() => loadLastRun(), [])
+  const result = session?.response?.carbon
 
-  async function handleRun() {
-    setLoading(true)
-    setError(null)
-    try {
-      const parsedBlend = JSON.parse(blend)
-      const res = await api.formulate({
-        input_text: 'calculate carbon credits',
-        vertical,
-        batch_size: batchSize,
-        opt_mode: 'single',
-        constraints: { blend: parsedBlend }
-      })
-      setResult(res.data?.carbon)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+  if (!result) {
+    return (
+      <div style={{ maxWidth: '800px' }}>
+        <h1 style={{ color: '#0D9488', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.25rem' }}>
+          ♻️ Carbon
+        </h1>
+        <p style={{ color: '#64748b', marginBottom: '2rem', fontSize: '0.9rem' }}>
+          Carbon and circularity outputs from the latest formulation session
+        </p>
+        <div style={{
+          padding: '2rem', background: '#0D1F3C', border: '1px solid #1e3a5f',
+          borderRadius: '8px', color: '#94a3b8', textAlign: 'center', fontSize: '0.9rem', lineHeight: 1.7
+        }}>
+          Run a formulation first to generate carbon and circularity outputs.
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div style={{ maxWidth: '800px' }}>
+    <div style={{ maxWidth: '860px' }}>
       <h1 style={{ color: '#0D9488', fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.25rem' }}>
-        ♻️ Carbon Credits
+        ♻️ Carbon
       </h1>
       <p style={{ color: '#64748b', marginBottom: '2rem', fontSize: '0.9rem' }}>
-        Estimate carbon savings and verified credit value per batch
+        Carbon and circularity outputs from the latest formulation session
       </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div>
-          <label style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '4px' }}>BLEND (JSON)</label>
-          <textarea
-            value={blend}
-            onChange={e => setBlend(e.target.value)}
-            rows={4}
-            style={{
-              width: '100%', background: '#0D1F3C', border: '1px solid #1e3a5f',
-              borderRadius: '8px', color: '#fff', padding: '1rem', fontSize: '0.85rem',
-              fontFamily: 'monospace', boxSizing: 'border-box', resize: 'vertical'
-            }}
-          />
-        </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-          <div>
-            <label style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '4px' }}>VERTICAL</label>
-            <select
-              value={vertical}
-              onChange={e => setVertical(e.target.value)}
-              style={{
-                background: '#0D1F3C', border: '1px solid #1e3a5f',
-                borderRadius: '6px', color: '#fff', padding: '0.5rem', fontSize: '0.85rem'
-              }}
-            >
-              {['personal_care','home_care','industrial','pharma','food','agriculture'].map(v => (
-                <option key={v} value={v}>{v.replace('_',' ')}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '4px' }}>BATCH SIZE (kg)</label>
-            <input
-              type="number"
-              value={batchSize}
-              onChange={e => setBatchSize(Number(e.target.value))}
-              style={{
-                width: '100px', background: '#0D1F3C', border: '1px solid #1e3a5f',
-                borderRadius: '6px', color: '#fff', padding: '0.5rem', fontSize: '0.85rem'
-              }}
-            />
-          </div>
-          <button
-            onClick={handleRun}
-            disabled={loading}
-            style={{
-              background: loading ? '#334155' : '#0D9488', color: '#fff',
-              border: 'none', borderRadius: '8px', padding: '0.6rem 1.5rem',
-              fontSize: '0.9rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? 'Calculating...' : 'Calculate →'}
-          </button>
-        </div>
+      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+        {[
+          card('CO2 DISPLACED', typeof result.co2_displaced_kg === 'number' ? result.co2_displaced_kg.toFixed(1) : '—', 'kg per batch', '#0D9488'),
+          card('CREDITS / BATCH', typeof result.credits_per_batch === 'number' ? result.credits_per_batch.toFixed(3) : '—', 'verified credits', '#D97706'),
+          card('MID CREDIT VALUE', typeof result.credit_value_mid === 'number' ? `$${result.credit_value_mid.toFixed(2)}` : '—', 'USD'),
+          card('CIRCULAR GRADE', result.circular_grade, 'circularity'),
+        ]}
       </div>
 
-      {error && (
-        <div style={{
-          padding: '1rem', background: '#450a0a', border: '1px solid #7f1d1d',
-          borderRadius: '8px', color: '#fca5a5', fontSize: '0.85rem', marginBottom: '1rem'
-        }}>
-          {error}
+      <div style={{ background: '#0D1F3C', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+        <div style={{ color: '#D97706', fontWeight: 600, marginBottom: '0.6rem', fontSize: '0.85rem' }}>
+          Summary
         </div>
-      )}
+        <div style={{ color: '#cbd5e1', fontSize: '0.88rem', lineHeight: 1.7 }}>{result.summary}</div>
+      </div>
 
-      {result ? (
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          {[
-            { label: 'CO₂e SAVED', value: result.co2_saved_kg?.toFixed(2), unit: 'kg per batch', color: '#0D9488' },
-            { label: 'CREDIT VALUE', value: result.credit_value ? `$${result.credit_value.toFixed(2)}` : '—', unit: 'USD', color: '#D97706' },
-            { label: 'ANNUAL SAVINGS', value: result.annual_co2_saved_kg?.toFixed(0), unit: 'kg CO₂e/yr' },
-            { label: 'BASELINE', value: result.baseline_kg?.toFixed(2), unit: 'kg CO₂e baseline' },
-          ].map(({ label, value, unit, color }) => (
-            <div key={label} style={{
-              background: '#0D1F3C', border: '1px solid #1e3a5f', borderRadius: '8px',
-              padding: '1.25rem', flex: 1, minWidth: '140px'
-            }}>
-              <div style={{ color: '#64748b', fontSize: '0.7rem', marginBottom: '4px' }}>{label}</div>
-              <div style={{ color: color || '#fff', fontSize: '1.4rem', fontWeight: 700 }}>{value ?? '—'}</div>
-              <div style={{ color: '#475569', fontSize: '0.7rem' }}>{unit}</div>
-            </div>
-          ))}
+      <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+        <div style={{ background: '#0D1F3C', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '1rem' }}>
+          <div style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '0.35rem' }}>Green formulation CO2e</div>
+          <div style={{ color: '#f8fafc', fontWeight: 700 }}>{result.green_co2_per_kg} kg/kg</div>
         </div>
-      ) : (
-        <div style={{
-          padding: '2rem', background: '#0D1F3C', border: '1px solid #1e3a5f',
-          borderRadius: '8px', color: '#334155', textAlign: 'center', fontSize: '0.85rem'
-        }}>
-          Enter a blend above and click Calculate
+        <div style={{ background: '#0D1F3C', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '1rem' }}>
+          <div style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '0.35rem' }}>Petro baseline CO2e</div>
+          <div style={{ color: '#f8fafc', fontWeight: 700 }}>{result.baseline_co2_per_kg} kg/kg</div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

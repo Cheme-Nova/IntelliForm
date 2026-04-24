@@ -15,7 +15,7 @@ export default function QSAR() {
       const res = await api.qsar({ smiles: smilesList, properties: ['biodegradability', 'ecotox', 'performance'] })
       setResult(res.data)
     } catch (err) {
-      setError(err.message)
+      setError(err.response?.data?.detail || err.message)
     } finally {
       setLoading(false)
     }
@@ -79,7 +79,11 @@ export default function QSAR() {
                 {pred.smiles}
               </div>
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                {Object.entries(pred.properties || {}).map(([key, val]) => (
+                {[
+                  ['biodegradability', pred.biodegradability],
+                  ['ecotoxicity', pred.ecotoxicity],
+                  ['performance', pred.performance],
+                ].map(([key, val]) => (
                   <div key={key}>
                     <div style={{ color: '#64748b', fontSize: '0.7rem' }}>{key.toUpperCase()}</div>
                     <div style={{ color: '#0D9488', fontWeight: 600 }}>
@@ -88,6 +92,11 @@ export default function QSAR() {
                   </div>
                 ))}
               </div>
+              {pred.confidence ? (
+                <div style={{ color: '#94a3b8', fontSize: '0.75rem', marginTop: '0.75rem' }}>
+                  Confidence: {pred.confidence}
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
