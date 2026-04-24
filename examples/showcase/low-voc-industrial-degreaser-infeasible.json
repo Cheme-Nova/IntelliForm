@@ -1,0 +1,49 @@
+{
+  "captured_at": "2026-04-24",
+  "runtime": "local controller",
+  "llm_provider": "regex fallback",
+  "prompt": "Low-VOC industrial degreaser for heavy equipment with high flash point, strong grease lift, and moderate foam.",
+  "vertical": "industrial",
+  "parsed": {
+    "max_cost": 4.0,
+    "min_bio": 80.0,
+    "min_perf": 85.0,
+    "application_type": "industrial",
+    "parser_backend": "regex"
+  },
+  "meta": {
+    "requested_vertical": "industrial",
+    "inferred_vertical": "industrial",
+    "resolved_vertical": "industrial",
+    "optimization_mode_requested": "auto",
+    "constraints_used": {
+      "max_cost": 4.0,
+      "min_bio": 80.0,
+      "min_perf": 85.0
+    },
+    "ingredient_pool_size": 158
+  },
+  "result": {
+    "success": false,
+    "blend": {},
+    "cost_per_kg": 0,
+    "bio_pct": 0,
+    "perf_score": 0,
+    "status": "Infeasible",
+    "relaxed": true,
+    "relaxation_rounds": 3,
+    "error_msg": "Could not find feasible blend after 3 relaxation round(s). Try: (1) increase max cost, (2) reduce bio-based requirement, (3) adjust max ingredient %, or (4) switch to All Verticals mode."
+  },
+  "vreg": {
+    "overall_status": "✅ Clear",
+    "framework": "REACH · EPA Safer Choice · NSF/ANSI 61 · NSF A1 (food-safe)",
+    "passes": [
+      "No SVHC substances detected"
+    ],
+    "warnings": [],
+    "flags": []
+  },
+  "agents": [
+    "**❌ Swarm halted**: Optimization failed — Could not find feasible blend after 3 relaxation round(s). Try: (1) increase max cost, (2) reduce bio-based requirement, (3) adjust max ingredient %, or (4) switch to All Verticals mode."
+  ]
+}

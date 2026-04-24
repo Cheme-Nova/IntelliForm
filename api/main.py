@@ -35,7 +35,15 @@ def health():
 
 @app.get("/api/v1/verticals")
 def get_verticals():
-    return ["personal_care", "home_care", "industrial", "pharma", "food", "agriculture"]
+    return [
+        "personal_care",
+        "industrial",
+        "agricultural",
+        "pharmaceutical",
+        "food",
+        "fabric_laundry",
+        "paint_coatings",
+    ]
 
 @app.get("/api/v1/failure-types")
 def get_failure_types():

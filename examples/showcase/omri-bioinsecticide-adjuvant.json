@@ -1,0 +1,58 @@
+{
+  "captured_at": "2026-04-24",
+  "runtime": "local controller",
+  "llm_provider": "regex fallback",
+  "prompt": "OMRI-listed bioinsecticide adjuvant for organic crops, under $8/kg",
+  "vertical": "agricultural",
+  "parsed": {
+    "max_cost": 8.0,
+    "min_bio": 85.0,
+    "min_perf": 80.0,
+    "application_type": "agricultural",
+    "parser_backend": "regex"
+  },
+  "meta": {
+    "requested_vertical": "agricultural",
+    "inferred_vertical": "agricultural",
+    "resolved_vertical": "agricultural",
+    "optimization_mode_requested": "auto",
+    "constraints_used": {
+      "max_cost": 8.0,
+      "min_bio": 85.0,
+      "min_perf": 80.0
+    },
+    "ingredient_pool_size": 132
+  },
+  "result": {
+    "success": true,
+    "blend": {
+      "Canola Methyl Ester": 65.1,
+      "Urea (agri)": 1.0,
+      "Ammonium Sulfate (fertilizer)": 1.0,
+      "Calcium Ammonium Nitrate": 1.0,
+      "Ethanol (agri grade)": 20.2,
+      "Sulfur Dust (agri)": 9.5
+    },
+    "cost_per_kg": 1.62,
+    "bio_pct": 82.9,
+    "perf_score": 78.2,
+    "status": "Optimal",
+    "relaxed": false,
+    "relaxation_rounds": 0
+  },
+  "eco": {
+    "eco_score": 87.7,
+    "grade": "A"
+  },
+  "vreg": {
+    "overall_status": "✅ Clear",
+    "framework": "EPA FIFRA · EU Reg 1107/2009 · OMRI Listed · NOP (USDA Organic)",
+    "passes": [
+      "Ethanol (agri grade): OMRI Listed",
+      "Sulfur Dust (agri): OMRI Listed",
+      "No EU-banned active substances detected"
+    ],
+    "warnings": [],
+    "flags": []
+  }
+}

@@ -262,7 +262,7 @@ def filter_db_by_vertical(db, vertical_key: str):
     # Do NOT include industrial solvents, pharma vehicles, etc. as "common"
     UNIVERSAL = [
         "Water", "Citric Acid", "Lactic Acid", "Sodium Chloride",
-        "Glycerol", "Ethanol", "Sodium Bicarbonate", "Sodium Citrate",
+        "Glycerol", "Sodium Bicarbonate", "Sodium Citrate",
         "Potassium Citrate", "Malic Acid", "Tartaric Acid",
     ]
     universal_mask = db["Ingredient"].apply(

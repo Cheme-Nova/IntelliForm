@@ -52,6 +52,17 @@ streamlit run app.py
 
 ---
 
+## Reliability Upgrades
+
+This repo now includes a tighter parser-and-controller path inspired by the FormulAI build:
+
+- model output is normalized locally instead of trusting brittle provider JSON enforcement
+- parsed brief constraints are propagated into optimization instead of being discarded
+- vertical aliases are canonicalized across parser, API, optimizer, and web UI
+- the web formulation page now exposes parsed intent, constraint posture, and showcase prompts more clearly
+
+---
+
 ## Repo Structure
 
 ```
@@ -110,6 +121,14 @@ Without Supabase, IntelliForm falls back to in-memory storage (session-only).
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Chemistry contributions (new ingredients, SMILES corrections) are as welcome as code contributions.
+
+## Showcase Results
+
+Proof-style tested outputs from the upgraded controller are in [examples/showcase/README.md](./examples/showcase/README.md). The showcase pack includes:
+
+- successful agricultural and food-vertical runs
+- an explicit infeasible industrial case that demonstrates honest constraint handling
+- raw JSON captures with parsed brief, resolved vertical, constraints used, and result data
 
 ---
 

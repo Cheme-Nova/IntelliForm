@@ -1,0 +1,77 @@
+{
+  "captured_at": "2026-04-24",
+  "runtime": "local controller",
+  "llm_provider": "regex fallback",
+  "prompt": "Clean-label emulsifier blend for plant-based milk, GRAS, under $4/kg",
+  "vertical": "food",
+  "parsed": {
+    "max_cost": 4.0,
+    "min_bio": 95.0,
+    "min_perf": 75.0,
+    "application_type": "food",
+    "parser_backend": "regex"
+  },
+  "meta": {
+    "requested_vertical": "food",
+    "inferred_vertical": "food",
+    "resolved_vertical": "food",
+    "optimization_mode_requested": "auto",
+    "constraints_used": {
+      "max_cost": 4.0,
+      "min_bio": 95.0,
+      "min_perf": 75.0
+    },
+    "ingredient_pool_size": 217
+  },
+  "result": {
+    "success": true,
+    "blend": {
+      "Resistant Starch": 1.0,
+      "Psyllium Husk": 1.0,
+      "Pea Fiber": 1.0,
+      "Oat Fiber": 1.0,
+      "Bamboo Fiber": 1.0,
+      "Pea Protein Isolate": 1.0,
+      "Soy Protein Isolate": 1.0,
+      "Whey Protein Isolate": 1.0,
+      "Casein (food)": 1.0,
+      "Egg Albumen Powder": 1.0,
+      "Transglutaminase (food)": 1.0,
+      "Chlorella Extract": 1.0,
+      "Spirulina Powder": 1.0,
+      "Lauryl Glucoside (and) Glycerol": 25.1,
+      "Water for Injection (WFI)": 53.9,
+      "Sodium Bicarbonate (agri)": 3.7
+    },
+    "cost_per_kg": 3.39,
+    "bio_pct": 90.9,
+    "perf_score": 71.9,
+    "status": "Optimal",
+    "relaxed": false,
+    "relaxation_rounds": 0,
+    "compliance_flags": [
+      "ALLERGEN DECLARATION REQUIRED: Soy Protein Isolate, Whey Protein Isolate, Casein (food), Egg Albumen Powder"
+    ]
+  },
+  "eco": {
+    "eco_score": 83.4,
+    "grade": "A"
+  },
+  "vreg": {
+    "overall_status": "⚠️ Review Required",
+    "framework": "FDA GRAS · EU Food Additives Reg 1333/2008 · EFSA · Codex Alimentarius",
+    "passes": [
+      "Clean label compliant",
+      "No EU-banned food additives detected"
+    ],
+    "warnings": [
+      "Soy Protein Isolate: Allergen declaration required (soy)",
+      "Whey Protein Isolate: Allergen declaration required (whey)",
+      "Casein (food): Allergen declaration required (casein)",
+      "Egg Albumen Powder: Allergen declaration required (egg)"
+    ],
+    "flags": [
+      "MANDATORY ALLERGEN LABELING: Soy Protein Isolate, Whey Protein Isolate, Casein (food), Egg Albumen Powder"
+    ]
+  }
+}

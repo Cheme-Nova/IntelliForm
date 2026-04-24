@@ -4,6 +4,7 @@ Agent swarm reasoning for IntelliForm v0.7+.
 """
 import os
 import json
+import re
 from typing import List
 
 from modules.optimizer import OptResult
@@ -39,14 +40,22 @@ Agents:
 Keep each comment to 1-2 sentences. Be specific and cite numbers."""
 
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=os.getenv("GROQ_SWARM_MODEL", "llama-3.3-70b-versatile"),
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             max_tokens=400,
-            response_format={"type": "json_object"}
         )
-        raw = response.choices[0].message.content
-        data = json.loads(raw)
+        raw = (response.choices[0].message.content or "").strip()
+        if raw.startswith("```"):
+            raw = re.sub(r"```(?:json)?", "", raw).replace("```", "").strip()
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            start = raw.find("[")
+            end = raw.rfind("]")
+            if start == -1 or end == -1:
+                raise
+            data = json.loads(raw[start:end + 1])
         if isinstance(data, list):
             comments = data
         else:

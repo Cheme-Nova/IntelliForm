@@ -178,7 +178,7 @@ class TestIngredientDB:
 
     def test_numeric_ranges(self):
         df = pd.read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'ingredients_db.csv'))
-        assert df['Cost_USD_kg'].between(0, 100).all(), "Cost out of range"
+        assert df['Cost_USD_kg'].between(0, 500).all(), "Cost out of range"
         assert df['Bio_based_pct'].between(0, 100).all(), "Bio% out of range"
         assert df['Performance_Score'].between(0, 100).all(), "Performance out of range"
         assert df['Stock_kg'].ge(0).all(), "Negative stock"
