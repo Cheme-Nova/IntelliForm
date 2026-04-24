@@ -1,168 +1,49 @@
-# IntelliForm
+# IntelliForm: AI-Powered Chemical Formulation & Process Optimization
 
-Open-source AI formulation intelligence for specialty chemical R&D teams.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://intelliform.streamlit.app/)
 
-This repo now supports two modes:
+**IntelliForm** is an open-source agentic AI framework designed to accelerate specialty chemical R&D. It translates natural language requirements into high-precision, RDKit-validated chemical formulations and manufacturing protocols.
 
-- `web/` + `api/`: the public free product shape
-- `app.py`: the original Streamlit lab app for demos, research, and internal workflows
+---
 
-## What To Deploy
+## 🌐 Ecosystem & Live Links
 
-If you want a public version that people can actually use, deploy:
+* **[Full Platform (Streamlit Lab)](https://intelliform.streamlit.app/):** The core R&D cockpit for internal research, lab-scale prototyping, and deep optimization.
+* **[IntelliForm Free (Web)](https://chemenova.com/intelliform/free):** Public production app featuring Google Sign-in and rate-limited QSAR generation.
+* **[Interactive Demo](https://chemenova.com/intelliform/demo):** A guided showcase of agentic reasoning in chemical manufacturing.
+* **[Official Project Site](https://chemenova.com/intelliform/):** Documentation and ecosystem overview by ChemeNova.
 
-- `web/` to Vercel
-- `api/` to Render or Railway
+---
 
-Do not treat Streamlit as the long-term public product surface. Keep Streamlit for:
+## 🚀 Key Capabilities
 
-- internal chemistry workbench usage
-- demos and investor screenshots
-- rapid module prototyping
+* **Natural Language → Chemistry:** Convert briefs into structured SMILES and formulation tables using LLM-based parsing.
+* **Multi-Objective Optimization:** Balance assay purity (e.g., target 98–99% $CaCl_2·2H_2O$), cost, and sustainability metrics.
+* **Regulatory Intelligence:** Integrated QSAR modeling and regulatory screening (v0.9+).
+* **Agentic Reliability:** Local JSON normalization and contradiction filtering to ensure "pilot-ready" outputs.
 
-## Why This Split
+---
 
-The React + FastAPI stack is a better public free product because it gives you:
+## 🛠 Architecture: "Lab vs. Product"
 
-- a cleaner product UX than a monolithic Streamlit app
-- easier auth and rate limiting
-- better control over API costs
-- a path to separate public and enterprise editions
+This repository supports a dual-stack architecture to separate research from public access:
 
-## Public Free Tier Features
+| Feature | **Streamlit Lab** (`app.py`) | **Public Web/API** (`web/` + `api/`) |
+| :--- | :--- | :--- |
+| **Primary Use** | Internal R&D / Heavy Computation | Public Showcase / User Onboarding |
+| **Tech Stack** | Python + Streamlit + RDKit | React (Vite) + FastAPI + Supabase |
+| **UX Focus** | Complexity & Scientific Tooling | Performance, Auth, & Responsiveness |
+| **Auth** | Local/Session | Google Sign-In |
 
-The API now includes a lightweight free-tier protection layer:
+---
 
-- hourly request limits for public generation endpoints
-- separate QSAR request budget
-- optional public API key support
-- CORS configured for local dev plus deploy-time custom origins
+## 📖 Quick Start
 
-Environment variables:
-
-- `INTELLIFORM_FREE_TIER=1`
-- `INTELLIFORM_FREE_TIER_MAX_REQUESTS_PER_HOUR=8`
-- `INTELLIFORM_FREE_TIER_MAX_QSAR_PER_HOUR=20`
-- `INTELLIFORM_FREE_TIER_REQUIRE_API_KEY=0`
-- `INTELLIFORM_PUBLIC_API_KEY=...` (optional)
-- `ALLOWED_ORIGINS=https://your-vercel-app.vercel.app,https://yourdomain.com`
-
-Frontend environment:
-
-- `VITE_API_URL=https://your-intelliform-api.onrender.com`
-- `VITE_PUBLIC_MODE=1`
-- `VITE_SUPABASE_URL=https://your-project.supabase.co`
-- `VITE_SUPABASE_ANON_KEY=your_supabase_anon_key`
-- `VITE_PUBLIC_API_KEY=...` (optional, if you turn on public API key mode)
-
-## Quick Start
-
-### 1. Streamlit Lab App
-
+### 1. Streamlit Lab (The Chemistry Workbench)
 ```bash
 conda create -n intelliform python=3.11 -y
 conda activate intelliform
 conda install -c conda-forge rdkit -y
 pip install -r requirements.txt
 streamlit run app.py
-```
-
-### 2. API
-
-```bash
-pip install -r requirements.txt
-uvicorn api.main:app --reload
-```
-
-API runs at `http://localhost:8000`.
-
-### 3. Web
-
-```bash
-cd web
-npm install
-cp .env.example .env.local
-npm run dev
-```
-
-Web runs at `http://localhost:5173`.
-
-## Deployment
-
-### Backend on Render
-
-This repo includes:
-
-- [render.yaml](/Users/makani/IntelliForm/render.yaml)
-- [Procfile](/Users/makani/IntelliForm/Procfile)
-- [runtime.txt](/Users/makani/IntelliForm/runtime.txt)
-
-Recommended first deployment:
-
-1. Create a new Render Web Service from this repo.
-2. Use the existing `render.yaml`.
-3. Add your env vars:
-   - `GROQ_API_KEY`
-   - `ALLOWED_ORIGINS`
-   - optional Supabase/PostHog keys
-4. Deploy and verify `/health`.
-
-### Frontend on Vercel
-
-This repo includes:
-
-- [web/vercel.json](/Users/makani/IntelliForm/web/vercel.json)
-- [web/.env.example](/Users/makani/IntelliForm/web/.env.example)
-
-Recommended first deployment:
-
-1. Import the `web/` directory as a Vercel project.
-2. Set `VITE_API_URL` to your Render API URL.
-3. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-4. Enable Google auth in Supabase Auth and add your public site URL plus localhost redirect URLs.
-5. Deploy.
-
-## Google Sign-In For Free Accounts
-
-The public edition now supports a better free-product flow:
-
-- anyone can browse the site
-- signed-in users can generate formulations
-- signed-in users get account-linked saved history
-- generation still runs server-side, so model keys are not exposed in the browser
-
-To enable this properly:
-
-1. Create a Supabase project
-2. Run [migrations/001_create_tables.sql](/Users/makani/IntelliForm/migrations/001_create_tables.sql)
-3. In Supabase Auth, enable Google
-4. Add these env vars to Render:
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-   - `INTELLIFORM_REQUIRE_SIGNIN=1`
-5. Add these env vars to the frontend:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-
-## Product Recommendation
-
-Best structure going forward:
-
-- `IntelliForm Public`: free, rate-limited, showcase-focused, lighter feature set
-- `IntelliForm Streamlit Lab`: internal R&D cockpit
-- `IntelliForm Enterprise`: paid product with auth, persistence, workflows, and higher-trust outputs
-
-That lets you grow without forcing one codebase surface to do everything.
-
-## Reliability Upgrades
-
-This repo already includes the public-controller hardening work:
-
-- local JSON normalization instead of brittle provider-only enforcement
-- canonical vertical mapping across parser, controller, and UI
-- brief-aware contradiction filtering
-- proof-style showcase examples under [examples/showcase/README.md](/Users/makani/IntelliForm/examples/showcase/README.md)
-
-## License
-
-MIT — see [LICENSE](/Users/makani/IntelliForm/LICENSE)
