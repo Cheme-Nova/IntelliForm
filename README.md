@@ -47,3 +47,19 @@ conda activate intelliform
 conda install -c conda-forge rdkit -y
 pip install -r requirements.txt
 streamlit run app.py
+```
+
+### 2. API (The Backend)
+```bash
+pip install -r requirements.txt
+uvicorn api.main:app --reload
+```
+
+### 3. Web (The Frontend)cd web
+```bash
+npm install
+npm run dev
+```
+
+## ⚖️ License
+MIT — Distributed by ChemeNova in collaboration with ChemRich Global. Built for chemists, ML engineers, and sustainability builders. 🚀
