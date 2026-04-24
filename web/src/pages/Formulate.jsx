@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api/client'
 import { PUBLIC_VERTICAL_GUIDES, VERTICAL_OPTIONS } from '../constants'
 import { useAuth } from '../auth/AuthContext'
@@ -86,6 +86,18 @@ export default function Formulate() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth < 960
+  })
+
+  useEffect(() => {
+    function onResize() {
+      setIsMobile(window.innerWidth < 960)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   const canSubmit = inputText.trim().length > 12
   const metrics = result?.result
@@ -167,7 +179,7 @@ export default function Formulate() {
         </div>
       </section>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 420px) minmax(0, 1fr)', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(320px, 420px) minmax(0, 1fr)', gap: '1rem' }}>
         <div>
           <Section eyebrow="Brief Builder" title="Describe the product target">
             {auth?.supabaseEnabled && !auth?.user ? (
@@ -209,7 +221,7 @@ export default function Formulate() {
               style={{ ...shell.input, resize: 'vertical', minHeight: '180px', lineHeight: 1.7 }}
             />
 
-            <div style={{ display: 'grid', gap: '0.85rem', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', marginTop: '1rem' }}>
+            <div style={{ display: 'grid', gap: '0.85rem', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', marginTop: '1rem' }}>
               <div>
                 <label style={{ display: 'block', textAlign: 'left', marginBottom: '0.45rem', color: '#94a3b8', fontSize: '0.76rem' }}>Vertical</label>
                 <select value={vertical} onChange={(event) => setVertical(event.target.value)} style={shell.input}>
@@ -361,7 +373,7 @@ export default function Formulate() {
             ) : null}
           >
             {parsed ? (
-              <div style={{ display: 'grid', gap: '0.85rem', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+              <div style={{ display: 'grid', gap: '0.85rem', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))' }}>
                 <div style={{ ...shell.panel, padding: '0.95rem 1rem' }}>
                   <div style={shell.label}>Resolved Vertical</div>
                   <div style={{ color: '#f8fafc', marginTop: '0.45rem', fontWeight: 700 }}>{formatVertical(meta?.resolved_vertical)}</div>
@@ -415,7 +427,7 @@ export default function Formulate() {
           </Section>
 
           <Section eyebrow="System Readout" title="Risk, compliance, and readiness">
-            <div style={{ display: 'grid', gap: '0.9rem', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ display: 'grid', gap: '0.9rem', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))' }}>
               <div style={{ ...shell.panel, padding: '1rem' }}>
                 <div style={shell.label}>Regulatory Status</div>
                 <div style={{ color: result?.vreg?.overall_status?.includes('✅') ? '#7dd3c8' : '#fbbf24', marginTop: '0.45rem', fontWeight: 700 }}>

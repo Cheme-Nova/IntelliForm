@@ -7,6 +7,18 @@ export default function Memory() {
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(false)
   const [n, setN] = useState(20)
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth < 720
+  })
+
+  useEffect(() => {
+    function onResize() {
+      setIsMobile(window.innerWidth < 720)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   async function fetchMemory() {
     setLoading(true)
@@ -64,7 +76,7 @@ export default function Memory() {
           : 'Anonymous local memory feed. Sign in to save account-linked formulation history.'}
       </p>
 
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', gap: '1rem', alignItems: isMobile ? 'stretch' : 'flex-end', flexDirection: isMobile ? 'column' : 'row', marginBottom: '1.5rem' }}>
         <div>
           <label style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '4px' }}>SHOW LAST</label>
           <input
@@ -73,7 +85,7 @@ export default function Memory() {
             onChange={e => setN(Number(e.target.value))}
             min={5} max={100}
             style={{
-              width: '80px', background: '#0D1F3C', border: '1px solid #1e3a5f',
+              width: isMobile ? '100%' : '80px', background: '#0D1F3C', border: '1px solid #1e3a5f',
               borderRadius: '6px', color: '#fff', padding: '0.5rem', fontSize: '0.85rem'
             }}
           />
@@ -84,7 +96,8 @@ export default function Memory() {
           style={{
             background: loading ? '#334155' : '#0D9488', color: '#fff',
             border: 'none', borderRadius: '8px', padding: '0.6rem 1.5rem',
-            fontSize: '0.9rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer'
+            fontSize: '0.9rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+            width: isMobile ? '100%' : 'auto',
           }}
         >
           {loading ? 'Loading...' : 'Refresh →'}
@@ -107,14 +120,14 @@ export default function Memory() {
             <div key={i} style={{
               background: '#0D1F3C', border: '1px solid #1e3a5f', borderRadius: '8px', padding: '1rem'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', flexDirection: isMobile ? 'column' : 'row', gap: '0.45rem', marginBottom: '0.5rem' }}>
                 <span style={{
                   background: '#0D948822', color: '#0D9488', padding: '2px 8px',
                   borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600
                 }}>
                   {item.label}
                 </span>
-                <span style={{ color: '#334155', fontSize: '0.75rem' }}>{item.timestamp}</span>
+                <span style={{ color: '#334155', fontSize: '0.75rem', wordBreak: 'break-word' }}>{item.timestamp}</span>
               </div>
               {item.vertical && (
                 <div style={{ color: '#64748b', fontSize: '0.75rem', marginBottom: '4px' }}>
