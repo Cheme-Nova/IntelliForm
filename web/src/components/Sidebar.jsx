@@ -57,9 +57,11 @@ function NavButton({ item, active, onClick, isMobile }) {
         fontSize: '0.84rem',
         fontWeight: active ? 750 : 550,
         whiteSpace: 'nowrap',
+        minHeight: '44px',
+        minWidth: 0,
       }}
     >
-      <Icon size={16} strokeWidth={2} />
+      <Icon size={16} strokeWidth={2} style={{ flex: '0 0 auto' }} />
       <span>{item.label}</span>
     </button>
   )
@@ -79,8 +81,8 @@ export default function Sidebar({ activePage, setActivePage, auth, isMobile = fa
         zIndex: 20,
         backdropFilter: 'blur(18px)',
       }}>
-        <div style={{ padding: '0 1rem 0.75rem', display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center' }}>
-          <div>
+        <div style={{ padding: '0 0.85rem 0.75rem', display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center' }}>
+          <div style={{ minWidth: 0 }}>
             <div style={{ color: colors.ink, fontWeight: 850, fontSize: '1rem', letterSpacing: '0', textAlign: 'left' }}>
               IntelliForm
             </div>
@@ -99,6 +101,7 @@ export default function Sidebar({ activePage, setActivePage, auth, isMobile = fa
             padding: '0.4rem 0.65rem',
             fontSize: '0.72rem',
             fontWeight: 750,
+            flex: '0 0 auto',
           }}>
             <Sparkles size={14} /> Live
           </div>
@@ -107,8 +110,10 @@ export default function Sidebar({ activePage, setActivePage, auth, isMobile = fa
           display: 'flex',
           gap: '0.45rem',
           overflowX: 'auto',
-          padding: '0 1rem',
+          padding: '0 0.85rem',
           scrollbarWidth: 'none',
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-x',
         }}>
           {NAV.map(item => (
             <NavButton

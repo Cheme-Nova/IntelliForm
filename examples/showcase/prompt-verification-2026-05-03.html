@@ -88,6 +88,7 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: 0 1px 2px rgba(16, 24, 40, .05);
+      min-width: 0;
     }
 
     .metric {
@@ -135,6 +136,7 @@
       border-radius: 8px;
       background: #fbfcfe;
       min-height: 158px;
+      overflow-wrap: anywhere;
     }
 
     .tab-card h3 {
@@ -171,6 +173,7 @@
       border-radius: 8px;
       background: #fbfcfe;
       padding: 14px;
+      overflow-wrap: anywhere;
     }
 
     .verification-card h3 {
@@ -207,6 +210,7 @@
       padding: 10px 12px;
       background: #fff;
       font-size: 13px;
+      overflow-wrap: anywhere;
     }
 
     .result-chip b {
@@ -221,6 +225,7 @@
       background: #f7fbff;
       border-radius: 6px;
       min-height: 108px;
+      overflow-wrap: anywhere;
     }
 
     .fix b {
@@ -242,6 +247,7 @@
 
     .prompt-card {
       padding: 16px;
+      overflow-wrap: anywhere;
     }
 
     .prompt-top {
@@ -345,6 +351,7 @@
 
     .table-wrap {
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .market-table td:first-child {
@@ -420,6 +427,68 @@
 
       .wrap {
         width: min(100% - 28px, 1180px);
+      }
+    }
+
+    @media (max-width: 520px) {
+      header {
+        padding: 28px 16px 22px;
+      }
+
+      .wrap {
+        width: min(100% - 20px, 1180px);
+      }
+
+      main {
+        padding: 18px 0 36px;
+      }
+
+      h1 {
+        font-size: clamp(28px, 9vw, 38px);
+        line-height: 1.08;
+      }
+
+      .subhead {
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .panel,
+      .prompt-card,
+      .metric {
+        padding: 14px;
+      }
+
+      h2 {
+        font-size: 19px;
+        line-height: 1.22;
+      }
+
+      .prompt-top {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .badge {
+        align-self: flex-start;
+      }
+
+      .bar-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 5px 8px;
+      }
+
+      .bar-row span {
+        grid-column: 1 / -1;
+      }
+
+      table {
+        min-width: 620px;
+      }
+
+      th,
+      td {
+        padding: 9px 8px;
       }
     }
   </style>

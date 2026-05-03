@@ -42,13 +42,14 @@ function MetricCard({ label, value, unit, tone = ink }) {
     <div style={{
       ...shell.panel,
       padding: '0.95rem 1rem',
-      minWidth: '138px',
-      flex: 1,
+      minWidth: 'min(138px, 100%)',
+      flex: '1 1 138px',
+      boxSizing: 'border-box',
     }}>
       <div style={{ color: muted, fontSize: '0.68rem', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 750 }}>
         {label}
       </div>
-      <div style={{ color: tone, fontSize: '1.45rem', fontWeight: 820, marginTop: '0.35rem' }}>
+      <div style={{ color: tone, fontSize: '1.45rem', fontWeight: 820, marginTop: '0.35rem', overflowWrap: 'anywhere' }}>
         {value ?? '—'}
       </div>
       {unit ? <div style={{ color: muted, fontSize: '0.72rem', marginTop: '0.15rem' }}>{unit}</div> : null}
@@ -59,8 +60,8 @@ function MetricCard({ label, value, unit, tone = ink }) {
 function Section({ eyebrow, title, children, aside }) {
   return (
     <section style={{ ...shell.panel, padding: '1.25rem', marginBottom: '1rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', marginBottom: '1rem' }}>
-        <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ minWidth: 0 }}>
           <div style={shell.label}>{eyebrow}</div>
           <h2 style={{ margin: '0.35rem 0 0', color: ink, fontSize: '1.15rem', textAlign: 'left', fontWeight: 780, letterSpacing: 0 }}>{title}</h2>
         </div>
@@ -186,7 +187,7 @@ export default function Formulate() {
   }
 
   return (
-    <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1180px', margin: '0 auto', width: '100%', minWidth: 0 }}>
       <section style={{
         ...shell.panel,
         padding: isMobile ? '1.15rem' : '1.5rem',
@@ -194,7 +195,7 @@ export default function Formulate() {
         background: '#FFFFFF',
       }}>
         <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ maxWidth: '680px' }}>
+          <div style={{ maxWidth: '680px', minWidth: 0, flex: '1 1 320px' }}>
             <div style={{ ...shell.label, color: accent }}>IntelliForm Free</div>
             <h1 style={{ margin: '0.45rem 0 0.6rem', color: ink, fontSize: isMobile ? '2rem' : '2.65rem', textAlign: 'left', lineHeight: 1.04, letterSpacing: 0, fontWeight: 860 }}>
               Formulation intelligence, from brief to proof stack.
@@ -203,7 +204,7 @@ export default function Formulate() {
               Describe the target product. IntelliForm parses the brief, chooses the vertical, optimizes the blend, and prepares sustainability, regulatory, carbon, stability, and certification screens from the same run.
             </p>
           </div>
-          <div style={{ display: 'grid', gap: '0.75rem', minWidth: '280px', flex: '1 1 280px' }}>
+          <div style={{ display: 'grid', gap: '0.75rem', minWidth: isMobile ? 0 : '280px', flex: '1 1 280px', width: isMobile ? '100%' : 'auto' }}>
             <div style={{ border: `1px solid ${line}`, borderRadius: '8px', padding: '1rem', background: '#F9FAFB' }}>
               <div style={{ color: muted, fontSize: '0.68rem', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 750 }}>Agentic run plan</div>
               <div style={{ color: ink, marginTop: '0.35rem', fontWeight: 760 }}>Parse → optimize → validate → report</div>
@@ -348,6 +349,8 @@ export default function Formulate() {
                       textAlign: 'left',
                       cursor: 'pointer',
                       background: '#FFFFFF',
+                      width: '100%',
+                      overflowWrap: 'anywhere',
                     }}
                   >
                     <div style={{ color: ink, fontWeight: 760, marginBottom: '0.25rem' }}>{example.title}</div>
@@ -385,7 +388,7 @@ export default function Formulate() {
             </div>
           ) : null}
 
-          <div style={{ display: 'flex', gap: '0.9rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
             <MetricCard label="Cost / kg" value={metrics?.cost_per_kg ? `$${metrics.cost_per_kg.toFixed(2)}` : '—'} tone={accent} />
             <MetricCard label="Bio-based" value={metrics?.bio_pct ? `${metrics.bio_pct.toFixed(1)}%` : '—'} tone="#B54708" />
             <MetricCard label="Perf Score" value={metrics?.perf_score ? metrics.perf_score.toFixed(1) : '—'} unit="/ 100" />
@@ -447,9 +450,9 @@ export default function Formulate() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {blendEntries.map(([ingredient, pct]) => (
                   <div key={ingredient}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.35rem' }}>
-                      <div style={{ color: '#344054', fontSize: '0.88rem', textAlign: 'left' }}>{ingredient}</div>
-                      <div style={{ color: ink, fontWeight: 760 }}>{pct}%</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.35rem', alignItems: 'flex-start' }}>
+                      <div style={{ color: '#344054', fontSize: '0.88rem', textAlign: 'left', minWidth: 0, overflowWrap: 'anywhere' }}>{ingredient}</div>
+                      <div style={{ color: ink, fontWeight: 760, flex: '0 0 auto' }}>{pct}%</div>
                     </div>
                     <div style={{ background: '#EAECF0', borderRadius: '999px', height: '10px', overflow: 'hidden' }}>
                       <div style={{ width: `${Math.min(pct, 100)}%`, height: '10px', background: accent }} />
@@ -511,7 +514,7 @@ export default function Formulate() {
             {result?.agents?.length ? (
               <div style={{ display: 'grid', gap: '0.7rem' }}>
                 {result.agents.map((agent) => (
-                  <div key={agent} style={{ ...shell.panel, padding: '0.95rem 1rem', color: '#344054', textAlign: 'left', lineHeight: 1.7 }}>
+                  <div key={agent} style={{ ...shell.panel, padding: '0.95rem 1rem', color: '#344054', textAlign: 'left', lineHeight: 1.7, overflowWrap: 'anywhere' }}>
                     {agent}
                   </div>
                 ))}

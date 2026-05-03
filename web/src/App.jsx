@@ -59,9 +59,12 @@ export default function App() {
         <Sidebar activePage={activePage} setActivePage={setActivePage} auth={auth} isMobile={isMobile} />
         <main style={{
           flex: 1,
-          padding: isMobile ? '1rem' : '2rem',
+          minWidth: 0,
+          width: '100%',
+          padding: isMobile ? '0.85rem' : '2rem',
           overflowY: 'auto',
           overflowX: 'hidden',
+          boxSizing: 'border-box',
         }}>
           {publicMode ? (
             <div style={{
@@ -74,6 +77,7 @@ export default function App() {
               fontSize: isMobile ? '0.82rem' : '0.9rem',
               lineHeight: 1.6,
               textAlign: 'left',
+              overflowWrap: 'anywhere',
             }}>
               Public edition: free-tier usage limits are enabled to keep IntelliForm broadly accessible. For internal, higher-volume, or enterprise use, keep the Streamlit lab app and the enterprise stack separate.
             </div>
