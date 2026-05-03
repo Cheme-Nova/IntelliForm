@@ -148,6 +148,27 @@ def _failed_opt_result(error_msg, status, vertical):
     )
 
 
+def _constraint_violations(result, max_cost, min_bio, min_perf):
+    if not result.success:
+        return []
+    violations = []
+    if result.cost_per_kg > max_cost + 0.01:
+        violations.append(f"cost ${result.cost_per_kg:.2f}/kg exceeds ${max_cost:.2f}/kg")
+    if result.bio_pct < min_bio - 0.1:
+        violations.append(f"bio-based {result.bio_pct:.1f}% below {min_bio:.1f}%")
+    if result.perf_score < min_perf - 0.1:
+        violations.append(f"performance {result.perf_score:.1f} below {min_perf:.1f}")
+    return violations
+
+
+def _mark_constraint_failure(result, violations):
+    result.success = False
+    result.status = "ConstraintViolation"
+    result.error_msg = "Generated blend did not meet requested constraints: " + "; ".join(violations) + "."
+    result.warnings = list(getattr(result, "warnings", []) or []) + violations
+    return result
+
+
 class IntelliFormController:
     def run(self, input_text, vertical, batch_size, opt_mode, constraints):
         db = load_db()
@@ -211,12 +232,24 @@ class IntelliFormController:
                 vertical=resolved_vertical,
             )
 
-        eco = compute_ecometrics(result.blend, filtered_db)
-        reg = get_blend_report(result.blend)
-        vreg = generate_vertical_regulatory_report(result.blend, filtered_db, resolved_vertical)
-        stability = predict_stability(result.blend, filtered_db)
-        carbon = calculate_carbon_credits(result.blend, filtered_db, batch_size)
-        cert = run_certification_oracle(result.blend, filtered_db, resolved_vertical, result.bio_pct)
+        violations = _constraint_violations(result, max_cost, min_bio, min_perf)
+        if violations:
+            result = _mark_constraint_failure(result, violations)
+
+        if result.success:
+            eco = compute_ecometrics(result.blend, filtered_db)
+            reg = get_blend_report(result.blend)
+            vreg = generate_vertical_regulatory_report(result.blend, filtered_db, resolved_vertical)
+            stability = predict_stability(result.blend, filtered_db)
+            carbon = calculate_carbon_credits(result.blend, filtered_db, batch_size)
+            cert = run_certification_oracle(result.blend, filtered_db, resolved_vertical, result.bio_pct)
+        else:
+            eco = None
+            reg = None
+            vreg = None
+            stability = None
+            carbon = None
+            cert = None
         agents = run_agent_swarm(result, parsed)
 
         if result.success:

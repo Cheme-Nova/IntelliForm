@@ -265,9 +265,8 @@ def filter_db_by_vertical(db, vertical_key: str):
         "Glycerol", "Sodium Bicarbonate", "Sodium Citrate",
         "Potassium Citrate", "Malic Acid", "Tartaric Acid",
     ]
-    universal_mask = db["Ingredient"].apply(
-        lambda x: any(u.lower() in x.lower() for u in UNIVERSAL)
-    )
+    universal_names = {u.lower() for u in UNIVERSAL}
+    universal_mask = db["Ingredient"].astype(str).str.lower().isin(universal_names)
     universal = db[universal_mask]
 
     combined = pd.concat([filtered, universal]).drop_duplicates(subset=["Ingredient"])
