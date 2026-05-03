@@ -52,9 +52,9 @@ export default function App() {
         display: 'flex',
         flexDirection: isMobile ? 'column' : 'row',
         minHeight: '100vh',
-        background: '#0A1628',
-        color: '#fff',
-        fontFamily: 'Inter, sans-serif'
+        background: '#F7F8FA',
+        color: '#111827',
+        fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
       }}>
         <Sidebar activePage={activePage} setActivePage={setActivePage} auth={auth} isMobile={isMobile} />
         <main style={{
@@ -67,10 +67,10 @@ export default function App() {
             <div style={{
               marginBottom: '1rem',
               padding: isMobile ? '0.8rem 0.9rem' : '0.85rem 1rem',
-              borderRadius: '14px',
-              border: '1px solid rgba(125, 211, 200, 0.24)',
-              background: 'rgba(13, 148, 136, 0.10)',
-              color: '#bfece4',
+              borderRadius: '8px',
+              border: '1px solid #D5E8E2',
+              background: '#F1FAF7',
+              color: '#275E52',
               fontSize: isMobile ? '0.82rem' : '0.9rem',
               lineHeight: 1.6,
               textAlign: 'left',
