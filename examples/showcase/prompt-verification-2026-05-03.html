@@ -160,6 +160,61 @@
       margin-top: 4px;
     }
 
+    .verification-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .verification-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      padding: 14px;
+    }
+
+    .verification-card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .verification-card .big {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 850;
+      color: var(--green);
+    }
+
+    .verification-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .result-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .result-chip {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .result-chip b {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--ink);
+    }
+
     .fix {
       border-left: 4px solid var(--blue);
       padding: 10px 12px;
@@ -353,6 +408,8 @@
       .metrics,
       .fix-grid,
       .workflow-grid,
+      .verification-grid,
+      .result-list,
       .prompts {
         grid-template-columns: 1fr;
       }
@@ -382,6 +439,39 @@
       <div class="metric"><strong>9</strong><span>Product tabs represented</span></div>
       <div class="metric"><strong>25</strong><span>Regression tests passing</span></div>
       <div class="metric"><strong>0</strong><span>Reports generated for failed runs</span></div>
+    </section>
+
+    <section class="panel">
+      <h2>Actual Live App Results</h2>
+      <p class="note" style="margin-top: -4px; margin-bottom: 14px;">
+        These are from the running FastAPI app, not the static HTML: one real formulation run, downstream saved-run payloads, and the active tool endpoints used by the React tabs.
+      </p>
+      <div class="verification-grid">
+        <article class="verification-card">
+          <h3>API Health</h3>
+          <span class="big">OK</span>
+          <p>Version 2.1.0 responded with 12 modules loaded: optimizer, Pareto, Bayesian, EcoMetrics, QSAR, regulatory, stability, carbon, certifications, agents, and parser.</p>
+        </article>
+        <article class="verification-card">
+          <h3>Formulate Result</h3>
+          <span class="big">Optimal</span>
+          <p>Plant-milk emulsifier prompt returned a valid food formulation: $3.37/kg, 95.0% bio-based, 75.0 performance, 8 ingredients, no error.</p>
+        </article>
+        <article class="verification-card">
+          <h3>Frontend Contract</h3>
+          <span class="big">Built</span>
+          <p>Vite served the React app HTML and the production frontend build completed successfully. The browser automation layer could not navigate to localhost, so tab verification used the same live API contracts the tabs consume.</p>
+        </article>
+      </div>
+
+      <div class="result-list">
+        <div class="result-chip"><b>Prompt Used</b>Clean-label emulsifier blend for plant-based milk, GRAS approved, under $4/kg, neutral taste, stable at pasteurization temperature.</div>
+        <div class="result-chip"><b>Top Blend</b>Medium Chain Fatty Acid Blend, Citric Acid (food grade), Beet Sugar, Lecithin, Mono/Diglycerides.</div>
+        <div class="result-chip"><b>Downstream Tabs Populated</b>EcoMetrics, Regulatory, Vertical Regulatory, Stability, Carbon, and Certifications all returned structured payloads.</div>
+        <div class="result-chip"><b>Active Tool Tabs</b>Pareto returned 7 frontier solutions; QSAR returned 2 molecular predictions; Reformulation returned root cause + best suggestion; Memory recorded 1 formulation event.</div>
+        <div class="result-chip"><b>Credible As Software QA</b>Yes: the app runs, constraints are enforced, valid results feed the downstream tabs, and failed/invalid results no longer get fake proof outputs.</div>
+        <div class="result-chip"><b>Not Yet Claim-Ready</b>Food, GRAS, OMRI, carbon-credit, certification, and pharma/coatings claims still require lab data, supplier documentation, toxicology, regulatory review, and third-party certification.</div>
+      </div>
     </section>
 
     <section class="panel">
