@@ -410,7 +410,10 @@ def _solve_vertical(db, max_cost, min_bio, min_perf, max_concentration, vertical
             func = str(idx.loc[n, "Function"])
             for func_key, (f_lo, f_hi) in func_bounds.items():
                 if func_key.lower() in func.lower():
-                    lo = f_lo
+                    # Lower bounds are category-level formulation guidance, not a
+                    # mandate to include every matching ingredient in the database.
+                    # Required groups are modeled explicitly below where needed.
+                    lo = 0.0
                     hi = min(f_hi, max_concentration)
                     break
         vars_[n] = pulp.LpVariable(f"x_{i}", lowBound=lo, upBound=hi)

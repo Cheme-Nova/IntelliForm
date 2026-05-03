@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IntelliForm Full Workflow Showcase - 2026-05-03</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #667085;
+      --line: #d7dde5;
+      --panel: #ffffff;
+      --page: #f5f7fa;
+      --green: #20744a;
+      --green-soft: #dff4e9;
+      --blue: #235e9d;
+      --blue-soft: #dfeeff;
+      --amber: #9a5d00;
+      --amber-soft: #fff0cf;
+      --red: #9f2d2d;
+      --red-soft: #ffe1e1;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--page);
+      line-height: 1.45;
+    }
+
+    header {
+      background: #0f1720;
+      color: #fff;
+      padding: 40px 28px 30px;
+      border-bottom: 5px solid #2aa56b;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #9bd3b4;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 900px;
+      font-size: clamp(30px, 5vw, 56px);
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .subhead {
+      max-width: 850px;
+      margin: 16px 0 0;
+      color: #d7e1ec;
+      font-size: 17px;
+    }
+
+    main {
+      padding: 28px 0 48px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .metric,
+    .panel,
+    .prompt-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, .05);
+    }
+
+    .metric {
+      padding: 16px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 30px;
+      line-height: 1;
+      margin-bottom: 7px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .panel {
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    .fix-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .workflow-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .tab-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      min-height: 158px;
+    }
+
+    .tab-card h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .tab-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tab-card ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: #344054;
+      font-size: 13px;
+    }
+
+    .tab-card li + li {
+      margin-top: 4px;
+    }
+
+    .verification-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .verification-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      padding: 14px;
+    }
+
+    .verification-card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .verification-card .big {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 850;
+      color: var(--green);
+    }
+
+    .verification-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .result-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .result-chip {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .result-chip b {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--ink);
+    }
+
+    .fix {
+      border-left: 4px solid var(--blue);
+      padding: 10px 12px;
+      background: #f7fbff;
+      border-radius: 6px;
+      min-height: 108px;
+    }
+
+    .fix b {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .fix p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .prompts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .prompt-card {
+      padding: 16px;
+    }
+
+    .prompt-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .prompt-card h3 {
+      margin: 0 0 4px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    .vertical {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+
+    .badge {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pass {
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .review {
+      color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .prompt {
+      min-height: 44px;
+      margin: 0 0 12px;
+      color: #344054;
+      font-size: 14px;
+    }
+
+    .bars {
+      display: grid;
+      gap: 9px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 92px 1fr 54px;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .track {
+      height: 10px;
+      border-radius: 999px;
+      background: #edf1f5;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--blue);
+    }
+
+    .fill.good {
+      background: var(--green);
+    }
+
+    .blend {
+      margin: 12px 0 0;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border-radius: 6px;
+      color: #344054;
+      font-size: 13px;
+    }
+
+    .blend b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+    }
+
+    .note {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    .market-table td:first-child {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .yes {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .partial {
+      color: var(--amber);
+      font-weight: 800;
+    }
+
+    .no {
+      color: var(--red);
+      font-weight: 800;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #475467;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      background: #edf1f5;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    footer {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 0 0 32px;
+    }
+
+    @media (max-width: 900px) {
+      .metrics,
+      .fix-grid,
+      .workflow-grid,
+      .verification-grid,
+      .result-list,
+      .prompts {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        padding-inline: 20px;
+      }
+
+      .wrap {
+        width: min(100% - 28px, 1180px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <p class="eyebrow">Full workflow showcase</p>
+      <h1>IntelliForm connects prompt-to-formulation with the downstream proof stack.</h1>
+      <p class="subhead">This dashboard covers the 10 public starter prompts plus the tabs that make IntelliForm more than a formula generator: optimization, sustainability, regulatory posture, carbon, stability, certification screening, QSAR, reformulation, and memory.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="metrics" aria-label="Run summary">
+      <div class="metric"><strong>10</strong><span>Starter prompts rerun</span></div>
+      <div class="metric"><strong>9</strong><span>Product tabs represented</span></div>
+      <div class="metric"><strong>25</strong><span>Regression tests passing</span></div>
+      <div class="metric"><strong>0</strong><span>Reports generated for failed runs</span></div>
+    </section>
+
+    <section class="panel">
+      <h2>Actual Live App Results</h2>
+      <p class="note" style="margin-top: -4px; margin-bottom: 14px;">
+        These are from the running FastAPI app, not the static HTML: one real formulation run, downstream saved-run payloads, and the active tool endpoints used by the React tabs.
+      </p>
+      <div class="verification-grid">
+        <article class="verification-card">
+          <h3>API Health</h3>
+          <span class="big">OK</span>
+          <p>Version 2.1.0 responded with 12 modules loaded: optimizer, Pareto, Bayesian, EcoMetrics, QSAR, regulatory, stability, carbon, certifications, agents, and parser.</p>
+        </article>
+        <article class="verification-card">
+          <h3>Formulate Result</h3>
+          <span class="big">Optimal</span>
+          <p>Plant-milk emulsifier prompt returned a valid food formulation: $3.37/kg, 95.0% bio-based, 75.0 performance, 8 ingredients, no error.</p>
+        </article>
+        <article class="verification-card">
+          <h3>Frontend Contract</h3>
+          <span class="big">Built</span>
+          <p>Vite served the React app HTML and the production frontend build completed successfully. The browser automation layer could not navigate to localhost, so tab verification used the same live API contracts the tabs consume.</p>
+        </article>
+      </div>
+
+      <div class="result-list">
+        <div class="result-chip"><b>Prompt Used</b>Clean-label emulsifier blend for plant-based milk, GRAS approved, under $4/kg, neutral taste, stable at pasteurization temperature.</div>
+        <div class="result-chip"><b>Top Blend</b>Medium Chain Fatty Acid Blend, Citric Acid (food grade), Beet Sugar, Lecithin, Mono/Diglycerides.</div>
+        <div class="result-chip"><b>Downstream Tabs Populated</b>EcoMetrics, Regulatory, Vertical Regulatory, Stability, Carbon, and Certifications all returned structured payloads.</div>
+        <div class="result-chip"><b>Active Tool Tabs</b>Pareto returned 7 frontier solutions; QSAR returned 2 molecular predictions; Reformulation returned root cause + best suggestion; Memory recorded 1 formulation event.</div>
+        <div class="result-chip"><b>Credible As Software QA</b>Yes: the app runs, constraints are enforced, valid results feed the downstream tabs, and failed/invalid results no longer get fake proof outputs.</div>
+        <div class="result-chip"><b>Not Yet Claim-Ready</b>Food, GRAS, OMRI, carbon-credit, certification, and pharma/coatings claims still require lab data, supplier documentation, toxicology, regulatory review, and third-party certification.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Workflow Coverage</h2>
+      <div class="workflow-grid">
+        <article class="tab-card">
+          <h3>Formulate</h3>
+          <p>Natural-language brief to constrained blend.</p>
+          <ul>
+            <li>Parser normalizes vertical, cost, bio, and performance targets.</li>
+            <li>Controller rejects outputs that miss requested constraints.</li>
+          </ul>
+        </article>
+        <article class="tab-card">
+          <h3>EcoMetrics</h3>
+          <p>Sustainability profile from the actual latest blend.</p>
+          <ul>
+            <li>Carbon, toxicity, renewability, biodegradability, and regulatory axes.</li>
+            <li>No placeholder recomputation after this fix path.</li>
+          </ul>
+        </article>
+        <article class="tab-card">
+          <h3>Regulatory</h3>
+          <p>Vertical-specific screening posture.</p>
+          <ul>
+            <li>EU cosmetics, detergents, food, ag, pharma, paint, and industrial frameworks.</li>
+            <li>Shown only when the base blend is valid.</li>
+          </ul>
+        </article>
+        <article class="tab-card">
+          <h3>Carbon</h3>
+          <p>Batch-level displacement and circularity economics.</p>
+          <ul>
+            <li>Shows CO2e displacement, circularity grade, and credit value estimate.</li>
+            <li>Suppressed for infeasible or constraint-failed blends.</li>
+          </ul>
+        </article>
+        <article class="tab-card">
+          <h3>Stability</h3>
+          <p>Early shelf-life, viscosity, pH, packaging, and risk signals.</p>
+          <ul>
+            <li>Helps move from formula idea to lab plan.</li>
+            <li>Paired with formulation output rather than isolated assumptions.</li>
+          </ul>
+        </article>
+        <article class="tab-card">
+          <h3>Certifications</h3>
+          <p>Certification screening across relevant schemes.</p>
+          <ul>
+            <li>Flags likely paths such as USDA BioPreferred, EPA Safer Choice, EU Ecolabel, COSMOS, or ISO 16128 where applicable.</li>
+            <li>Presented as screening, not a substitute for third-party certification.</li>
+          </ul>
+        </article>
+        <article class="tab-card">
+          <h3>Pareto</h3>
+          <p>Multi-objective optimization frontier.</p>
+          <ul>
+            <li>Compares cost, bio-based content, and performance tradeoffs.</li>
+            <li>Useful when teams need options instead of a single recipe.</li>
+          </ul>
+        </article>
+        <article class="tab-card">
+          <h3>QSAR</h3>
+          <p>Molecular property prediction for candidate ingredients.</p>
+          <ul>
+            <li>Scores biodegradability, ecotoxicity, performance, and sustainability signals from SMILES.</li>
+            <li>Supports ingredient vetting before optimization.</li>
+          </ul>
+        </article>
+        <article class="tab-card">
+          <h3>Reformulation and Memory</h3>
+          <p>Failure diagnosis plus learning from prior runs.</p>
+          <ul>
+            <li>Reformulation suggests fixes for viscosity, stability, compliance, and cost failures.</li>
+            <li>Memory records valid formulation events for future pattern insight.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Why It Beats The Usual Stack</h2>
+      <div class="table-wrap">
+        <table class="market-table">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th>Spreadsheet + supplier PDFs</th>
+              <th>Generic LLM chat</th>
+              <th>Legacy LIMS / ELN</th>
+              <th>IntelliForm</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Natural-language brief to constrained formulation</td>
+              <td><span class="no">No</span></td>
+              <td><span class="partial">Partial</span></td>
+              <td><span class="no">No</span></td>
+              <td><span class="yes">Yes</span></td>
+            </tr>
+            <tr>
+              <td>Cost, bio-based, and performance optimization</td>
+              <td><span class="partial">Manual</span></td>
+              <td><span class="no">No solver</span></td>
+              <td><span class="partial">Custom</span></td>
+              <td><span class="yes">Built in</span></td>
+            </tr>
+            <tr>
+              <td>Regulatory and certification pre-screening</td>
+              <td><span class="partial">Manual</span></td>
+              <td><span class="partial">Narrative only</span></td>
+              <td><span class="partial">Records only</span></td>
+              <td><span class="yes">Integrated</span></td>
+            </tr>
+            <tr>
+              <td>Carbon, circularity, and sustainability metrics</td>
+              <td><span class="partial">Separate LCA</span></td>
+              <td><span class="no">No validated blend link</span></td>
+              <td><span class="partial">External</span></td>
+              <td><span class="yes">Same run</span></td>
+            </tr>
+            <tr>
+              <td>QSAR ingredient screening</td>
+              <td><span class="no">No</span></td>
+              <td><span class="partial">Unstructured</span></td>
+              <td><span class="partial">Plugin/custom</span></td>
+              <td><span class="yes">Native tab</span></td>
+            </tr>
+            <tr>
+              <td>Reformulation loop after failure</td>
+              <td><span class="partial">Trial and error</span></td>
+              <td><span class="partial">Advice only</span></td>
+              <td><span class="partial">Workflow record</span></td>
+              <td><span class="yes">Root cause + suggestion</span></td>
+            </tr>
+            <tr>
+              <td>Fails closed when outputs miss constraints</td>
+              <td><span class="no">No</span></td>
+              <td><span class="no">No</span></td>
+              <td><span class="partial">Depends</span></td>
+              <td><span class="yes">Now guarded</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">This is a product-positioning comparison, not a claim that IntelliForm replaces lab validation, regulatory counsel, toxicology review, or third-party certification.</p>
+    </section>
+
+    <section class="panel">
+      <h2>What Changed</h2>
+      <div class="fix-grid">
+        <div class="fix">
+          <b>Direct regex mode</b>
+          <p><code>LLM_PROVIDER=regex</code> now uses the deterministic parser directly, without probing remote providers first.</p>
+        </div>
+        <div class="fix">
+          <b>Cleaner vertical parsing</b>
+          <p>Body wash maps to personal care, and tablet film coating maps to pharmaceutical before generic coatings.</p>
+        </div>
+        <div class="fix">
+          <b>Solver bound fix</b>
+          <p>Function bounds no longer force every matching ingredient into the formula as trace filler.</p>
+        </div>
+        <div class="fix">
+          <b>Truthful reporting</b>
+          <p>Controller output fails closed when a blend misses cost, bio-based, or performance requirements.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Prompt Cards</h2>
+      <div class="prompts">
+        <article class="prompt-card">
+          <div class="prompt-top"><div><h3>Clear Mild Body Wash</h3><div class="vertical">Personal care</div></div><span class="badge pass">Pass</span></div>
+          <p class="prompt">Sulfate-free clear body wash with mild foam and rinse-clean feel under $5/kg.</p>
+          <div class="bars">
+            <div class="bar-row"><span>Cost</span><div class="track"><div class="fill good" style="width: 62.4%"></div></div><b>$3.12</b></div>
+            <div class="bar-row"><span>Bio-based</span><div class="track"><div class="fill good" style="width: 97.2%"></div></div><b>97.2%</b></div>
+            <div class="bar-row"><span>Performance</span><div class="track"><div class="fill good" style="width: 85%"></div></div><b>85.0</b></div>
+          </div>
+          <p class="blend"><b>Top blend</b>Coco-Glucoside 75.0%; Ethanol (bio) 25.0%</p>
+        </article>
+
+        <article class="prompt-card">
+          <div class="prompt-top"><div><h3>Low-Odor Hard-Surface Cleaner</h3><div class="vertical">Industrial</div></div><span class="badge review">Borderline</span></div>
+          <p class="prompt">General-purpose hard-surface cleaner concentrate for industrial maintenance, low odor, under $6/kg.</p>
+          <div class="bars">
+            <div class="bar-row"><span>Cost</span><div class="track"><div class="fill good" style="width: 26.2%"></div></div><b>$1.57</b></div>
+            <div class="bar-row"><span>Bio-based</span><div class="track"><div class="fill good" style="width: 79.9%"></div></div><b>79.9%</b></div>
+            <div class="bar-row"><span>Performance</span><div class="track"><div class="fill good" style="width: 84.9%"></div></div><b>84.9</b></div>
+          </div>
+          <p class="blend"><b>Top blend</b>D-Limonene 42.7%; Corn Ethanol 39.2%; Sodium Hypochlorite 10.0%; Sodium Metasilicate 8.0%</p>
+          <p class="note">Numerically inside tolerance; still needs formulation review for low-odor and material compatibility claims.</p>
+        </article>
+
+        <article class="prompt-card">
+          <div class="prompt-top"><div><h3>OMRI Bioinsecticide Adjuvant</h3><div class="vertical">Agricultural</div></div><span class="badge pass">Pass</span></div>
+          <p class="prompt">OMRI-listed bioinsecticide adjuvant for organic crops, bee-safe, under $8/kg, improves spray coverage.</p>
+          <div class="bars">
+            <div class="bar-row"><span>Cost</span><div class="track"><div class="fill good" style="width: 20.6%"></div></div><b>$1.65</b></div>
+            <div class="bar-row"><span>Bio-based</span><div class="track"><div class="fill good" style="width: 85%"></div></div><b>85.0%</b></div>
+            <div class="bar-row"><span>Performance</span><div class="track"><div class="fill good" style="width: 80%"></div></div><b>80.0</b></div>
+          </div>
+          <p class="blend"><b>Top blend</b>Canola Methyl Ester 64.6%; Ethanol (agri grade) 23.5%; Sulfur Dust 11.9%</p>
+        </article>
+
+        <article class="prompt-card">
+          <div class="prompt-top"><div><h3>Bio-Based Biostimulant Blend</h3><div class="vertical">Agricultural</div></div><span class="badge pass">Pass</span></div>
+          <p class="prompt">Biostimulant blend for enhanced root growth, 100% bio-based, soil-safe, and minimal persistence.</p>
+          <div class="bars">
+            <div class="bar-row"><span>Cost</span><div class="track"><div class="fill good" style="width: 52%"></div></div><b>$2.60</b></div>
+            <div class="bar-row"><span>Bio-based</span><div class="track"><div class="fill good" style="width: 98.1%"></div></div><b>98.1%</b></div>
+            <div class="bar-row"><span>Performance</span><div class="track"><div class="fill good" style="width: 80.1%"></div></div><b>80.1</b></div>
+          </div>
+          <p class="blend"><b>Top blend</b>Canola Methyl Ester 66.7%; Lecithin (soy) 16.7%; Wood Vinegar 16.7%</p>
+        </article>
+
+        <article class="prompt-card">
+          <div class="prompt-top"><div><h3>Tablet Film Coating System</h3><div class="vertical">Pharmaceutical</div></div><span class="badge review">Review</span></div>
+          <p class="prompt">Immediate-release tablet film coating system, water-based, pilot-friendly.</p>
+          <div class="bars">
+            <div class="bar-row"><span>Cost</span><div class="track"><div class="fill good" style="width: 13.3%"></div></div><b>$1.99</b></div>
+            <div class="bar-row"><span>Bio-based</span><div class="track"><div class="fill good" style="width: 80%"></div></div><b>80.0%</b></div>
+            <div class="bar-row"><span>Performance</span><div class="track"><div class="fill good" style="width: 78%"></div></div><b>78.0</b></div>
+          </div>
+          <p class="blend"><b>Top blend</b>Glycerin USP 60.0%; Hydrogen Peroxide 20.0%; MCC PH102 13.3%; Sucrose 6.7%</p>
+          <p class="note">Passes software constraints; requires pharma development review before any product claim.</p>
+        </article>
+
+        <article class="prompt-card">
+          <div class="prompt-top"><div><h3>Plant-Milk Emulsifier Blend</h3><div class="vertical">Food</div></div><span class="badge pass">Pass</span></div>
+          <p class="prompt">Clean-label emulsifier blend for plant-based milk, GRAS approved, under $4/kg, neutral taste, stable at pasteurization temperature.</p>
+          <div class="bars">
+            <div class="bar-row"><span>Cost</span><div class="track"><div class="fill good" style="width: 84.3%"></div></div><b>$3.37</b></div>
+            <div class="bar-row"><span>Bio-based</span><div class="track"><div class="fill good" style="width: 95%"></div></div><b>95.0%</b></div>
+            <div class="bar-row"><span>Performance</span><div class="track"><div class="fill good" style="width: 75%"></div></div><b>75.0</b></div>
+          </div>
+          <p class="blend"><b>Top blend</b>Medium Chain Fatty Acid Blend 32.7%; Citric Acid 24.4%; Beet Sugar 20.0%; Lecithin 5.0%</p>
+        </article>
+
+        <article class="prompt-card">
+          <div class="prompt-top"><div><h3>Natural Bakery Preservation System</h3><div class="vertical">Food</div></div><span class="badge pass">Pass</span></div>
+          <p class="prompt">Natural preservative system for bakery applications with clean-label positioning and mold control under $4/kg.</p>
+          <div class="bars">
+            <div class="bar-row"><span>Cost</span><div class="track"><div class="fill good" style="width: 82.5%"></div></div><b>$3.30</b></div>
+            <div class="bar-row"><span>Bio-based</span><div class="track"><div class="fill good" style="width: 90%"></div></div><b>90.0%</b></div>
+            <div class="bar-row"><span>Performance</span><div class="track"><div class="fill good" style="width: 75%"></div></div><b>75.0</b></div>
+          </div>
+          <p class="blend"><b>Top blend</b>Medium Chain Fatty Acid Blend 32.2%; Beet Sugar 20.0%; Citric Acid 19.9%; Ammonium Sulfate 7.9%</p>
+        </article>
+
+        <article class="prompt-card">
+          <div class="prompt-top"><div><h3>Cold-Water Laundry Detergent</h3><div class="vertical">Fabric and laundry</div></div><span class="badge pass">Pass</span></div>
+          <p class="prompt">Phosphate-free laundry detergent for cold-water washing with stain focus and improved sustainability profile under $4/kg.</p>
+          <div class="bars">
+            <div class="bar-row"><span>Cost</span><div class="track"><div class="fill good" style="width: 86%"></div></div><b>$3.01</b></div>
+            <div class="bar-row"><span>Bio-based</span><div class="track"><div class="fill good" style="width: 85%"></div></div><b>85.0%</b></div>
+            <div class="bar-row"><span>Performance</span><div class="track"><div class="fill good" style="width: 82%"></div></div><b>82.0</b></div>
+          </div>
+          <p class="blend"><b>Top blend</b>Ethanol (fabric grade) 39.6%; Sodium Laureth Sulfate 30.0%; SLES 3EO 29.0%; Lauryl Glucoside 1.4%</p>
+        </article>
+
+        <article class="prompt-card">
+          <div class="prompt-top"><div><h3>Bio-Focused Laundry Liquid</h3><div class="vertical">Fabric and laundry</div></div><span class="badge pass">Pass</span></div>
+          <p class="prompt">Concentrated liquid detergent, phosphate-free, cold-water active, stain-focused, and at least 85% bio-based.</p>
+          <div class="bars">
+            <div class="bar-row"><span>Cost</span><div class="track"><div class="fill good" style="width: 86%"></div></div><b>$3.01</b></div>
+            <div class="bar-row"><span>Bio-based</span><div class="track"><div class="fill good" style="width: 85%"></div></div><b>85.0%</b></div>
+            <div class="bar-row"><span>Performance</span><div class="track"><div class="fill good" style="width: 82%"></div></div><b>82.0</b></div>
+          </div>
+          <p class="blend"><b>Top blend</b>Ethanol (fabric grade) 39.6%; Sodium Laureth Sulfate 30.0%; SLES 3EO 29.0%; Lauryl Glucoside 1.4%</p>
+        </article>
+
+        <article class="prompt-card">
+          <div class="prompt-top"><div><h3>Waterborne Coating Aid</h3><div class="vertical">Paint and coatings</div></div><span class="badge review">Review</span></div>
+          <p class="prompt">Waterborne coating aid for interior paint with low odor and easy application.</p>
+          <div class="bars">
+            <div class="bar-row"><span>Cost</span><div class="track"><div class="fill good" style="width: 49.3%"></div></div><b>$2.96</b></div>
+            <div class="bar-row"><span>Bio-based</span><div class="track"><div class="fill good" style="width: 80%"></div></div><b>80.0%</b></div>
+            <div class="bar-row"><span>Performance</span><div class="track"><div class="fill good" style="width: 80%"></div></div><b>80.0</b></div>
+          </div>
+          <p class="blend"><b>Top blend</b>n-Butanol (bio) 76.6%; VAE Copolymer 10.9%; Soya Alkyd 9.1%; Carbon Black 3.4%</p>
+          <p class="note">Passes software constraints; VOC and low-odor claims need manual coatings review.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Regression Coverage</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Guardrail</th>
+              <th>Why it matters</th>
+              <th>Test coverage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Direct regex parser mode</td>
+              <td>Local deterministic runs should not attempt remote LLM providers.</td>
+              <td><code>test_regex_provider_is_direct_and_classifies_common_edge_prompts</code></td>
+            </tr>
+            <tr>
+              <td>Constraint violation gate</td>
+              <td>Below-target blends cannot be presented as successful generated formulations.</td>
+              <td><code>test_controller_marks_constraint_violations_and_skips_reports</code></td>
+            </tr>
+            <tr>
+              <td>Failed-run report suppression</td>
+              <td>Certification, carbon, and stability outputs should not make empty failures look validated.</td>
+              <td><code>test_controller_skips_reports_for_infeasible_result</code></td>
+            </tr>
+            <tr>
+              <td>Vertical filtering cleanup</td>
+              <td>Universal ingredients are exact-name matches, avoiding accidental cross-vertical leakage.</td>
+              <td>Covered through prompt reruns and controller integration tests.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    Generated from the local IntelliForm controller path with <code>LLM_PROVIDER=regex</code>. Passing software constraints does not replace regulatory, toxicology, stability, sensory, or manufacturing validation.
+  </footer>
+</body>
+</html>

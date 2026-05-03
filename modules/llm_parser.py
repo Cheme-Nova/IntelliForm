@@ -138,14 +138,14 @@ def _to_float(value, default: float) -> float:
 
 def _infer_application_type(text: str) -> str:
     t = text.lower()
-    if any(term in t for term in ["conditioner", "shampoo", "lotion", "serum", "cleanser", "skin", "hair"]):
+    if any(term in t for term in ["pharma", "pharmaceutical", "tablet", "capsule", "excipient", "oral suspension"]):
+        return "pharmaceutical"
+    if any(term in t for term in ["conditioner", "shampoo", "body wash", "lotion", "serum", "cleanser", "skin", "hair"]):
         return "personal_care"
     if any(term in t for term in ["laundry", "detergent", "fabric", "softener", "stain remover"]):
         return "fabric_laundry"
     if any(term in t for term in ["paint", "coating", "varnish", "primer"]):
         return "paint_coatings"
-    if any(term in t for term in ["pharma", "pharmaceutical", "tablet", "capsule", "excipient", "oral suspension"]):
-        return "pharmaceutical"
     if any(term in t for term in ["food", "beverage", "bakery", "flavor", "flavour", "gras"]):
         return "food"
     if any(term in t for term in ["agricultural", "crop", "adjuvant", "fertilizer", "biostimulant", "herbicide"]):
@@ -358,7 +358,7 @@ def _parse_with_regex(text: str) -> ParseResult:
 
     if any(x in t for x in ["foaming", "high foam", "surfactant"]):
         min_perf = 88.0
-    elif any(x in t for x in ["skin", "cosmetics", "personal care", "mild", "industrial", "degreaser", "conditioner", "shampoo"]):
+    elif any(x in t for x in ["skin", "cosmetics", "personal care", "mild", "industrial", "degreaser", "conditioner", "shampoo", "body wash"]):
         min_perf = 85.0
     else:
         min_perf = base_perf
@@ -384,7 +384,9 @@ def parse_request(text: str) -> ParseResult:
     """
     provider = os.getenv("LLM_PROVIDER", "auto").lower()
 
-    if provider == "groq":
+    if provider == "regex":
+        result = _parse_with_regex(text)
+    elif provider == "groq":
         result = _parse_with_groq(text) or _parse_with_regex(text)
     elif provider == "anthropic":
         result = _parse_with_anthropic(text) or _parse_with_regex(text)
