@@ -18,7 +18,7 @@ rdkit>=2023.9.1
 # Chemistry — enhanced descriptors (open source, BSD-3)
 # Mordred: 1613 molecular descriptors vs 7 in base RDKit
 # Reference: Moriwaki et al., J Cheminformatics 2018
-mordredcommunity[full]>=2.0.0
+mordredcommunity>=2.0.0
 
 # Chemistry — compound enrichment (open source, MIT)
 # PubChemPy: auto-enriches SMILES + metadata from PubChem REST API

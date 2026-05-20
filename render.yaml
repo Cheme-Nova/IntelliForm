@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     rootDir: .
-    buildCommand: pip install --no-cache-dir numpy scipy pandas scikit-learn && pip install --no-cache-dir mordredcommunity[full] rdkit && pip install --no-cache-dir -r requirements.txt
+    buildCommand: pip install --no-cache-dir numpy scipy pandas scikit-learn && pip install --no-cache-dir mordredcommunity rdkit && pip install --no-cache-dir -r requirements.txt
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
