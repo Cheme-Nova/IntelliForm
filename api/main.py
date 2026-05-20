@@ -224,7 +224,11 @@ async def optimize_bayesian(req: BayesianRequest):
 @app.post("/api/v1/predict/qsar")
 async def predict_qsar(req: QSARRequest):
     try:
-        from modules.qsar import predict_properties
+        import pandas as pd
+        from modules.qsar import predict_properties, initialize_models, _MODEL_CACHE
+        if _MODEL_CACHE is None:
+            db = pd.read_csv(DB_PATH)
+            initialize_models(db)
         predictions = [predict_properties(smiles) for smiles in req.smiles]
         return {
             "predictions": _serialize(predictions),
