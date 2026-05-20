@@ -51,11 +51,21 @@ except ImportError:
 
 try:
     from mordred import Calculator as MordredCalc, descriptors as mordred_descs
-    _MORDRED_CALC = MordredCalc(mordred_descs, ignore_3D=True)
     MORDRED_OK = True
-except ImportError:
+except Exception:
     MORDRED_OK = False
-    _MORDRED_CALC = None
+    MordredCalc = None
+    mordred_descs = None
+
+_MORDRED_CALC = None  # lazy-initialised on first use; avoids slow startup on cold start
+
+
+def _get_mordred_calc():
+    """Return the Mordred calculator, initialising it on first call."""
+    global _MORDRED_CALC
+    if _MORDRED_CALC is None and MORDRED_OK and MordredCalc is not None:
+        _MORDRED_CALC = MordredCalc(mordred_descs, ignore_3D=True)
+    return _MORDRED_CALC
 
 try:
     from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
@@ -235,13 +245,14 @@ def _mordred_features(smiles: str) -> Optional[np.ndarray]:
     Returns array of shape (n_descriptors,) or None on failure.
     Handles NaN/Error values by replacing with 0.
     """
-    if not MORDRED_OK or not RDKIT_OK or _MORDRED_CALC is None:
+    calc = _get_mordred_calc()
+    if not MORDRED_OK or not RDKIT_OK or calc is None:
         return None
     try:
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return None
-        result = _MORDRED_CALC(mol)
+        result = calc(mol)
         # Convert to numeric array, replace errors with NaN then 0
         values = []
         for v in result:
@@ -295,8 +306,9 @@ def _smiles_to_features(smiles: str) -> Tuple[Optional[np.ndarray], bool]:
 
 
 def _feature_names(used_mordred: bool = False) -> List[str]:
-    if used_mordred and MORDRED_OK and _MORDRED_CALC is not None:
-        return [str(d) for d in _MORDRED_CALC.descriptors]
+    calc = _get_mordred_calc()
+    if used_mordred and MORDRED_OK and calc is not None:
+        return [str(d) for d in calc.descriptors]
     names = [f"MorganFP_{i}" for i in range(MORGAN_NBITS)]
     names += ["MW", "LogP", "TPSA", "HBA", "HBD", "RotBonds", "FractionCSP3"]
     return names
@@ -426,7 +438,8 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
         _MODEL_CACHE  = None
         _USED_MORDRED = False
 
-    n_desc = len(_MORDRED_CALC.descriptors) if (MORDRED_OK and _MORDRED_CALC) else MORGAN_NBITS + 7
+    _mc = _get_mordred_calc()
+    n_desc = len(_mc.descriptors) if (MORDRED_OK and _mc) else MORGAN_NBITS + 7
 
     card = ModelCard(
         benchmarks=_make_benchmarks(n_train, used_mordred),
