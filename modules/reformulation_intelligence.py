@@ -154,6 +154,16 @@ THICKENERS_DECREASE = ["propylene glycol", "glycerol", "sorbitol",
 EMULSIFIERS = ["lecithin", "polysorbate", "glyceryl stearate", "ceteareth",
                 "sucrose laurate", "polyglyceryl", "sorbitan", "steareth"]
 
+# Solvents that increase instability under stress conditions when over-loaded
+SOLVENTS = ["ipa", "isopropanol", "limonene", "ethanol", "alcohol",
+            "acetone", "methanol", "butanol", "propylene glycol",
+            "dipropylene glycol", "glycol ether"]
+
+# Preservatives / antioxidants / chelators that protect shelf stability
+PRESERVATIVE_KEYWORDS = ["preservative", "antioxidant", "chelating", "edta",
+                          "phenoxyethanol", "benzoate", "sorbate", "tocopherol",
+                          "ascorbate", "bht", "bha", "propyl gallate"]
+
 
 # ── Result schemas ─────────────────────────────────────────────────────────────
 
@@ -487,6 +497,175 @@ def _suggest_phase_separation_fix(blend: Dict[str, float], db: pd.DataFrame,
     return suggestions
 
 
+def _diagnose_stability(blend: Dict[str, float], test_data: dict) -> RootCauseAnalysis:
+    """Diagnose accelerated stability failure root cause."""
+    contributing = []
+    evidence = []
+    condition = test_data.get("stability_condition", "accelerated")
+    timepoint = test_data.get("failure_timepoint_weeks", "unknown")
+    observation = test_data.get("failure_observation", "degradation")
+
+    # Rule: high solvent load (>30% total) destabilises emulsions under thermal stress
+    solvent_ings = {ing: pct for ing, pct in blend.items()
+                    if any(kw in ing.lower() for kw in SOLVENTS)}
+    total_solvent = sum(solvent_ings.values())
+    if total_solvent > 30:
+        contributing.extend(solvent_ings.keys())
+        evidence.append(
+            f"High solvent load ({total_solvent:.0f}% total) — "
+            f"solvents can destabilise emulsions and accelerate oxidative degradation "
+            f"under ICH accelerated conditions"
+        )
+
+    # Rule: no preservative / antioxidant system
+    has_preservative = any(
+        any(kw in ing.lower() for kw in PRESERVATIVE_KEYWORDS) for ing in blend
+    )
+    if not has_preservative:
+        evidence.append(
+            "No preservative or antioxidant detected — "
+            "formulation is unprotected against microbial growth and oxidative degradation"
+        )
+
+    # Rule: no emulsifier when blend contains both polar and non-polar phases
+    has_emulsifier = any(any(e in ing.lower() for e in EMULSIFIERS) for ing in blend)
+    if not has_emulsifier and total_solvent > 10:
+        evidence.append(
+            "No emulsifier detected — polar/non-polar phases may separate under "
+            "thermal stress (freeze-thaw or 40°C cycling)"
+        )
+
+    confidence = 0.65 if (total_solvent > 30 or not has_preservative) else 0.45
+    try:
+        wks = float(timepoint)
+        severity = "Severe" if wks <= 2 else "Moderate" if wks <= 8 else "Minor"
+    except (TypeError, ValueError):
+        severity = "Moderate"
+
+    root_cause = (
+        f"Accelerated stability failure at {condition}, week {timepoint}: {observation}. "
+        + (f"High solvent load ({total_solvent:.0f}% total) identified. " if total_solvent > 30 else "")
+        + ("No preservative system present. " if not has_preservative else "")
+        + ("No emulsifier detected. " if not has_emulsifier and total_solvent > 10 else "")
+    ).strip()
+
+    return RootCauseAnalysis(
+        failure_type="stability_failure",
+        root_cause=root_cause,
+        contributing_ingredients=contributing,
+        severity=severity,
+        confidence=confidence,
+        evidence=evidence,
+    )
+
+
+def _suggest_stability_fix(
+    blend: Dict[str, float], db: pd.DataFrame, test_data: dict
+) -> List[ReformulationSuggestion]:
+    """Generate stability-focused reformulation suggestions.
+
+    Rules applied (in priority order):
+      1. High solvent (>30% total) → reduce top solvent 5–10 pp, add emulsifier 2–5%
+      2. No preservative / antioxidant → add EDTA Disodium 0.1%
+    Minimum confidence 0.4 is enforced when at least one rule fires.
+    """
+    suggestions = []
+    rank = 1
+
+    solvent_ings = {ing: pct for ing, pct in blend.items()
+                    if any(kw in ing.lower() for kw in SOLVENTS)}
+    total_solvent = sum(solvent_ings.values())
+
+    # Rule 1a — reduce highest-load solvent by 5–10 percentage points
+    if total_solvent > 30 and solvent_ings:
+        top_solvent = max(solvent_ings, key=lambda x: solvent_ings[x])
+        top_pct = solvent_ings[top_solvent]
+        reduction = max(5.0, min(10.0, top_pct * 0.20))
+
+        suggestions.append(ReformulationSuggestion(
+            rank=rank, action_type="decrease", ingredient=top_solvent,
+            current_pct=top_pct, suggested_pct=round(top_pct - reduction, 1),
+            rationale=(
+                f"Reduce {top_solvent} by {reduction:.0f} pp — total solvent load is "
+                f"{total_solvent:.0f}% (threshold: 30%). High solvent concentration "
+                f"accelerates emulsion breakdown and oxidative degradation under ICH conditions."
+            ),
+            confidence=0.65,
+            predicted_impact={
+                "stability": "Improved — reduced solvent stress on formulation",
+                "cleaning_performance": "Monitor — retest soil removal at new level",
+                "cost": f"~-${reduction * 0.01:.2f}/kg estimated",
+            },
+            cost_delta_per_kg=round(-reduction * 0.01, 3),
+            risk_level="Low",
+            implementation_notes=(
+                f"Replace displaced {reduction:.0f}% with deionised water or co-solvent. "
+                "Retest accelerated stability at 40°C/75% RH, 4 weeks."
+            ),
+        ))
+        rank += 1
+
+        # Rule 1b — add emulsifier if none present to stabilise reduced-solvent system
+        has_emulsifier = any(any(e in ing.lower() for e in EMULSIFIERS) for ing in blend)
+        if not has_emulsifier:
+            suggestions.append(ReformulationSuggestion(
+                rank=rank, action_type="add", ingredient="Polysorbate 20",
+                current_pct=0.0, suggested_pct=3.0,
+                rationale=(
+                    "Add Polysorbate 20 at 3% — non-ionic HLB 16.7 emulsifier that bridges "
+                    "the solvent/water interface. REACH registered, EPA Safer Choice listed, "
+                    "widely compatible with industrial and personal care verticals."
+                ),
+                confidence=0.72,
+                predicted_impact={
+                    "stability": "Significantly improved",
+                    "phase_separation_risk": "Reduced",
+                    "cost": "+$0.09/kg",
+                },
+                cost_delta_per_kg=0.09,
+                risk_level="Low",
+                implementation_notes=(
+                    "Add to aqueous phase at room temperature before combining phases. "
+                    "Effective range 2–5%; titrate to minimum effective concentration."
+                ),
+            ))
+            rank += 1
+
+    # Rule 2 — add chelating agent if no preservative system present
+    has_preservative = any(
+        any(kw in ing.lower() for kw in PRESERVATIVE_KEYWORDS) for ing in blend
+    )
+    if not has_preservative:
+        suggestions.append(ReformulationSuggestion(
+            rank=rank, action_type="add", ingredient="EDTA Disodium",
+            current_pct=0.0, suggested_pct=0.1,
+            rationale=(
+                "Add EDTA Disodium 0.1% — chelating agent that sequesters trace metal ions "
+                "which catalyse oxidative degradation. Standard protective additive in "
+                "industrial cleaners and personal care formulations."
+            ),
+            confidence=0.70,
+            predicted_impact={
+                "oxidative_stability": "Improved",
+                "microbial_stability": "Partial — metal chelation inhibits metal-dependent microbes",
+                "cost": "+$0.005/kg",
+            },
+            cost_delta_per_kg=0.005,
+            risk_level="Low",
+            implementation_notes=(
+                "Add to aqueous phase. REACH registered, low ecotox concern at 0.1%. "
+                "For food-contact surfaces, use food-grade EDTA or substitute Citric Acid 0.2%."
+            ),
+        ))
+
+    # Enforce minimum confidence of 0.4 on all suggestions when at least one rule fired
+    if suggestions:
+        for s in suggestions:
+            s.confidence = max(s.confidence, 0.4)
+
+    return suggestions
+
+
 def _suggest_certification_fix(blend: Dict[str, float], db: pd.DataFrame,
                                  test_data: dict) -> List[ReformulationSuggestion]:
     """Generate certification rejection fix."""
@@ -594,6 +773,10 @@ def run_reformulation_intelligence(
         rca = _diagnose_phase_separation(blend, db, test_data)
         suggestions = _suggest_phase_separation_fix(blend, db, test_data)
 
+    elif failure_type == "stability_failure":
+        rca = _diagnose_stability(blend, test_data)
+        suggestions = _suggest_stability_fix(blend, db, test_data)
+
     elif failure_type == "certification_rejection":
         rca = _diagnose_certification(blend, test_data)
         suggestions = _suggest_certification_fix(blend, db, test_data)
@@ -653,18 +836,38 @@ def run_reformulation_intelligence(
     best = suggestions[0] if suggestions else ReformulationSuggestion(
         rank=1, action_type="review", ingredient="—",
         current_pct=0, suggested_pct=0,
-        rationale="Insufficient data — manual expert review recommended",
-        confidence=0.0, predicted_impact={}, cost_delta_per_kg=0,
-        risk_level="High", implementation_notes="Contact shehan@chemenova.com",
+        rationale=(
+            "No automated rule matched this failure pattern. "
+            "Manual formulation review recommended — check raw material COAs, "
+            "processing conditions (temperature, mixing order, shear), "
+            "and storage history before changing the formulation."
+        ),
+        confidence=0.0,
+        predicted_impact={
+            "next_step": "Review batch records and lab notes against specification",
+            "escalation": "Consider DoE (Design of Experiments) to isolate failure variable",
+        },
+        cost_delta_per_kg=0,
+        risk_level="Medium",
+        implementation_notes=(
+            "Document failure observations and test data — structured records improve "
+            "future rule matching. Check IntelliForm failure taxonomy for closest match."
+        ),
     )
 
     # Predict success probability
     success_prob = best.confidence * (1.0 - 0.2 * len(rca.contributing_ingredients))
     success_prob = float(np.clip(success_prob, 0.3, 0.95))
 
-    # Do not change — high performing ingredients
-    do_not_change = [ing for ing in blend
-                     if ing not in rca.contributing_ingredients][:3]
+    # Do not change — only flag ingredients we have specific evidence are working.
+    # When contributing_ingredients is empty (no root cause identified), we have no
+    # basis to declare any ingredient safe, so return an empty list rather than
+    # locking the entire blend by default.
+    do_not_change = (
+        [ing for ing in blend if ing not in rca.contributing_ingredients][:3]
+        if rca.contributing_ingredients
+        else []
+    )
 
     # Iterations estimate
     iterations = "1–2 batches" if rca.severity in ("Minor", "Moderate") else "2–4 batches"

@@ -146,8 +146,8 @@ def get_projects(request: Request, limit: int = 25):
 
 @app.post("/api/v1/formulate")
 async def formulate(req: FormulateRequest, request: Request):
+    user = _require_user(request)
     try:
-        user = _require_user(request)
         from api.controller import controller
         result = controller.run(
             req.input_text, req.vertical,
