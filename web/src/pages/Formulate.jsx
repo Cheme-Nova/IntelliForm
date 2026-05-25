@@ -350,7 +350,7 @@ function CompToxPanel({ data }) {
         <div style={{ ...panel, padding: '1rem', background: '#fffdf0', borderColor: '#e8c96b', boxShadow: 'none' }}>
           <div style={{ color: amber, fontWeight: 780, fontSize: '0.88rem', marginBottom: '0.3rem' }}>API key not configured — stub mode</div>
           <div style={{ color: muted, fontSize: '0.83rem', lineHeight: 1.65 }}>
-            Set <code style={{ background: '#f1f5f8', padding: '0.1rem 0.35rem', borderRadius: '4px', fontSize: '0.79rem' }}>COMPTOX_API_KEY</code> in Render environment variables to enable live OPERA QSAR predictions: SVHC/CMR flags, OECD biodegradability, log BCF, and log Kow per ingredient. Free key available at api-ccte.epa.gov/docs/.
+            Set <code style={{ background: '#f1f5f8', padding: '0.1rem 0.35rem', borderRadius: '4px', fontSize: '0.79rem' }}>COMPTOX_API_KEY</code> in Render environment variables to enable live OPERA QSAR predictions: SVHC/CMR flags, OECD biodegradability, log BCF, and log Kow per ingredient. To get a free key, search "EPA CCTE API key" on epa.gov.
           </div>
         </div>
       </Section>
