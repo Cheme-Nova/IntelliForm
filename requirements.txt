@@ -43,6 +43,15 @@ lightning>=2.0.0
 gauche>=0.1.2
 gpytorch>=1.11.0
 
+# Memory — temporal knowledge graph (optional)
+# Graphiti bi-temporal KG: every event stored as a time-stamped graph node.
+# Enables querying "what negative rules were active in November 2024?"
+# Requires Neo4j (env: NEO4J_URI / NEO4J_USER / NEO4J_PASSWORD).
+# Uses Groq Llama 3.3 for entity extraction (GROQ_API_KEY already set).
+# Reference: Rauch et al., "Graphiti", 2024. Apache-2.0.
+graphiti-core>=0.4.0
+neo4j>=5.14.0
+
 # Optimization
 pulp>=2.7.0
 pymoo>=0.6.0                # NSGA-III Pareto; falls back to weighted-sum if unavailable
