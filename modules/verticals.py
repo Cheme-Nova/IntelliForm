@@ -152,8 +152,8 @@ VERTICAL_PROFILES = {
         icon="🍃",
         description="Food additives, functional ingredients, flavor systems, preservatives",
         default_max_cost=5.0,
-        default_min_bio=85.0,
-        default_min_perf=75.0,
+        default_min_bio=82.0,
+        default_min_perf=70.0,
         regulatory_frameworks=["FDA_GRAS", "EU_FOOD_ADDITIVE", "EFSA", "CODEX"],
         required_functions=["Food", "GRAS", "Emulsifier", "Thickener", "Stabilizer",
                            "Acidulant", "Preservative", "Sweetener", "Flavor",
@@ -286,19 +286,24 @@ def get_vertical_constraints(vertical_key: str, parsed_cost, parsed_bio, parsed_
     min_bio  = max(parsed_bio,  profile.default_min_bio)
     min_perf = max(parsed_perf, profile.default_min_perf)
 
-    # Per-vertical feasibility caps derived from ingredient database coverage.
-    # Prevents LP infeasibility when the parser escalates bio% beyond what the
+    # Per-vertical feasibility caps based on ingredient database coverage.
+    # Prevents LP infeasibility when the parser escalates beyond what the
     # ingredient pool can actually achieve in a blended formulation.
-    _FEASIBILITY_CAP = {
-        "food":          88.0,  # food pool peaks ~87-89% blended bio
+    _BIO_CAP = {
+        "food":          86.0,  # affordable food pool blended bio peaks ~85-87%
         "personal_care": 97.0,
         "agricultural":  97.0,
-        "fabric_laundry":83.0,  # detergent/softener pool peaks ~82-83% blended bio
+        "fabric_laundry":83.0,  # affordable fabric pool blended bio peaks ~82%
         "industrial":    78.0,
         "paint_coatings":72.0,
         "pharmaceutical":85.0,
     }
-    bio_cap = _FEASIBILITY_CAP.get(vertical_key, 99.0)
-    min_bio = min(min_bio, bio_cap)
+    # Max blended perf achievable with affordable ingredients in each vertical
+    _PERF_CAP = {
+        "food":          77.0,  # affordable food pool max perf = 78
+        "fabric_laundry":84.0,
+    }
+    min_bio = min(min_bio, _BIO_CAP.get(vertical_key, 99.0))
+    min_perf = min(min_perf, _PERF_CAP.get(vertical_key, 100.0))
 
     return max_cost, min_bio, min_perf

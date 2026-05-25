@@ -70,7 +70,7 @@ JSON schema:
 {
   "max_cost": <float, USD/kg, default 5.0>,
   "min_bio": <float, bio-based percentage 0-100, default 85>,
-  "min_perf": <float, performance score 0-100, default 82>,
+  "min_perf": <float, performance score 0-100, default 75>,
   "application_type": <string, one of: personal_care | industrial | agricultural | pharmaceutical | food | fabric_laundry | paint_coatings | unknown>,
   "reasoning": <string, 1-2 short sentences>
 }

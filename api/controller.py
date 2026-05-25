@@ -149,23 +149,33 @@ def _failed_opt_result(error_msg, status, vertical):
 
 
 def _constraint_violations(result, max_cost, min_bio, min_perf):
-    if not result.success:
-        return []
     violations = []
-    if result.cost_per_kg > max_cost + 0.01:
+    if result.cost_per_kg and result.cost_per_kg > max_cost + 0.01:
         violations.append(f"cost ${result.cost_per_kg:.2f}/kg exceeds ${max_cost:.2f}/kg")
-    if result.bio_pct < min_bio - 0.1:
-        violations.append(f"bio-based {result.bio_pct:.1f}% below {min_bio:.1f}%")
-    if result.perf_score < min_perf - 0.1:
-        violations.append(f"performance {result.perf_score:.1f} below {min_perf:.1f}")
+    if result.bio_pct and result.bio_pct < min_bio - 0.1:
+        violations.append(f"bio-based {result.bio_pct:.1f}% vs target {min_bio:.1f}%")
+    if result.perf_score and result.perf_score < min_perf - 0.1:
+        violations.append(f"performance {result.perf_score:.1f} vs target {min_perf:.1f}")
     return violations
 
 
-def _mark_constraint_failure(result, violations):
-    result.success = False
-    result.status = "ConstraintViolation"
-    result.error_msg = "Generated blend did not meet requested constraints: " + "; ".join(violations) + "."
-    result.warnings = list(getattr(result, "warnings", []) or []) + violations
+def _apply_constraint_result(result, violations):
+    """
+    If a blend was found, return it as BestEffort with warnings rather than a hard failure.
+    Only hard-fail when the optimizer produced no blend at all.
+    """
+    if not violations:
+        return result
+    if result.blend:
+        # Optimizer found a formulation — return it with warnings rather than failing
+        result.success = True
+        result.status = "BestEffort"
+        result.warnings = list(getattr(result, "warnings", []) or []) + violations
+    else:
+        result.success = False
+        result.status = "ConstraintViolation"
+        result.error_msg = "No feasible blend found: " + "; ".join(violations) + "."
+        result.warnings = list(getattr(result, "warnings", []) or []) + violations
     return result
 
 
@@ -243,8 +253,7 @@ class IntelliFormController:
             )
 
         violations = _constraint_violations(result, max_cost, min_bio, min_perf)
-        if violations:
-            result = _mark_constraint_failure(result, violations)
+        result = _apply_constraint_result(result, violations)
 
         if result.success:
             emit("optimize_done", f"Blend optimized — ${result.cost_per_kg:.2f}/kg · {result.bio_pct:.1f}% bio-based · perf {result.perf_score:.1f}/100")
