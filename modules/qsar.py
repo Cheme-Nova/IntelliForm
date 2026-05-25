@@ -113,6 +113,8 @@ GBR_CACHE_PATH    = "/tmp/intelliform_qsar_v15.pkl"
 GBR_CACHE_VERSION = "v1.5-mordred"
 CHEMPROP_CKPT_DIR = "/tmp/intelliform_chemprop_v2"
 _CHEMPROP_TARGETS = ["Biodegradability", "Ecotoxicity", "Performance"]
+AL_FEEDBACK_PATH  = "/tmp/intelliform_al_feedback.pkl"
+AL_ENSEMBLE_N     = 5   # GBR models in uncertainty ensemble
 
 
 # ── Benchmarks ────────────────────────────────────────────────────────────────
@@ -186,6 +188,17 @@ class ModelCard:
     pubchem_active:         bool = False
     n_descriptors:          int  = 519
     active_tier:            str  = "gbr_morgan"
+    al_feedback_count:      int  = 0
+    al_last_retrain:        str  = ""
+
+
+@dataclass
+class FeedbackRecord:
+    smiles:       str
+    target:       str   # "Biodegradability" | "Ecotoxicity" | "Performance"
+    actual_value: float
+    timestamp:    str
+    al_round:     int
 
 
 # ── PubChemPy enrichment ──────────────────────────────────────────────────────
@@ -488,11 +501,12 @@ def _predict_chemprop(smiles: str, cp_models: Dict) -> Optional[Tuple[float, flo
 
 # ── Module-level caches ───────────────────────────────────────────────────────
 
-_GBR_CACHE:      Optional[Dict]      = None
-_CHEMPROP_CACHE: Optional[Dict]      = None
-_MODEL_CARD:     Optional[ModelCard] = None
-_USED_MORDRED:   bool                = False
-_ACTIVE_TIER:    str                 = "gbr_morgan"
+_GBR_CACHE:          Optional[Dict]      = None
+_GBR_ENSEMBLE_CACHE: Optional[Dict]      = None   # Dict[target, List[Pipeline]]
+_CHEMPROP_CACHE:     Optional[Dict]      = None
+_MODEL_CARD:         Optional[ModelCard] = None
+_USED_MORDRED:       bool                = False
+_ACTIVE_TIER:        str                 = "gbr_morgan"
 
 
 def _get_training_hash(db: pd.DataFrame) -> str:
@@ -507,13 +521,15 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
     Load or train QSAR models. Priority: Chemprop → Mordred GBR → Morgan GBR.
     Chemprop is used if pre-trained checkpoints exist in CHEMPROP_CKPT_DIR.
     Call train_chemprop_models(db) once to generate those checkpoints.
+    Also trains the GBR uncertainty ensemble from any stored feedback records.
     """
-    global _GBR_CACHE, _CHEMPROP_CACHE, _MODEL_CARD, _USED_MORDRED, _ACTIVE_TIER
+    global _GBR_CACHE, _GBR_ENSEMBLE_CACHE, _CHEMPROP_CACHE, _MODEL_CARD, _USED_MORDRED, _ACTIVE_TIER
 
     if PUBCHEM_OK:
         db = batch_enrich_db(db, max_lookups=30)
 
     training_hash = _get_training_hash(db)
+    feedback      = _load_feedback()
 
     # ── Try Chemprop checkpoints first ────────────────────────────────────────
     cp = _load_chemprop_checkpoints()
@@ -531,8 +547,12 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
             pubchem_active=PUBCHEM_OK,
             n_descriptors=0,
             active_tier="chemprop",
+            al_feedback_count=len(feedback),
         )
         _MODEL_CARD = card
+        ens = _train_gbr_ensemble(db, feedback)
+        if ens:
+            _GBR_ENSEMBLE_CACHE = ens
         return card
 
     # ── GBR tier: try disk cache ──────────────────────────────────────────────
@@ -547,12 +567,16 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
                 _USED_MORDRED = cached.get("used_mordred", False)
                 _ACTIVE_TIER  = "gbr_mordred" if _USED_MORDRED else "gbr_morgan"
                 _MODEL_CARD   = cached["card"]
+                ens = _train_gbr_ensemble(db, feedback)
+                if ens:
+                    _GBR_ENSEMBLE_CACHE = ens
                 return _MODEL_CARD
         except Exception:
             pass
 
     # ── Train GBR fresh ───────────────────────────────────────────────────────
-    train_result = _train_gbr_models(db)
+    db_aug       = _build_augmented_db(db, feedback)
+    train_result = _train_gbr_models(db_aug)
 
     sklearn_ver = "unavailable"
     if SKLEARN_OK:
@@ -584,6 +608,7 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
         pubchem_active=PUBCHEM_OK,
         n_descriptors=n_desc,
         active_tier=_ACTIVE_TIER,
+        al_feedback_count=len(feedback),
     )
     _MODEL_CARD = card
 
@@ -596,6 +621,10 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
             }, f)
     except Exception:
         pass
+
+    ens = _train_gbr_ensemble(db, feedback)
+    if ens:
+        _GBR_ENSEMBLE_CACHE = ens
 
     return card
 
@@ -699,9 +728,237 @@ def _rule_based_prediction(smiles: str, warnings_list: List[str]) -> QSARPredict
 
 # ── Active learning ────────────────────────────────────────────────────────────
 
+def _load_feedback() -> List[FeedbackRecord]:
+    if not os.path.exists(AL_FEEDBACK_PATH):
+        return []
+    try:
+        with open(AL_FEEDBACK_PATH, "rb") as f:
+            return pickle.load(f)
+    except Exception:
+        return []
+
+
+def _save_feedback(records: List[FeedbackRecord]) -> None:
+    try:
+        with open(AL_FEEDBACK_PATH, "wb") as f:
+            pickle.dump(records, f)
+    except Exception:
+        pass
+
+
+def _build_augmented_db(db: pd.DataFrame,
+                         records: List[FeedbackRecord]) -> pd.DataFrame:
+    """Merge confirmed lab values into db, overriding estimated values for matching SMILES."""
+    if not records:
+        return db
+    db = db.copy()
+    _col = {"Biodegradability": "Biodegradability",
+            "Ecotoxicity":      "Ecotoxicity_Score",
+            "Performance":      "Performance_Score"}
+    for rec in records:
+        mask = db["SMILES"] == rec.smiles
+        col  = _col.get(rec.target)
+        if not col:
+            continue
+        if mask.any():
+            db.loc[mask, col] = rec.actual_value
+        else:
+            new_row = {"SMILES": rec.smiles, col: rec.actual_value}
+            db = pd.concat([db, pd.DataFrame([new_row])], ignore_index=True)
+    return db
+
+
+def _train_gbr_ensemble(
+    db: pd.DataFrame,
+    records: List[FeedbackRecord],
+    n_models: int = AL_ENSEMBLE_N,
+) -> Optional[Dict[str, List]]:
+    """
+    Train N GBR models per endpoint with different random seeds.
+    Variance across ensemble predictions = epistemic uncertainty estimate.
+    """
+    if not SKLEARN_OK:
+        return None
+
+    db_aug = _build_augmented_db(db, records)
+    MAX_TRAIN = 400
+    if len(db_aug) > MAX_TRAIN:
+        db_aug = db_aug.sample(n=MAX_TRAIN, random_state=42)
+
+    X_rows, y_bio, y_etox, y_perf = [], [], [], []
+    for _, row in db_aug.iterrows():
+        smiles = str(row.get("SMILES", ""))
+        if not smiles or smiles == "nan":
+            continue
+        feat, _ = _smiles_to_features(smiles)
+        if feat is not None:
+            X_rows.append(feat)
+            y_bio.append(float(row.get("Biodegradability",
+                                        row.get("Bio_based_pct", 80) * 0.95)))
+            y_etox.append(float(row.get("Ecotoxicity_Score", 7.0)))
+            y_perf.append(float(row.get("Performance_Score", 75.0)))
+
+    if len(X_rows) < 10:
+        return None
+
+    X        = np.nan_to_num(np.array(X_rows), nan=0.0, posinf=0.0, neginf=0.0)
+    ensemble: Dict[str, List] = {}
+
+    for target, y_list in [("Biodegradability", y_bio),
+                            ("Ecotoxicity",      y_etox),
+                            ("Performance",      y_perf)]:
+        models = []
+        for seed in range(n_models):
+            pipe = Pipeline([
+                ("imputer", SimpleImputer(strategy="median")),
+                ("scaler",  StandardScaler()),
+                ("model",   GradientBoostingRegressor(
+                    n_estimators=100, max_depth=4, learning_rate=0.08,
+                    subsample=0.8, min_samples_leaf=3, random_state=seed,
+                )),
+            ])
+            pipe.fit(X, y_list)
+            models.append(pipe)
+        ensemble[target] = models
+
+    return ensemble
+
+
+def _ensemble_uncertainty(smiles: str, models: List) -> Tuple[float, float]:
+    """Returns (mean_prediction, std_prediction) across the ensemble."""
+    if not models:
+        return 0.0, 0.0
+    feat, _ = _smiles_to_features(smiles)
+    if feat is None:
+        return 0.0, 0.0
+    feat_2d = np.nan_to_num(feat, nan=0.0).reshape(1, -1)
+    preds = []
+    for pipe in models:
+        try:
+            preds.append(float(pipe.predict(feat_2d)[0]))
+        except Exception:
+            pass
+    if not preds:
+        return 0.0, 0.0
+    return float(np.mean(preds)), float(np.std(preds))
+
+
 def submit_feedback(smiles: str, target: str, actual_value: float,
                     db: pd.DataFrame) -> str:
-    global _MODEL_CARD
+    """
+    Store a lab-validated measurement, retrain GBR models with the augmented
+    dataset, and rebuild the uncertainty ensemble.
+
+    Chemprop checkpoints are NOT retrained here (too slow on CPU). Once you
+    have accumulated enough feedback (≥20 points), call train_chemprop_models(db)
+    from the Model Card tab to retrain the graph-neural-network tier.
+    """
+    global _GBR_CACHE, _GBR_ENSEMBLE_CACHE, _MODEL_CARD, _USED_MORDRED
+
+    valid = {"Biodegradability", "Ecotoxicity", "Performance"}
+    if target not in valid:
+        return f"❌ Unknown target '{target}'. Valid: {', '.join(sorted(valid))}"
+
+    records  = _load_feedback()
+    al_round = (_MODEL_CARD.active_learning_rounds + 1) if _MODEL_CARD else 1
+    records.append(FeedbackRecord(
+        smiles=smiles,
+        target=target,
+        actual_value=actual_value,
+        timestamp=pd.Timestamp.now().isoformat(),
+        al_round=al_round,
+    ))
+    _save_feedback(records)
+
+    retrain_msg = ""
+    if SKLEARN_OK:
+        db_aug = _build_augmented_db(db, records)
+        result = _train_gbr_models(db_aug)
+        if result:
+            _GBR_CACHE, _USED_MORDRED, _ = result
+            if os.path.exists(GBR_CACHE_PATH):
+                os.remove(GBR_CACHE_PATH)  # invalidate disk cache
+        ens = _train_gbr_ensemble(db, records)
+        if ens:
+            _GBR_ENSEMBLE_CACHE = ens
+        retrain_msg = f" GBR retrained on {len(records)} validated point(s)."
+
+    now = pd.Timestamp.now().isoformat()
     if _MODEL_CARD:
         _MODEL_CARD.active_learning_rounds += 1
-    return f"✅ Feedback recorded for {target}. Model retrains on next session load."
+        _MODEL_CARD.al_feedback_count       = len(records)
+        _MODEL_CARD.al_last_retrain         = now
+
+    label = smiles[:30] + ("..." if len(smiles) > 30 else "")
+    return (f"✅ Feedback stored (round {al_round}): "
+            f"{target}={actual_value:.2f} for {label}.{retrain_msg}")
+
+
+def get_feedback_records() -> List[FeedbackRecord]:
+    """Return all stored lab-validated feedback records."""
+    return _load_feedback()
+
+
+def query_uncertain_candidates(db: pd.DataFrame, top_k: int = 10) -> pd.DataFrame:
+    """
+    Rank all ingredients in db by ensemble disagreement (epistemic uncertainty).
+    The top-k rows are the most valuable experiments to run next —
+    labelling them will compress uncertainty the most.
+
+    Returns a DataFrame with columns:
+      Ingredient, SMILES, uncertainty_bio, uncertainty_etox,
+      uncertainty_perf, mean_uncertainty
+    Returns an empty DataFrame if the ensemble is not yet trained.
+    """
+    empty = pd.DataFrame(columns=["Ingredient", "SMILES",
+                                   "uncertainty_bio", "uncertainty_etox",
+                                   "uncertainty_perf", "mean_uncertainty"])
+    if not _GBR_ENSEMBLE_CACHE or not RDKIT_OK:
+        return empty
+
+    rows = []
+    for _, row in db.iterrows():
+        smiles = str(row.get("SMILES", ""))
+        if not smiles or smiles in ("nan", "") or len(smiles) < 3:
+            continue
+        name = str(row.get("Ingredient", smiles[:20]))
+
+        _, u_bio  = _ensemble_uncertainty(smiles, _GBR_ENSEMBLE_CACHE.get("Biodegradability", []))
+        _, u_etox = _ensemble_uncertainty(smiles, _GBR_ENSEMBLE_CACHE.get("Ecotoxicity",      []))
+        _, u_perf = _ensemble_uncertainty(smiles, _GBR_ENSEMBLE_CACHE.get("Performance",       []))
+
+        # Normalise to comparable scale before averaging
+        mean_u = (u_bio / 10.0 + u_etox / 2.0 + u_perf / 10.0) / 3.0
+
+        rows.append({
+            "Ingredient":     name,
+            "SMILES":         smiles,
+            "uncertainty_bio":  round(u_bio,  2),
+            "uncertainty_etox": round(u_etox, 3),
+            "uncertainty_perf": round(u_perf, 2),
+            "mean_uncertainty": round(mean_u, 4),
+        })
+
+    if not rows:
+        return empty
+
+    return (pd.DataFrame(rows)
+              .sort_values("mean_uncertainty", ascending=False)
+              .head(top_k)
+              .reset_index(drop=True))
+
+
+def al_stats() -> dict:
+    """Summary statistics for the Model Card / active-learning dashboard."""
+    records   = _load_feedback()
+    by_target = {"Biodegradability": 0, "Ecotoxicity": 0, "Performance": 0}
+    for rec in records:
+        if rec.target in by_target:
+            by_target[rec.target] += 1
+    return {
+        "total_feedback":  len(records),
+        "by_target":       by_target,
+        "al_rounds":       (_MODEL_CARD.active_learning_rounds if _MODEL_CARD else 0),
+        "ensemble_active": _GBR_ENSEMBLE_CACHE is not None,
+        "last_retrain":    (_MODEL_CARD.al_last_retrain if _MODEL_CARD else ""),
+    }
