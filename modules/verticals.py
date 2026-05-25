@@ -152,7 +152,7 @@ VERTICAL_PROFILES = {
         icon="🍃",
         description="Food additives, functional ingredients, flavor systems, preservatives",
         default_max_cost=5.0,
-        default_min_bio=90.0,
+        default_min_bio=85.0,
         default_min_perf=75.0,
         regulatory_frameworks=["FDA_GRAS", "EU_FOOD_ADDITIVE", "EFSA", "CODEX"],
         required_functions=["Food", "GRAS", "Emulsifier", "Thickener", "Stabilizer",
@@ -180,8 +180,8 @@ VERTICAL_PROFILES = {
         icon="👕",
         description="Detergents, fabric softeners, stain removers, laundry additives",
         default_max_cost=3.5,
-        default_min_bio=85.0,
-        default_min_perf=82.0,
+        default_min_bio=78.0,
+        default_min_perf=80.0,
         regulatory_frameworks=["REACH", "EU_DETERGENT_REGULATION", "EPA_DESIGN_FOR_ENVIRONMENT"],
         required_functions=["Fabric", "Surfactant", "Builder", "Enzyme", "Softener",
                            "Bleach", "Optical Brightener", "Anti-Redeposition",
@@ -290,10 +290,10 @@ def get_vertical_constraints(vertical_key: str, parsed_cost, parsed_bio, parsed_
     # Prevents LP infeasibility when the parser escalates bio% beyond what the
     # ingredient pool can actually achieve in a blended formulation.
     _FEASIBILITY_CAP = {
-        "food":          92.0,
+        "food":          88.0,  # food pool peaks ~87-89% blended bio
         "personal_care": 97.0,
         "agricultural":  97.0,
-        "fabric_laundry":88.0,
+        "fabric_laundry":83.0,  # detergent/softener pool peaks ~82-83% blended bio
         "industrial":    78.0,
         "paint_coatings":72.0,
         "pharmaceutical":85.0,
