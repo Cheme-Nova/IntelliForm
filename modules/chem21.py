@@ -171,26 +171,42 @@ class SolventGreenness:
 @dataclass
 class BlendSolventProfile:
     """Aggregated CHEM21 profile for a full blend."""
-    weighted_score: float          # 0–100 (weighted by blend %)
+    weighted_score: float          # 0–100, normalized to assessed solvents only
     grade: str                     # A+ / A / B / C / D
+    coverage_pct: float            # % of blend weight covered by CHEM21 database
     solvents_assessed: List[SolventGreenness]
     worst_tier: int                # 1–4
     alerts: List[str]              # any tier-3/4 warnings
     substitution_suggestions: List[str]
 
 
+# Non-solvent ingredient patterns to skip (food actives, functional ingredients, etc.)
+_NON_SOLVENT_PATTERNS = {
+    "lecithin", "sucrose", "fructose", "starch", "cellulose", "pectin",
+    "gum", "enzyme", "protein", "peptide", "extract", "powder", "flour",
+    "salt", "chloride", "sulfate", "phosphate", "carbonate", "bicarbonate",
+    "hydroxide", "oxide", "silica", "titanium", "zinc", "iron", "calcium",
+    "pigment", "wax", "ester (", "paraffin", "fragrance", "dye",
+    "preservative", "benzoate", "sorbate", "propionate",
+}
+
+
 def _lookup_solvent(name: str) -> Optional[Tuple[int, str]]:
     """Look up a solvent in the CHEM21 database by ingredient name."""
     key = name.lower().strip()
+    # Skip obvious non-solvents
+    if any(pat in key for pat in _NON_SOLVENT_PATTERNS):
+        return None
     if key in _CHEM21_DB:
         return _CHEM21_DB[key]
-    # Fuzzy match on keywords
+    # Fuzzy keyword match
     for keyword, canonical in _SOLVENT_KEYWORDS.items():
         if keyword in key:
             return _CHEM21_DB.get(canonical)
-    # Partial match
+    # Partial match — only if the ingredient name starts with a known key
+    # (avoids false matches like "citric acid" → "acetic acid")
     for db_key, val in _CHEM21_DB.items():
-        if db_key in key or key in db_key:
+        if key.startswith(db_key) or db_key.startswith(key):
             return val
     return None
 
@@ -246,18 +262,21 @@ def score_blend_solvents(blend: dict) -> BlendSolventProfile:
         return BlendSolventProfile(
             weighted_score=75.0,
             grade="B",
+            coverage_pct=0.0,
             solvents_assessed=[],
             worst_tier=1,
             alerts=[],
             substitution_suggestions=[],
         )
 
-    # Normalize to 0–100 regardless of what fraction of blend is solvent
-    final_score = round(weighted_score, 1) if total_solvent_pct == 0 else round(weighted_score, 1)
+    # Normalize score to ONLY the assessed solvent fraction.
+    # e.g. 100% Tier-1 ethanol at 25% of blend → score = 100, not 25.
+    final_score = round((weighted_score / (total_solvent_pct / 100.0)), 1) if total_solvent_pct > 0 else 75.0
 
     return BlendSolventProfile(
         weighted_score=final_score,
         grade=_grade_solvent(final_score),
+        coverage_pct=round(total_solvent_pct, 1),
         solvents_assessed=assessed,
         worst_tier=worst_tier,
         alerts=alerts,
