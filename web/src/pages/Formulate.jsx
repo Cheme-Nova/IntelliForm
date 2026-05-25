@@ -6,27 +6,27 @@ import { useAuth } from '../auth/AuthContext'
 import { saveLastRun } from '../lib/session'
 
 /* ── Design tokens (match luxury-upgrade.css) ──────────────── */
-const ink    = '#111827'
-const muted  = '#5f6f7d'
-const accent = '#1f8a7a'
-const accentSoft = '#eef6f3'
-const steel  = '#4c6375'
-const line   = '#dce6ee'
-const amber  = '#b5893a'
+const ink    = '#0E1C2A'
+const muted  = '#6B7A8A'
+const accent = '#1A7C6E'
+const accentSoft = '#EBF4F1'
+const steel  = '#4E6070'
+const line   = '#E2D9CF'
+const amber  = '#A67C3A'
 
 const panel = {
   background: '#ffffff',
   border: `1px solid ${line}`,
-  borderRadius: '8px',
-  boxShadow: '0 12px 32px rgba(36,49,61,0.08)',
+  borderRadius: '12px',
+  boxShadow: '0 1px 3px rgba(14,28,42,0.04), 0 8px 24px rgba(14,28,42,0.06)',
 }
 
 const label = {
   color: steel,
-  fontSize: '0.7rem',
-  letterSpacing: '0.08em',
+  fontSize: '0.65rem',
+  letterSpacing: '0.1em',
   textTransform: 'uppercase',
-  fontWeight: 800,
+  fontWeight: 700,
 }
 
 const input = {
@@ -52,10 +52,14 @@ function MetricCard({ label: lbl, value, unit, tone = ink }) {
   return (
     <div style={{ ...panel, padding: '1rem', flex: '1 1 130px', minWidth: 'min(130px,100%)' }}>
       <div style={label}>{lbl}</div>
-      <div style={{ color: tone, fontSize: '1.42rem', fontWeight: 840, marginTop: '0.4rem', overflowWrap: 'anywhere' }}>
+      <div style={{
+        color: tone, fontSize: '1.52rem', fontWeight: 700, marginTop: '0.4rem',
+        overflowWrap: 'anywhere', fontFamily: "'Fraunces', serif",
+        fontOpticalSizing: 'auto', letterSpacing: '-0.03em', lineHeight: 1.05,
+      }}>
         {value ?? '—'}
       </div>
-      {unit && <div style={{ color: muted, fontSize: '0.72rem', marginTop: '0.15rem' }}>{unit}</div>}
+      {unit && <div style={{ color: muted, fontSize: '0.68rem', marginTop: '0.2rem', letterSpacing: '0.02em' }}>{unit}</div>}
     </div>
   )
 }

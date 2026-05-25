@@ -3,23 +3,27 @@ import { loadLastRun } from '../lib/session'
 import { api } from '../api/client'
 
 const c = {
-  ink: '#111827', muted: '#5f6f7d', accent: '#1f8a7a',
-  accentSoft: '#eef6f3', steel: '#4c6375', line: '#dce6ee',
-  amber: '#b5893a', navy: '#0A1628',
+  ink: '#0E1C2A', muted: '#6B7A8A', accent: '#1A7C6E',
+  accentSoft: '#EBF4F1', steel: '#4E6070', line: '#E2D9CF',
+  tealBorder: '#B5D0C9', amber: '#A67C3A', amberSoft: '#FBF5E8',
 }
 
 const panel = {
   background: '#ffffff', border: `1px solid ${c.line}`,
-  borderRadius: '8px', boxShadow: '0 12px 32px rgba(36,49,61,0.08)',
+  borderRadius: '12px', boxShadow: '0 1px 3px rgba(14,28,42,0.04), 0 8px 24px rgba(14,28,42,0.06)',
 }
-const label = { color: c.steel, fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 800 }
+const label = { color: c.steel, fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }
 
 function MetricCard({ lbl, value, unit, tone = c.ink }) {
   return (
     <div style={{ ...panel, padding: '1rem', flex: '1 1 140px', minWidth: 'min(140px,100%)', boxShadow: 'none' }}>
       <div style={label}>{lbl}</div>
-      <div style={{ color: tone, fontSize: '1.4rem', fontWeight: 840, marginTop: '0.35rem' }}>{value ?? '—'}</div>
-      {unit && <div style={{ color: c.muted, fontSize: '0.72rem', marginTop: '0.1rem' }}>{unit}</div>}
+      <div style={{
+        color: tone, fontSize: '1.52rem', fontWeight: 700, marginTop: '0.35rem',
+        fontFamily: "'Fraunces', serif", fontOpticalSizing: 'auto',
+        letterSpacing: '-0.03em', lineHeight: 1.05,
+      }}>{value ?? '—'}</div>
+      {unit && <div style={{ color: c.muted, fontSize: '0.68rem', marginTop: '0.2rem', letterSpacing: '0.02em' }}>{unit}</div>}
     </div>
   )
 }
@@ -100,11 +104,11 @@ export default function Carbon() {
       <div style={{ display: 'grid', gap: '0.65rem', gridTemplateColumns: 'repeat(2, 1fr)', marginBottom: '1.1rem' }}>
         <div style={{ ...panel, padding: '1rem', boxShadow: 'none' }}>
           <div style={label}>Green formulation CO2e</div>
-          <div style={{ color: c.accent, fontWeight: 780, fontSize: '1.1rem', marginTop: '0.3rem' }}>{result.green_co2_per_kg} kg/kg</div>
+          <div style={{ color: c.accent, fontWeight: 700, fontSize: '1.3rem', marginTop: '0.3rem', fontFamily: "'Fraunces', serif", letterSpacing: '-0.02em' }}>{result.green_co2_per_kg} kg/kg</div>
         </div>
         <div style={{ ...panel, padding: '1rem', boxShadow: 'none' }}>
           <div style={label}>Petro baseline CO2e</div>
-          <div style={{ color: c.ink, fontWeight: 780, fontSize: '1.1rem', marginTop: '0.3rem' }}>{result.baseline_co2_per_kg} kg/kg</div>
+          <div style={{ color: c.ink, fontWeight: 700, fontSize: '1.3rem', marginTop: '0.3rem', fontFamily: "'Fraunces', serif", letterSpacing: '-0.02em' }}>{result.baseline_co2_per_kg} kg/kg</div>
         </div>
       </div>
 
@@ -132,31 +136,31 @@ export default function Carbon() {
         </div>
 
         <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
-          <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 130px', boxShadow: 'none', background: c.accentSoft, borderColor: '#b9d1ca' }}>
+          <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 130px', boxShadow: 'none', background: c.accentSoft, borderColor: c.tealBorder }}>
             <div style={label}>CBAM cost (green)</div>
-            <div style={{ color: c.accent, fontWeight: 780, fontSize: '1.2rem', marginTop: '0.3rem' }}>€{cbamCost.toFixed(2)}</div>
+            <div style={{ color: c.accent, fontWeight: 700, fontSize: '1.4rem', fontFamily: "'Fraunces', serif", letterSpacing: '-0.02em', marginTop: '0.3rem' }}>€{cbamCost.toFixed(2)}</div>
             <div style={{ color: c.muted, fontSize: '0.72rem' }}>per {batchKg} kg batch</div>
           </div>
-          <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 130px', boxShadow: 'none', background: '#fffdf0', borderColor: '#e8c96b' }}>
+          <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 130px', boxShadow: 'none', background: c.amberSoft, borderColor: '#DDB96A' }}>
             <div style={label}>CBAM cost (petro baseline)</div>
-            <div style={{ color: c.amber, fontWeight: 780, fontSize: '1.2rem', marginTop: '0.3rem' }}>€{baselineCbam.toFixed(2)}</div>
+            <div style={{ color: c.amber, fontWeight: 700, fontSize: '1.4rem', fontFamily: "'Fraunces', serif", letterSpacing: '-0.02em', marginTop: '0.3rem' }}>€{baselineCbam.toFixed(2)}</div>
             <div style={{ color: c.muted, fontSize: '0.72rem' }}>per {batchKg} kg batch</div>
           </div>
           <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 130px', boxShadow: 'none' }}>
             <div style={label}>CBAM saving</div>
-            <div style={{ color: c.accent, fontWeight: 780, fontSize: '1.2rem', marginTop: '0.3rem' }}>€{cbamSaving.toFixed(2)}</div>
+            <div style={{ color: c.accent, fontWeight: 700, fontSize: '1.4rem', fontFamily: "'Fraunces', serif", letterSpacing: '-0.02em', marginTop: '0.3rem' }}>€{cbamSaving.toFixed(2)}</div>
             <div style={{ color: c.muted, fontSize: '0.72rem' }}>vs petrochemical blend</div>
           </div>
           <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 110px', boxShadow: 'none' }}>
             <div style={label}>CBAM per kg</div>
-            <div style={{ color: c.ink, fontWeight: 780, fontSize: '1.2rem', marginTop: '0.3rem' }}>€{cbamPerKg.toFixed(4)}</div>
+            <div style={{ color: c.ink, fontWeight: 700, fontSize: '1.4rem', fontFamily: "'Fraunces', serif", letterSpacing: '-0.02em', marginTop: '0.3rem' }}>€{cbamPerKg.toFixed(4)}</div>
             <div style={{ color: c.muted, fontSize: '0.72rem' }}>€/kg product</div>
           </div>
         </div>
       </div>
 
       {/* ── Carbon Passport download ─────────────────────────────────────────── */}
-      <div style={{ ...panel, padding: '1rem 1.1rem', boxShadow: 'none', background: c.accentSoft, borderColor: '#b9d1ca' }}>
+      <div style={{ ...panel, padding: '1rem 1.1rem', boxShadow: 'none', background: c.accentSoft, borderColor: c.tealBorder }}>
         <div style={label}>ISO 14067 Carbon Passport</div>
         <div style={{ color: '#3d5060', fontSize: '0.84rem', lineHeight: 1.6, marginTop: '0.4rem', marginBottom: '0.85rem' }}>
           Generate a machine-readable, EU CBAM-compliant carbon footprint declaration for this formulation. Download as JSON — ready for submission.
