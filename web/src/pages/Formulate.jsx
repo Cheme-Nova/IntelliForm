@@ -439,6 +439,7 @@ export default function Formulate() {
   const [stepFlags, setStepFlags]     = useState({})
   const [agentStream, setAgentStream] = useState([])
   const [pinned, setPinned]           = useState([])
+  const [pubchem, setPubchem]         = useState({})
   const [isMobile, setIsMobile]       = useState(() => typeof window !== 'undefined' && window.innerWidth < 960)
   const abortRef = useRef(null)
 
@@ -470,7 +471,13 @@ export default function Formulate() {
           setResult(final)
           saveLastRun({ request: { inputText, vertical, batchSize, optMode }, response: final })
           setStepFlags((f) => ({ ...f, complete: true }))
-          setLoading(false); return
+          setLoading(false)
+          // Kick off PubChem enrichment asynchronously after result is shown
+          const blendNames = Object.keys(final?.result?.blend || {})
+          if (blendNames.length) {
+            api.pubchemEnrich(blendNames).then(r => setPubchem(r.data || {})).catch(() => {})
+          }
+          return
         }
         if (step === 'agent_comment') setAgentStream((p) => [...p, event.text ?? message])
         setStepFlags((f) => ({ ...f, [step]: true }))
@@ -481,6 +488,39 @@ export default function Formulate() {
   }, [inputText, vertical, batchSize, optMode, auth])
 
   const displayedAgents = result?.agents?.length ? result.agents : agentStream
+
+  function downloadCSV() {
+    if (!blendEntries.length) return
+    const rows = [
+      ['Ingredient', 'Weight (%)', 'CAS', 'MW (g/mol)', 'SMILES', 'CHEM21 Tier', 'Interaction Flags', 'SVHC'],
+    ]
+    const chem21Map = {}
+    ;(result?.chem21?.solvents_assessed || []).forEach(s => { chem21Map[s.name] = `T${s.tier} ${s.tier_label}` })
+    const flagMap = {}
+    ;(result?.interactions?.flags || []).forEach(f => {
+      const key = f.ingredient_a; flagMap[key] = (flagMap[key] || []).concat(f.severity)
+      const key2 = f.ingredient_b; flagMap[key2] = (flagMap[key2] || []).concat(f.severity)
+    })
+    const svhcSet = new Set(result?.comptox?.svhc_flags || [])
+    blendEntries.forEach(([name, pct]) => {
+      const pc = pubchem[name] || {}
+      rows.push([
+        name,
+        pct,
+        pc.cas || '',
+        pc.molecular_weight || '',
+        pc.smiles || '',
+        chem21Map[name] || '',
+        (flagMap[name] || []).join('; '),
+        svhcSet.has(name) ? 'Yes' : '',
+      ])
+    })
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = 'intelliform_blend.csv'; a.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div style={{ maxWidth: '1180px', margin: '0 auto', width: '100%', minWidth: 0 }}>
@@ -699,29 +739,47 @@ export default function Formulate() {
             eyebrow="Blend Architecture"
             title="Optimized composition"
             aside={blendEntries.length ? (
-              <button
-                onClick={() => { if (!result || pinned.length >= 3) return; setPinned((p) => [...p, { ...result, vertical }]) }}
-                disabled={pinned.length >= 3}
-                style={{ fontSize: '0.76rem', padding: '0.3rem 0.85rem', borderRadius: '999px', border: `1px solid ${pinned.length >= 3 ? line : accent}`, background: pinned.length >= 3 ? '#f9fafb' : accentSoft, color: pinned.length >= 3 ? muted : accent, cursor: pinned.length >= 3 ? 'not-allowed' : 'pointer', fontWeight: 680 }}>
-                Pin &amp; compare
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button
+                  onClick={downloadCSV}
+                  style={{ fontSize: '0.76rem', padding: '0.3rem 0.85rem', borderRadius: '999px', border: `1px solid ${line}`, background: '#f9fafb', color: steel, cursor: 'pointer', fontWeight: 680 }}>
+                  ↓ CSV
+                </button>
+                <button
+                  onClick={() => { if (!result || pinned.length >= 3) return; setPinned((p) => [...p, { ...result, vertical }]) }}
+                  disabled={pinned.length >= 3}
+                  style={{ fontSize: '0.76rem', padding: '0.3rem 0.85rem', borderRadius: '999px', border: `1px solid ${pinned.length >= 3 ? line : accent}`, background: pinned.length >= 3 ? '#f9fafb' : accentSoft, color: pinned.length >= 3 ? muted : accent, cursor: pinned.length >= 3 ? 'not-allowed' : 'pointer', fontWeight: 680 }}>
+                  Pin &amp; compare
+                </button>
+              </div>
             ) : null}
           >
             {blendEntries.length ? (
               <>
                 <BlendDonut blendEntries={blendEntries} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-                  {blendEntries.map(([ingredient, pct]) => (
-                    <div key={ingredient}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.3rem', alignItems: 'flex-start' }}>
-                        <div style={{ color: '#3d5060', fontSize: '0.86rem', minWidth: 0, overflowWrap: 'anywhere' }}>{ingredient}</div>
-                        <div style={{ color: ink, fontWeight: 780, flex: '0 0 auto', fontSize: '0.9rem' }}>{pct}%</div>
+                  {blendEntries.map(([ingredient, pct]) => {
+                    const pc = pubchem[ingredient]
+                    return (
+                      <div key={ingredient}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.15rem', alignItems: 'flex-start' }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ color: '#3d5060', fontSize: '0.86rem', overflowWrap: 'anywhere' }}>{ingredient}</div>
+                            {pc && !pc.error && (
+                              <div style={{ color: muted, fontSize: '0.72rem', marginTop: '0.1rem' }}>
+                                {pc.cas && <span style={{ marginRight: '0.6rem' }}>CAS {pc.cas}</span>}
+                                {pc.molecular_weight && <span>MW {pc.molecular_weight} g/mol</span>}
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ color: ink, fontWeight: 780, flex: '0 0 auto', fontSize: '0.9rem' }}>{pct}%</div>
+                        </div>
+                        <div className="if-bar-wrap" style={{ marginBottom: '0.55rem' }}>
+                          <div className="if-bar-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
+                        </div>
                       </div>
-                      <div className="if-bar-wrap">
-                        <div className="if-bar-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </>
             ) : (

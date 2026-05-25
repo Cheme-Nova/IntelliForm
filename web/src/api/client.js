@@ -94,6 +94,7 @@ export const api = {
   qsar: (data) => client.post('/api/v1/predict/qsar', data),
   reformulate: (data) => client.post('/api/v1/reformulate', data),
   refine: (data) => client.post('/api/v1/refine', data),
+  pubchemEnrich: (names) => client.post('/api/v1/pubchem/enrich', { names }),
 }
 
 export default client

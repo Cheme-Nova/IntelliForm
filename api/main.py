@@ -315,6 +315,22 @@ async def refine_formulation(req: RefineRequest, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class PubChemRequest(BaseModel):
+    names: list[str]
+
+@app.post("/api/v1/pubchem/enrich")
+async def pubchem_enrich(req: PubChemRequest):
+    """Enrich a list of ingredient names with PubChem identity data (CAS, SMILES, MW)."""
+    try:
+        from modules.pubchem import enrich_blend
+        if not req.names:
+            return {}
+        blend = {n: 0 for n in req.names[:30]}  # cap at 30 names
+        return enrich_blend(blend)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/v1/reformulate")
 async def reformulate(req: ReformulateRequest):
     try:
