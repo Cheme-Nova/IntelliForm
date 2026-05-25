@@ -1,9 +1,14 @@
 import axios from 'axios'
 
 const publicApiKey = import.meta.env.VITE_PUBLIC_API_KEY
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim()
+const isLocalHost =
+  typeof window !== 'undefined' &&
+  ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)
+export const apiBaseUrl = configuredApiUrl || (isLocalHost ? 'http://localhost:8000' : 'https://intelliform-4x48.onrender.com')
 
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
     ...(publicApiKey ? { 'X-API-Key': publicApiKey } : {}),
@@ -18,6 +23,64 @@ client.interceptors.request.use((config) => {
   return config
 })
 
+/**
+ * Stream a formulation run via SSE.
+ * Calls onEvent(event) for each server-sent event.
+ * Returns a cleanup function that aborts the stream.
+ */
+export function streamFormulate(data, onEvent) {
+  const controller = new AbortController()
+  const token = localStorage.getItem('intelliform_access_token')
+
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'text/event-stream',
+    ...(publicApiKey ? { 'X-API-Key': publicApiKey } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+
+  fetch(`${apiBaseUrl}/api/v1/stream/formulate`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
+    signal: controller.signal,
+  })
+    .then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text().catch(() => res.statusText)
+        onEvent({ step: 'error', message: text })
+        return
+      }
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const parts = buffer.split('\n\n')
+        buffer = parts.pop() ?? ''
+        for (const part of parts) {
+          const line = part.trim()
+          if (line.startsWith('data: ')) {
+            try {
+              onEvent(JSON.parse(line.slice(6)))
+            } catch {
+              // ignore malformed lines
+            }
+          }
+        }
+      }
+    })
+    .catch((err) => {
+      if (err.name !== 'AbortError') {
+        onEvent({ step: 'error', message: err.message })
+      }
+    })
+
+  return () => controller.abort()
+}
+
 export const api = {
   health: () => client.get('/health'),
   verticals: () => client.get('/api/v1/verticals'),
@@ -30,6 +93,7 @@ export const api = {
   bayesian: (data) => client.post('/api/v1/optimize/bayesian', data),
   qsar: (data) => client.post('/api/v1/predict/qsar', data),
   reformulate: (data) => client.post('/api/v1/reformulate', data),
+  refine: (data) => client.post('/api/v1/refine', data),
 }
 
 export default client

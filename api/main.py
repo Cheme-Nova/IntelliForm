@@ -2,13 +2,26 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import asyncio
+import json
+import queue
+import threading
+from typing import Optional, Dict, Any
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import BaseModel
 from api.models import (
     FormulateRequest, ParetoRequest, BayesianRequest,
     QSARRequest, ReformulateRequest, HealthResponse
 )
+
+class RefineRequest(BaseModel):
+    instruction: str
+    current_result: Dict[str, Any]
+    vertical: str
+    batch_size: float = 1000.0
+    opt_mode: str = "auto"
 from api.memory import memory
 from api.public_access import (
     FREE_TIER_ENABLED,
@@ -236,6 +249,71 @@ async def predict_qsar(req: QSARRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/stream/formulate")
+async def stream_formulate(req: FormulateRequest, request: Request):
+    """SSE streaming endpoint — yields progress events then the complete result."""
+    user = _require_user(request)
+    event_queue: queue.Queue = queue.Queue()
+
+    def progress_cb(event):
+        event_queue.put(event)
+
+    def run_in_thread():
+        try:
+            from api.controller import controller
+            controller.run(
+                req.input_text, req.vertical,
+                req.batch_size, req.opt_mode,
+                req.constraints,
+                progress_cb=progress_cb,
+            )
+        except Exception as e:
+            event_queue.put({"step": "error", "message": str(e)})
+        finally:
+            event_queue.put(None)  # sentinel
+
+    thread = threading.Thread(target=run_in_thread, daemon=True)
+    thread.start()
+
+    async def event_stream():
+        loop = asyncio.get_event_loop()
+        while True:
+            event = await loop.run_in_executor(None, event_queue.get)
+            if event is None:
+                break
+            yield f"data: {json.dumps(event)}\n\n"
+            if event.get("step") in ("complete", "error"):
+                break
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
+
+
+@app.post("/api/v1/refine")
+async def refine_formulation(req: RefineRequest, request: Request):
+    """Refine an existing formulation with a natural-language instruction."""
+    _require_user(request)
+    try:
+        from api.controller import controller
+        result = controller.refine(
+            req.current_result,
+            req.instruction,
+            req.vertical,
+            req.batch_size,
+            req.opt_mode,
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/v1/reformulate")
 async def reformulate(req: ReformulateRequest):

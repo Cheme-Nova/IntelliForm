@@ -170,8 +170,14 @@ def _mark_constraint_failure(result, violations):
 
 
 class IntelliFormController:
-    def run(self, input_text, vertical, batch_size, opt_mode, constraints):
+    def run(self, input_text, vertical, batch_size, opt_mode, constraints, progress_cb=None):
+        def emit(step, message, **extra):
+            if progress_cb:
+                progress_cb({"step": step, "message": message, **extra})
+
         db = load_db()
+
+        emit("parse", "Parsing formulation brief...")
         parsed = parse_request(input_text)
 
         requested_vertical = _canonicalize_vertical(vertical)
@@ -180,6 +186,8 @@ class IntelliFormController:
         if resolved_vertical == "unknown":
             resolved_vertical = inferred_vertical if inferred_vertical != "unknown" else "all"
 
+        emit("parse_done", f"Brief parsed — application: {parsed.application_type.replace('_', ' ').title()}")
+
         filtered_db = filter_db_by_vertical(db, resolved_vertical)
         filtered_db = _apply_brief_filters(filtered_db, input_text)
         max_cost, min_bio, min_perf = _merge_constraints(parsed, constraints, resolved_vertical)
@@ -187,6 +195,8 @@ class IntelliFormController:
         optimization_mode = str(opt_mode or "auto").lower()
         pareto = None
         bayesian = None
+
+        emit("optimize", f"Running {optimization_mode} optimization ({len(filtered_db)} ingredient candidates)...")
 
         if optimization_mode == "pareto":
             pareto = run_pareto_optimization(filtered_db, max_cost, min_bio, min_perf)
@@ -237,12 +247,15 @@ class IntelliFormController:
             result = _mark_constraint_failure(result, violations)
 
         if result.success:
+            emit("optimize_done", f"Blend optimized — ${result.cost_per_kg:.2f}/kg · {result.bio_pct:.1f}% bio-based · perf {result.perf_score:.1f}/100")
+            emit("proof_stack", "Generating sustainability, regulatory, and stability proof stack...")
             eco = compute_ecometrics(result.blend, filtered_db)
             reg = get_blend_report(result.blend)
             vreg = generate_vertical_regulatory_report(result.blend, filtered_db, resolved_vertical)
             stability = predict_stability(result.blend, filtered_db)
             carbon = calculate_carbon_credits(result.blend, filtered_db, batch_size)
             cert = run_certification_oracle(result.blend, filtered_db, resolved_vertical, result.bio_pct)
+            emit("proof_stack_done", "Proof stack complete — eco, regulatory, stability, carbon, certifications ready")
         else:
             eco = None
             reg = None
@@ -250,12 +263,17 @@ class IntelliFormController:
             stability = None
             carbon = None
             cert = None
+            emit("optimize_done", f"Optimization did not converge — {result.error_msg or 'constraint infeasible'}")
+
+        emit("agents", "Running 4-agent expert commentary swarm...")
         agents = run_agent_swarm(result, parsed)
+        for i, comment in enumerate(agents):
+            emit("agent_comment", comment, index=i)
 
         if result.success:
             memory.record("formulation_generated", result.blend, resolved_vertical)
 
-        return {
+        final = {
             "parsed": _serialize(parsed),
             "result": _serialize(result),
             "eco": _serialize(eco),
@@ -280,6 +298,41 @@ class IntelliFormController:
                 "ingredient_pool_size": len(filtered_db),
             },
         }
+        emit("complete", "Formulation run complete", result=final)
+        return final
+
+    def refine(self, current_result, instruction, vertical, batch_size, opt_mode):
+        """Re-run formulation with constraints adjusted by a natural-language instruction."""
+        meta = current_result.get("meta", {})
+        constraints_used = meta.get("constraints_used", {})
+        max_cost = float(constraints_used.get("max_cost", 20.0))
+        min_bio = float(constraints_used.get("min_bio", 0.0))
+        min_perf = float(constraints_used.get("min_perf", 0.0))
+
+        # Parse the instruction to adjust constraints
+        text = instruction.lower()
+        if any(w in text for w in ["cheaper", "lower cost", "reduce cost", "less expensive", "budget"]):
+            max_cost = round(max_cost * 0.80, 2)
+        if any(w in text for w in ["more expensive", "premium", "higher quality", "increase cost"]):
+            max_cost = round(max_cost * 1.25, 2)
+        if any(w in text for w in ["more bio", "greener", "sustainable", "eco", "natural", "organic"]):
+            min_bio = min(round(min_bio + 15, 1), 95.0)
+        if any(w in text for w in ["less bio", "conventional", "synthetic"]):
+            min_bio = max(round(min_bio - 10, 1), 0.0)
+        if any(w in text for w in ["better performance", "higher perf", "more effective", "stronger"]):
+            min_perf = min(round(min_perf + 10, 1), 90.0)
+
+        # Rebuild the input text, incorporating the instruction as an addendum
+        parsed = current_result.get("parsed", {})
+        original_input = parsed.get("reasoning", "") or instruction
+        enriched_input = f"{original_input}. Additional requirement: {instruction}"
+
+        new_constraints = {
+            "max_cost": max_cost,
+            "min_bio": min_bio,
+            "min_perf": min_perf,
+        }
+        return self.run(enriched_input, vertical, batch_size, opt_mode, new_constraints)
 
 
 def _serialize(obj):
