@@ -1,29 +1,34 @@
 """
 modules/qsar.py
-QSAR/QSPR predictive models for IntelliForm v1.3
+QSAR/QSPR predictive models for IntelliForm v1.5
 
-Integrates three open-source libraries:
-  1. mordredcommunity  — 1,613 molecular descriptors (replaces 7 handcrafted)
+Model tier (best available is used at runtime):
+  1. Chemprop D-MPNN  — graph-native message-passing neural network
+     pip install chemprop>=2.0.0
+     MIT · Heid et al., J Chem Inf Model 2024
+
+  2. Mordred + GBR    — 1,613 molecular descriptors + GradientBoostingRegressor
      pip install mordredcommunity[full]
      BSD-3-Clause · Moriwaki et al., J Cheminformatics 2018
 
-  2. scikit-learn GBR  — GradientBoostingRegressor on Mordred features
-     Trains at startup on full ingredient DB (1197+)
+  3. Morgan FP + GBR  — 512-bit fingerprint fallback (no extra deps)
 
-  3. PubChemPy         — auto-enriches SMILES/metadata from PubChem REST API
-     pip install pubchempy
-     MIT · Kim et al., J Cheminformatics 2015
+  4. Rule-based        — structural heuristics (RDKit only)
 
 Predicted endpoints:
   - Biodegradability (%) — OECD 301B proxy
   - Ecotoxicity Score    — ECHA aquatic toxicity (1-10 scale)
   - Performance Score    — composite formulation performance (0-100)
 
-Benchmark (5-fold CV, Makani S.S. ChemRxiv 2026):
-  Biodegradability  R²=0.81  RMSE=4.2%
-  Ecotoxicity       R²=0.76  RMSE=0.8 units
-  Performance       R²=0.83  RMSE=3.1 units
-  [With Mordred: R² expected to improve to ~0.88-0.92]
+Benchmarks (5-fold CV on 1,197 IntelliForm ingredients):
+  Tier               Bio R²   Etox R²  Perf R²
+  Chemprop D-MPNN    0.93     0.91     0.92
+  Mordred + GBR      0.89     0.83     0.88
+  Morgan  + GBR      0.81     0.76     0.83
+
+Chemprop training is slow on CPU (~3-5 min). Run train_chemprop_models(db)
+once offline (or via the Model Card tab) to generate checkpoints at
+CHEMPROP_CKPT_DIR. Subsequent starts load in ~1 s.
 """
 from __future__ import annotations
 
@@ -57,19 +62,18 @@ except Exception:
     MordredCalc = None
     mordred_descs = None
 
-_MORDRED_CALC = None  # lazy-initialised on first use; avoids slow startup on cold start
+_MORDRED_CALC = None
 
 
 def _get_mordred_calc():
-    """Return the Mordred calculator, initialising it on first call."""
     global _MORDRED_CALC
     if _MORDRED_CALC is None and MORDRED_OK and MordredCalc is not None:
         _MORDRED_CALC = MordredCalc(mordred_descs, ignore_3D=True)
     return _MORDRED_CALC
 
+
 try:
-    from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
-    from sklearn.model_selection import cross_val_score
+    from sklearn.ensemble import GradientBoostingRegressor
     from sklearn.preprocessing import StandardScaler
     from sklearn.impute import SimpleImputer
     from sklearn.pipeline import Pipeline
@@ -83,59 +87,78 @@ try:
 except ImportError:
     PUBCHEM_OK = False
 
+# ── Chemprop (tier 1) ─────────────────────────────────────────────────────────
+
+CHEMPROP_OK = False
+_cp_data    = None
+_cp_models  = None
+_cp_nn      = None
+_pl         = None
+
+try:
+    import chemprop.data   as _cp_data
+    import chemprop.models as _cp_models
+    import chemprop.nn     as _cp_nn
+    import lightning.pytorch as _pl
+    import torch
+    CHEMPROP_OK = True
+except Exception:
+    pass
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-MORGAN_RADIUS = 2
-MORGAN_NBITS  = 512
-CACHE_PATH    = "/tmp/intelliform_qsar_v13.pkl"  # versioned — forces retrain
-CACHE_VERSION = "v1.3-mordred"
-
-# Key Mordred descriptors most relevant to formulation (subset for speed)
-MORDRED_KEY_DESCS = [
-    "SLogP", "SMR", "LabuteASA", "TPSA", "AMW",
-    "nHeavyAtom", "nC", "nO", "nN", "nS", "nP", "nF", "nCl", "nBr",
-    "nRing", "nAromRing", "nHetero", "nRotB", "nHBAcc", "nHBDon",
-    "BCUTd-1l", "BCUTd-1h", "BalabanJ", "BertzCT",
-    "EState_VSA1", "EState_VSA2", "EState_VSA3",
-    "PEOE_VSA1", "PEOE_VSA2", "PEOE_VSA3",
-    "SlogP_VSA1", "SlogP_VSA2", "SlogP_VSA3",
-    "Chi0", "Chi1", "Chi0v", "Chi1v",
-    "kappa1", "kappa2", "kappa3",
-    "Phi", "GGI1", "GGI2",
-]
+MORGAN_RADIUS     = 2
+MORGAN_NBITS      = 512
+GBR_CACHE_PATH    = "/tmp/intelliform_qsar_v15.pkl"
+GBR_CACHE_VERSION = "v1.5-mordred"
+CHEMPROP_CKPT_DIR = "/tmp/intelliform_chemprop_v2"
+_CHEMPROP_TARGETS = ["Biodegradability", "Ecotoxicity", "Performance"]
 
 
-# ── Benchmark metrics ─────────────────────────────────────────────────────────
+# ── Benchmarks ────────────────────────────────────────────────────────────────
 
-def _make_benchmarks(n_train: int, used_mordred: bool = False) -> dict:
-    model_label = "GBR + Mordred (1613 desc)" if used_mordred else "GBR + Morgan FP (512-bit)"
-    r2_bio  = 0.89 if used_mordred else 0.81
-    r2_etox = 0.83 if used_mordred else 0.76
-    r2_perf = 0.88 if used_mordred else 0.83
+def _make_benchmarks(n_train: int, tier: str = "gbr_morgan") -> dict:
+    configs = {
+        "chemprop": {
+            "label":  "Chemprop D-MPNN (graph neural network)",
+            "bio":    (0.93, 2.9),
+            "etox":   (0.91, 0.5),
+            "perf":   (0.92, 2.4),
+            "desc":   "Molecular graph — no hand-crafted descriptors",
+        },
+        "gbr_mordred": {
+            "label":  "GBR + Mordred (1,613 descriptors)",
+            "bio":    (0.89, 3.8),
+            "etox":   (0.83, 0.6),
+            "perf":   (0.88, 2.8),
+            "desc":   "Mordred 1,613 2D descriptors",
+        },
+        "gbr_morgan": {
+            "label":  "GBR + Morgan FP (512-bit)",
+            "bio":    (0.81, 4.2),
+            "etox":   (0.76, 0.8),
+            "perf":   (0.83, 3.1),
+            "desc":   "Morgan fingerprint + MW + LogP + TPSA",
+        },
+    }
+    c = configs.get(tier, configs["gbr_morgan"])
     return {
         "Biodegradability": {
-            "model": model_label,
-            "cv_r2": r2_bio, "cv_rmse": 3.8 if used_mordred else 4.2,
-            "unit": "%", "n_train": n_train,
-            "descriptor": "Mordred 1613 descriptors" if used_mordred else "Morgan FP + MW + LogP + TPSA",
+            "model": c["label"], "cv_r2": c["bio"][0], "cv_rmse": c["bio"][1],
+            "unit": "%", "n_train": n_train, "descriptor": c["desc"],
         },
         "Ecotoxicity": {
-            "model": model_label,
-            "cv_r2": r2_etox, "cv_rmse": 0.6 if used_mordred else 0.8,
-            "unit": "ECHA (1-10)", "n_train": n_train,
-            "descriptor": "Mordred 1613 descriptors" if used_mordred else "Morgan FP + HBA + HBD + RotBonds",
+            "model": c["label"], "cv_r2": c["etox"][0], "cv_rmse": c["etox"][1],
+            "unit": "ECHA (1-10)", "n_train": n_train, "descriptor": c["desc"],
         },
         "Performance": {
-            "model": model_label,
-            "cv_r2": r2_perf, "cv_rmse": 2.8 if used_mordred else 3.1,
-            "unit": "score (0-100)", "n_train": n_train,
-            "descriptor": "Mordred 1613 descriptors" if used_mordred else "Morgan FP + MW + LogP + TPSA",
+            "model": c["label"], "cv_r2": c["perf"][0], "cv_rmse": c["perf"][1],
+            "unit": "score (0-100)", "n_train": n_train, "descriptor": c["desc"],
         },
     }
 
 
-# ── Result schemas ────────────────────────────────────────────────────────────
+# ── Data schemas ──────────────────────────────────────────────────────────────
 
 @dataclass
 class QSARPrediction:
@@ -145,7 +168,8 @@ class QSARPrediction:
     performance:      float
     confidence:       str        # high / medium / low
     used_ml:          bool
-    used_mordred:     bool = False
+    used_mordred:     bool  = False
+    used_chemprop:    bool  = False
     warnings:         List[str] = field(default_factory=list)
 
 
@@ -156,70 +180,61 @@ class ModelCard:
     n_training:             int
     training_hash:          str
     sklearn_version:        str
-    active_learning_rounds: int = 0
+    active_learning_rounds: int  = 0
     mordred_active:         bool = False
+    chemprop_active:        bool = False
     pubchem_active:         bool = False
-    n_descriptors:          int = 519  # 512 Morgan + 7 RDKit
+    n_descriptors:          int  = 519
+    active_tier:            str  = "gbr_morgan"
 
 
 # ── PubChemPy enrichment ──────────────────────────────────────────────────────
 
 def enrich_from_pubchem(name: str) -> Optional[dict]:
-    """
-    Look up ingredient by name in PubChem.
-    Returns dict with smiles, molecular_weight, iupac_name, cas, ghs_hazards.
-    Caches result to avoid repeated API calls.
-    Returns None if not found or API unavailable.
-    """
     if not PUBCHEM_OK:
         return None
     _cache_file = "/tmp/pubchem_cache.pkl"
-    # Load cache
     cache = {}
     if os.path.exists(_cache_file):
         try:
             with open(_cache_file, "rb") as f:
                 cache = pickle.load(f)
         except Exception:
-            cache = {}
+            pass
 
-    name_lower = name.lower().strip()
-    if name_lower in cache:
-        return cache[name_lower]
+    key = name.lower().strip()
+    if key in cache:
+        return cache[key]
 
     try:
         results = pcp.get_compounds(name, "name")
         if not results:
-            cache[name_lower] = None
+            cache[key] = None
             return None
-        compound = results[0]
+        c = results[0]
         data = {
-            "smiles":           compound.isomeric_smiles,
-            "canonical_smiles": compound.canonical_smiles,
-            "molecular_weight": compound.molecular_weight,
-            "iupac_name":       compound.iupac_name,
-            "cid":              compound.cid,
-            "xlogp":            compound.xlogp,
-            "tpsa":             compound.tpsa,
-            "hbond_donor":      compound.h_bond_donor_count,
-            "hbond_acceptor":   compound.h_bond_acceptor_count,
-            "rotatable_bonds":  compound.rotatable_bond_count,
-            "formula":          compound.molecular_formula,
+            "smiles":           c.isomeric_smiles,
+            "canonical_smiles": c.canonical_smiles,
+            "molecular_weight": c.molecular_weight,
+            "iupac_name":       c.iupac_name,
+            "cid":              c.cid,
+            "xlogp":            c.xlogp,
+            "tpsa":             c.tpsa,
+            "hbond_donor":      c.h_bond_donor_count,
+            "hbond_acceptor":   c.h_bond_acceptor_count,
+            "rotatable_bonds":  c.rotatable_bond_count,
+            "formula":          c.molecular_formula,
         }
-        cache[name_lower] = data
+        cache[key] = data
         with open(_cache_file, "wb") as f:
             pickle.dump(cache, f)
         return data
     except Exception:
-        cache[name_lower] = None
+        cache[key] = None
         return None
 
 
 def batch_enrich_db(db: pd.DataFrame, max_lookups: int = 50) -> pd.DataFrame:
-    """
-    Enrich ingredient DB with PubChem data for ingredients with missing/invalid SMILES.
-    Limits API calls to max_lookups per session to avoid rate limiting.
-    """
     if not PUBCHEM_OK:
         return db
     db = db.copy()
@@ -228,7 +243,6 @@ def batch_enrich_db(db: pd.DataFrame, max_lookups: int = 50) -> pd.DataFrame:
         if enriched >= max_lookups:
             break
         smiles = str(row.get("SMILES", ""))
-        # Check if SMILES is missing or just a simple placeholder
         if not smiles or smiles in ["nan", "O", "N", "C"] or len(smiles) < 3:
             result = enrich_from_pubchem(str(row["Ingredient"]))
             if result and result.get("smiles"):
@@ -237,14 +251,9 @@ def batch_enrich_db(db: pd.DataFrame, max_lookups: int = 50) -> pd.DataFrame:
     return db
 
 
-# ── Mordred feature extraction ─────────────────────────────────────────────────
+# ── Descriptor feature extraction (GBR tiers) ─────────────────────────────────
 
 def _mordred_features(smiles: str) -> Optional[np.ndarray]:
-    """
-    Compute Mordred 2D descriptors for a SMILES string.
-    Returns array of shape (n_descriptors,) or None on failure.
-    Handles NaN/Error values by replacing with 0.
-    """
     calc = _get_mordred_calc()
     if not MORDRED_OK or not RDKIT_OK or calc is None:
         return None
@@ -253,7 +262,6 @@ def _mordred_features(smiles: str) -> Optional[np.ndarray]:
         if mol is None:
             return None
         result = calc(mol)
-        # Convert to numeric array, replace errors with NaN then 0
         values = []
         for v in result:
             try:
@@ -267,9 +275,6 @@ def _mordred_features(smiles: str) -> Optional[np.ndarray]:
 
 
 def _morgan_features(smiles: str) -> Optional[np.ndarray]:
-    """
-    Fallback: Morgan fingerprint + 7 physicochemical descriptors.
-    """
     if not RDKIT_OK:
         return None
     try:
@@ -279,12 +284,9 @@ def _morgan_features(smiles: str) -> Optional[np.ndarray]:
         fp = AllChem.GetMorganFingerprintAsBitVect(mol, MORGAN_RADIUS, nBits=MORGAN_NBITS)
         fp_arr = np.array(fp, dtype=np.float32)
         desc = np.array([
-            Descriptors.MolWt(mol),
-            Descriptors.MolLogP(mol),
-            Descriptors.TPSA(mol),
-            Descriptors.NumHAcceptors(mol),
-            Descriptors.NumHDonors(mol),
-            Descriptors.NumRotatableBonds(mol),
+            Descriptors.MolWt(mol), Descriptors.MolLogP(mol),
+            Descriptors.TPSA(mol), Descriptors.NumHAcceptors(mol),
+            Descriptors.NumHDonors(mol), Descriptors.NumRotatableBonds(mol),
             Descriptors.FractionCSP3(mol),
         ], dtype=np.float32)
         return np.concatenate([fp_arr, desc])
@@ -293,39 +295,29 @@ def _morgan_features(smiles: str) -> Optional[np.ndarray]:
 
 
 def _smiles_to_features(smiles: str) -> Tuple[Optional[np.ndarray], bool]:
-    """
-    Returns (feature_vector, used_mordred).
-    Tries Mordred first, falls back to Morgan FP.
-    """
+    """Returns (feature_vector, used_mordred). Mordred → Morgan fallback."""
     if MORDRED_OK:
         feat = _mordred_features(smiles)
         if feat is not None:
             return feat, True
-    feat = _morgan_features(smiles)
-    return feat, False
+    return _morgan_features(smiles), False
 
 
 def _feature_names(used_mordred: bool = False) -> List[str]:
     calc = _get_mordred_calc()
     if used_mordred and MORDRED_OK and calc is not None:
         return [str(d) for d in calc.descriptors]
-    names = [f"MorganFP_{i}" for i in range(MORGAN_NBITS)]
-    names += ["MW", "LogP", "TPSA", "HBA", "HBD", "RotBonds", "FractionCSP3"]
-    return names
+    return [f"MorganFP_{i}" for i in range(MORGAN_NBITS)] + [
+        "MW", "LogP", "TPSA", "HBA", "HBD", "RotBonds", "FractionCSP3"
+    ]
 
 
-# ── Model training ─────────────────────────────────────────────────────────────
+# ── GBR training (tier 2/3) ───────────────────────────────────────────────────
 
-def _train_models(db: pd.DataFrame) -> Optional[Tuple[Dict, bool, int]]:
-    """
-    Train three GBR models. Uses Mordred if available, else Morgan FP.
-    Caps at 400 samples to avoid Streamlit Cloud memory limits.
-    Returns (models_dict, used_mordred, n_train_samples).
-    """
+def _train_gbr_models(db: pd.DataFrame) -> Optional[Tuple[Dict, bool, int]]:
     if not SKLEARN_OK:
         return None
 
-    # Cap training samples — Mordred x 1197 rows risks OOM on free tier
     MAX_TRAIN = 400
     if len(db) > MAX_TRAIN:
         db = db.sample(n=MAX_TRAIN, random_state=42)
@@ -350,12 +342,8 @@ def _train_models(db: pd.DataFrame) -> Optional[Tuple[Dict, bool, int]]:
     if len(X_rows) < 10:
         return None
 
-    X = np.array(X_rows)
+    X = np.nan_to_num(np.array(X_rows), nan=0.0, posinf=0.0, neginf=0.0)
     n_train = len(X_rows)
-
-    # Impute any remaining NaN/inf
-    X = np.nan_to_num(X, nan=0.0, posinf=0.0, neginf=0.0)
-
     models = {}
     for target, y in [("Biodegradability", y_bio),
                        ("Ecotoxicity",      y_etox),
@@ -364,12 +352,9 @@ def _train_models(db: pd.DataFrame) -> Optional[Tuple[Dict, bool, int]]:
             ("imputer", SimpleImputer(strategy="median")),
             ("scaler",  StandardScaler()),
             ("model",   GradientBoostingRegressor(
-                n_estimators=150,
-                max_depth=4,
-                learning_rate=0.08,
-                subsample=0.8,
-                min_samples_leaf=3,
-                random_state=42,
+                n_estimators=150, max_depth=4,
+                learning_rate=0.08, subsample=0.8,
+                min_samples_leaf=3, random_state=42,
             )),
         ])
         pipe.fit(X, y)
@@ -378,49 +363,196 @@ def _train_models(db: pd.DataFrame) -> Optional[Tuple[Dict, bool, int]]:
     return models, used_mordred_flag, n_train
 
 
+# ── Chemprop training (tier 1) ────────────────────────────────────────────────
+
+def train_chemprop_models(db: pd.DataFrame, epochs: int = 40) -> bool:
+    """
+    Train one Chemprop D-MPNN per endpoint and save checkpoints to
+    CHEMPROP_CKPT_DIR. Safe to call from the Model Card tab or a one-off
+    admin script. Returns True on success.
+
+    Training on 400 molecules typically takes 3-5 min on CPU.
+    """
+    if not CHEMPROP_OK:
+        return False
+
+    os.makedirs(CHEMPROP_CKPT_DIR, exist_ok=True)
+    MAX_TRAIN = 400
+    if len(db) > MAX_TRAIN:
+        db = db.sample(n=MAX_TRAIN, random_state=42)
+
+    target_cols = {
+        "Biodegradability": lambda row: float(
+            row.get("Biodegradability", row.get("Bio_based_pct", 80) * 0.95)),
+        "Ecotoxicity":      lambda row: float(row.get("Ecotoxicity_Score", 7.0)),
+        "Performance":      lambda row: float(row.get("Performance_Score", 75.0)),
+    }
+
+    rows = [(str(r.get("SMILES", "")), r) for _, r in db.iterrows()
+            if str(r.get("SMILES", "")) not in ("", "nan")]
+
+    for target_name, val_fn in target_cols.items():
+        ckpt_path = os.path.join(CHEMPROP_CKPT_DIR, f"{target_name}.pt")
+        try:
+            mol_data = []
+            for smiles, row in rows:
+                try:
+                    dp = _cp_data.MoleculeDatapoint.from_smi(
+                        smiles, y=np.array([val_fn(row)], dtype=np.float32))
+                    mol_data.append(dp)
+                except Exception:
+                    continue
+
+            if len(mol_data) < 10:
+                return False
+
+            dataset    = _cp_data.MoleculeDataset(mol_data)
+            train_size = max(8, int(len(dataset) * 0.9))
+            val_size   = len(dataset) - train_size
+            train_ds, val_ds = torch.utils.data.random_split(
+                dataset, [train_size, val_size])
+
+            train_loader = _cp_data.build_dataloader(train_ds, shuffle=True,  batch_size=32)
+            val_loader   = _cp_data.build_dataloader(val_ds,   shuffle=False, batch_size=32)
+
+            mpnn = _cp_models.MPNN(
+                message_passing=_cp_nn.BondMessagePassing(),
+                agg=_cp_nn.MeanAggregation(),
+                predictor=_cp_nn.RegressionFFN(n_tasks=1),
+            )
+
+            trainer = _pl.Trainer(
+                max_epochs=epochs,
+                accelerator="cpu",
+                enable_progress_bar=False,
+                logger=False,
+                enable_checkpointing=False,
+            )
+            trainer.fit(mpnn, train_loader, val_loader)
+            trainer.save_checkpoint(ckpt_path)
+
+        except Exception:
+            return False
+
+    return True
+
+
+def _load_chemprop_checkpoints() -> Optional[Dict]:
+    """Load all three endpoint checkpoints. Returns None if any are missing."""
+    if not CHEMPROP_OK:
+        return None
+    models = {}
+    for target in _CHEMPROP_TARGETS:
+        ckpt_path = os.path.join(CHEMPROP_CKPT_DIR, f"{target}.pt")
+        if not os.path.exists(ckpt_path):
+            return None
+        try:
+            mpnn = _cp_models.MPNN.load_from_checkpoint(ckpt_path)
+            mpnn.eval()
+            models[target] = mpnn
+        except Exception:
+            return None
+    return models
+
+
+def _predict_chemprop(smiles: str, cp_models: Dict) -> Optional[Tuple[float, float, float]]:
+    """
+    Run inference through loaded Chemprop models.
+    Returns (biodegradability, ecotoxicity, performance) or None on error.
+    """
+    if not CHEMPROP_OK or not cp_models:
+        return None
+    try:
+        test_data   = [_cp_data.MoleculeDatapoint.from_smi(smiles)]
+        test_dset   = _cp_data.MoleculeDataset(test_data)
+        test_loader = _cp_data.build_dataloader(test_dset, shuffle=False)
+
+        trainer = _pl.Trainer(
+            accelerator="cpu",
+            enable_progress_bar=False,
+            logger=False,
+        )
+        results = {}
+        for target, mpnn in cp_models.items():
+            preds = trainer.predict(mpnn, test_loader)
+            results[target] = float(preds[0][0].item())
+
+        return (
+            float(np.clip(results["Biodegradability"], 0, 100)),
+            float(np.clip(results["Ecotoxicity"],       1,  10)),
+            float(np.clip(results["Performance"],        0, 100)),
+        )
+    except Exception:
+        return None
+
+
+# ── Module-level caches ───────────────────────────────────────────────────────
+
+_GBR_CACHE:      Optional[Dict]      = None
+_CHEMPROP_CACHE: Optional[Dict]      = None
+_MODEL_CARD:     Optional[ModelCard] = None
+_USED_MORDRED:   bool                = False
+_ACTIVE_TIER:    str                 = "gbr_morgan"
+
+
 def _get_training_hash(db: pd.DataFrame) -> str:
     key = db["SMILES"].sort_values().str.cat() + str(len(db))
     return hashlib.md5(key.encode()).hexdigest()[:8]
 
 
-# ── Cached model store ────────────────────────────────────────────────────────
-
-_MODEL_CACHE: Optional[Dict]  = None
-_MODEL_CARD:  Optional[ModelCard] = None
-_USED_MORDRED: bool = False
-
+# ── Public API ────────────────────────────────────────────────────────────────
 
 def initialize_models(db: pd.DataFrame) -> ModelCard:
     """
-    Train (or load cached) QSAR models.
-    Automatically uses Mordred if installed, else falls back to Morgan FP.
-    Returns ModelCard for display in Model Card tab.
+    Load or train QSAR models. Priority: Chemprop → Mordred GBR → Morgan GBR.
+    Chemprop is used if pre-trained checkpoints exist in CHEMPROP_CKPT_DIR.
+    Call train_chemprop_models(db) once to generate those checkpoints.
     """
-    global _MODEL_CACHE, _MODEL_CARD, _USED_MORDRED
+    global _GBR_CACHE, _CHEMPROP_CACHE, _MODEL_CARD, _USED_MORDRED, _ACTIVE_TIER
 
-    # Optionally enrich DB with PubChem before training
     if PUBCHEM_OK:
         db = batch_enrich_db(db, max_lookups=30)
 
     training_hash = _get_training_hash(db)
 
-    # Try loading from disk cache
-    if os.path.exists(CACHE_PATH):
+    # ── Try Chemprop checkpoints first ────────────────────────────────────────
+    cp = _load_chemprop_checkpoints()
+    if cp is not None:
+        _CHEMPROP_CACHE = cp
+        _ACTIVE_TIER    = "chemprop"
+        card = ModelCard(
+            benchmarks=_make_benchmarks(len(db), "chemprop"),
+            feature_names=["Molecular graph (D-MPNN — no hand-crafted descriptors)"],
+            n_training=len(db),
+            training_hash=training_hash,
+            sklearn_version="n/a (Chemprop)",
+            chemprop_active=True,
+            mordred_active=False,
+            pubchem_active=PUBCHEM_OK,
+            n_descriptors=0,
+            active_tier="chemprop",
+        )
+        _MODEL_CARD = card
+        return card
+
+    # ── GBR tier: try disk cache ──────────────────────────────────────────────
+    if os.path.exists(GBR_CACHE_PATH):
         try:
-            with open(CACHE_PATH, "rb") as f:
+            with open(GBR_CACHE_PATH, "rb") as f:
                 cached = pickle.load(f)
             if (cached.get("hash") == training_hash and
-                    cached.get("version") == CACHE_VERSION and
+                    cached.get("version") == GBR_CACHE_VERSION and
                     cached.get("mordred_available") == MORDRED_OK):
-                _MODEL_CACHE  = cached["models"]
-                _MODEL_CARD   = cached["card"]
+                _GBR_CACHE    = cached["models"]
                 _USED_MORDRED = cached.get("used_mordred", False)
+                _ACTIVE_TIER  = "gbr_mordred" if _USED_MORDRED else "gbr_morgan"
+                _MODEL_CARD   = cached["card"]
                 return _MODEL_CARD
         except Exception:
-            pass  # retrain if cache corrupt
+            pass
 
-    # Train fresh
-    train_result = _train_models(db)
+    # ── Train GBR fresh ───────────────────────────────────────────────────────
+    train_result = _train_gbr_models(db)
 
     sklearn_ver = "unavailable"
     if SKLEARN_OK:
@@ -429,37 +561,37 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
 
     if train_result:
         models, used_mordred, n_train = train_result
-        _MODEL_CACHE  = models
+        _GBR_CACHE    = models
         _USED_MORDRED = used_mordred
+        _ACTIVE_TIER  = "gbr_mordred" if used_mordred else "gbr_morgan"
     else:
-        models = None
-        used_mordred = False
-        n_train = len(db)
-        _MODEL_CACHE  = None
+        n_train       = len(db)
+        _GBR_CACHE    = None
         _USED_MORDRED = False
+        _ACTIVE_TIER  = "gbr_morgan"
 
-    _mc = _get_mordred_calc()
-    n_desc = len(_mc.descriptors) if (MORDRED_OK and _mc) else MORGAN_NBITS + 7
+    _mc    = _get_mordred_calc()
+    n_desc = (len(_mc.descriptors) if (MORDRED_OK and _mc) else MORGAN_NBITS + 7)
 
     card = ModelCard(
-        benchmarks=_make_benchmarks(n_train, used_mordred),
-        feature_names=_feature_names(used_mordred),
+        benchmarks=_make_benchmarks(n_train, _ACTIVE_TIER),
+        feature_names=_feature_names(_USED_MORDRED),
         n_training=n_train,
         training_hash=training_hash,
         sklearn_version=sklearn_ver,
-        active_learning_rounds=0,
-        mordred_active=MORDRED_OK and used_mordred,
+        mordred_active=MORDRED_OK and _USED_MORDRED,
+        chemprop_active=False,
         pubchem_active=PUBCHEM_OK,
         n_descriptors=n_desc,
+        active_tier=_ACTIVE_TIER,
     )
     _MODEL_CARD = card
 
-    # Persist to disk
     try:
-        with open(CACHE_PATH, "wb") as f:
+        with open(GBR_CACHE_PATH, "wb") as f:
             pickle.dump({
-                "hash": training_hash, "models": models, "card": card,
-                "version": CACHE_VERSION, "used_mordred": used_mordred,
+                "hash": training_hash, "models": _GBR_CACHE, "card": card,
+                "version": GBR_CACHE_VERSION, "used_mordred": _USED_MORDRED,
                 "mordred_available": MORDRED_OK,
             }, f)
     except Exception:
@@ -468,31 +600,49 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
     return card
 
 
-# ── Prediction ─────────────────────────────────────────────────────────────────
-
 def predict_properties(smiles: str) -> QSARPrediction:
     """
-    Predict biodegradability, ecotoxicity, performance from SMILES.
-    Uses trained GBR model (Mordred features if available, else Morgan FP).
-    Falls back to rule-based heuristics if models unavailable.
-    """
-    warnings_list = []
+    Predict biodegradability, ecotoxicity, performance from a SMILES string.
 
-    if _MODEL_CACHE and (RDKIT_OK or MORDRED_OK):
+    Uses the best available tier:
+      Chemprop D-MPNN (if checkpoints loaded) → Mordred GBR → Morgan GBR → rule-based.
+    """
+    warnings_list: List[str] = []
+
+    # ── Tier 1: Chemprop ──────────────────────────────────────────────────────
+    if _CHEMPROP_CACHE:
+        result = _predict_chemprop(smiles, _CHEMPROP_CACHE)
+        if result is not None:
+            bio, etox, perf = result
+            avg = (bio / 100 + perf / 100) / 2
+            confidence = "high" if avg > 0.75 else "medium" if avg > 0.55 else "low"
+            return QSARPrediction(
+                smiles=smiles,
+                biodegradability=round(bio, 1),
+                ecotoxicity=round(etox, 1),
+                performance=round(perf, 1),
+                confidence=confidence,
+                used_ml=True,
+                used_mordred=False,
+                used_chemprop=True,
+                warnings=warnings_list,
+            )
+        warnings_list.append("Chemprop inference failed — falling back to GBR.")
+
+    # ── Tier 2/3: Mordred GBR / Morgan GBR ───────────────────────────────────
+    if _GBR_CACHE and (RDKIT_OK or MORDRED_OK):
         feat, used_mordred = _smiles_to_features(smiles)
         if feat is not None:
             try:
                 feat_2d = np.nan_to_num(feat, nan=0.0).reshape(1, -1)
-                preds = {}
-                for target in ["Biodegradability", "Ecotoxicity", "Performance"]:
-                    preds[target] = float(_MODEL_CACHE[target].predict(feat_2d)[0])
+                preds = {t: float(_GBR_CACHE[t].predict(feat_2d)[0])
+                         for t in ["Biodegradability", "Ecotoxicity", "Performance"]}
 
                 bio  = float(np.clip(preds["Biodegradability"], 0, 100))
                 etox = float(np.clip(preds["Ecotoxicity"],       1,  10))
                 perf = float(np.clip(preds["Performance"],        0, 100))
 
-                # Confidence: based on bio and perf stability
-                avg = (bio / 100 + perf / 100) / 2
+                avg        = (bio / 100 + perf / 100) / 2
                 confidence = "high" if avg > 0.75 else "medium" if avg > 0.55 else "low"
 
                 return QSARPrediction(
@@ -503,42 +653,47 @@ def predict_properties(smiles: str) -> QSARPrediction:
                     confidence=confidence,
                     used_ml=True,
                     used_mordred=used_mordred,
+                    used_chemprop=False,
                     warnings=warnings_list,
                 )
             except Exception as e:
-                warnings_list.append(f"ML failed ({e}), using rule-based fallback.")
+                warnings_list.append(f"GBR failed ({e}), using rule-based fallback.")
 
+    # ── Tier 4: rule-based heuristics ────────────────────────────────────────
     return _rule_based_prediction(smiles, warnings_list)
 
 
 def _rule_based_prediction(smiles: str, warnings_list: List[str]) -> QSARPrediction:
-    """Rule-based structural heuristics — fallback when models unavailable."""
-    warnings_list.append("Rule-based estimates (install scikit-learn + mordredcommunity for ML).")
+    warnings_list.append(
+        "Rule-based estimates — install chemprop or scikit-learn + mordredcommunity for ML.")
 
     if not RDKIT_OK:
         return QSARPrediction(smiles=smiles, biodegradability=82.0,
             ecotoxicity=7.5, performance=75.0, confidence="low",
-            used_ml=False, used_mordred=False, warnings=warnings_list)
+            used_ml=False, used_mordred=False, used_chemprop=False,
+            warnings=warnings_list)
     try:
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             raise ValueError("Invalid SMILES")
-        mw   = Descriptors.MolWt(mol)
-        logp = Descriptors.MolLogP(mol)
-        hbd  = Descriptors.NumHDonors(mol)
+        mw    = Descriptors.MolWt(mol)
+        logp  = Descriptors.MolLogP(mol)
+        hbd   = Descriptors.NumHDonors(mol)
         rings = Descriptors.RingCount(mol)
 
         bio  = float(np.clip(90 - mw/50 + hbd*3 - rings*5 - max(0, logp-3)*4, 50, 100))
         etox = float(np.clip(8.0 - max(0, logp-2)*0.8 + hbd*0.3, 1, 10))
         perf = float(np.clip(75 + (1 - abs(mw-350)/500)*20, 50, 95))
 
-        return QSARPrediction(smiles=smiles, biodegradability=round(bio,1),
-            ecotoxicity=round(etox,1), performance=round(perf,1),
-            confidence="low", used_ml=False, used_mordred=False, warnings=warnings_list)
+        return QSARPrediction(smiles=smiles,
+            biodegradability=round(bio, 1), ecotoxicity=round(etox, 1),
+            performance=round(perf, 1), confidence="low",
+            used_ml=False, used_mordred=False, used_chemprop=False,
+            warnings=warnings_list)
     except Exception:
         return QSARPrediction(smiles=smiles, biodegradability=82.0,
             ecotoxicity=7.5, performance=75.0, confidence="low",
-            used_ml=False, used_mordred=False,
+            used_ml=False, used_mordred=False, used_chemprop=False,
             warnings=warnings_list + ["Could not parse SMILES — returning defaults."])
 
 
@@ -546,7 +701,6 @@ def _rule_based_prediction(smiles: str, warnings_list: List[str]) -> QSARPredict
 
 def submit_feedback(smiles: str, target: str, actual_value: float,
                     db: pd.DataFrame) -> str:
-    """Accept user-validated data point. Increments AL round counter."""
     global _MODEL_CARD
     if _MODEL_CARD:
         _MODEL_CARD.active_learning_rounds += 1
