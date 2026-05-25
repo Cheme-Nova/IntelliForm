@@ -11,6 +11,7 @@ from modules.bayesian_optimizer import run_bayesian_optimization
 from modules.carbon_credits import calculate_carbon_credits
 from modules.certification_oracle import run_certification_oracle
 from modules.chem21 import score_blend_solvents
+from modules.comptox import screen_blend as comptox_screen_blend
 from modules.ecometrics import compute_ecometrics
 from modules.interaction_checker import check_interactions
 from modules.llm_parser import parse_request
@@ -275,7 +276,11 @@ class IntelliFormController:
                 interactions = _serialize(check_interactions(result.blend, resolved_vertical))
             except Exception:
                 interactions = None
-            emit("proof_stack_done", "Proof stack complete — eco, regulatory, stability, carbon, certifications, solvent safety ready")
+            try:
+                comptox = _serialize(comptox_screen_blend(result.blend, resolved_vertical))
+            except Exception:
+                comptox = None
+            emit("proof_stack_done", "Proof stack complete — eco, regulatory, stability, carbon, certifications, solvent safety, CompTox ready")
         else:
             eco = None
             reg = None
@@ -285,6 +290,7 @@ class IntelliFormController:
             cert = None
             chem21 = None
             interactions = None
+            comptox = None
             emit("optimize_done", f"Optimization did not converge — {result.error_msg or 'constraint infeasible'}")
 
         emit("agents", "Running 4-agent expert commentary swarm...")
@@ -306,6 +312,7 @@ class IntelliFormController:
             "cert": _serialize(cert),
             "chem21": chem21,
             "interactions": interactions,
+            "comptox": comptox,
             "agents": agents,
             "pareto": _serialize(pareto),
             "bayesian": _serialize(bayesian),
