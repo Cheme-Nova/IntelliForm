@@ -1,4 +1,4 @@
-# redeploy: flush cached module bytecode
+# redeploy: 2026-05-25 — add pharma/carbon-passport/pubchem endpoints
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
