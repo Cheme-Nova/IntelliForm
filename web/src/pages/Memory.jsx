@@ -76,7 +76,7 @@ export default function Memory() {
           : 'Anonymous local memory feed. Sign in to save account-linked formulation history.'}
       </p>
 
-      <div style={{ display: 'flex', gap: '1rem', alignItems: isMobile ? 'stretch' : 'flex-end', flexDirection: isMobile ? 'column' : 'row', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', gap: '1rem', alignItems: isMobile ? 'stretch' : 'flex-end', flexDirection: isMobile ? 'column' : 'row', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         <div>
           <label style={{ color: '#64748b', fontSize: '0.75rem', display: 'block', marginBottom: '4px' }}>SHOW LAST</label>
           <input
@@ -102,6 +102,23 @@ export default function Memory() {
         >
           {loading ? 'Loading...' : 'Refresh →'}
         </button>
+        {records.length > 0 && (
+          <button
+            onClick={() => {
+              const blob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a'); a.href = url; a.download = 'intelliform_knowledge_base.json'; a.click()
+              URL.revokeObjectURL(url)
+            }}
+            style={{
+              background: 'transparent', color: '#0D9488', border: '1px solid #0D9488',
+              borderRadius: '8px', padding: '0.6rem 1.2rem', fontSize: '0.9rem',
+              fontWeight: 600, cursor: 'pointer', width: isMobile ? '100%' : 'auto',
+            }}
+          >
+            ↓ Export JSON
+          </button>
+        )}
       </div>
 
       {records.length === 0 ? (

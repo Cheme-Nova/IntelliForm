@@ -318,6 +318,56 @@ async def refine_formulation(req: RefineRequest, request: Request):
 class PubChemRequest(BaseModel):
     names: list[str]
 
+class PharmaRequest(BaseModel):
+    blend: Dict[str, Any]
+    bcs_class: str = "I"
+    dosage_form: str = "immediate_release_tablet"
+    target_markets: list[str] = ["USA", "EU"]
+    is_generic: bool = False
+    is_pediatric: bool = False
+
+class CarbonPassportRequest(BaseModel):
+    blend: Dict[str, Any]
+    batch_kg: float = 500.0
+    product_name: str = "IntelliForm Formulation"
+
+@app.post("/api/v1/pharma/deep-dive")
+async def pharma_deep_dive(req: PharmaRequest):
+    """Run ICH/BCS pharmaceutical deep-dive analysis on a blend."""
+    try:
+        import pandas as pd
+        from modules.pharma import run_pharma_deep_dive
+        db = pd.read_csv(DB_PATH)
+        result = run_pharma_deep_dive(
+            req.blend, db,
+            bcs_class=req.bcs_class,
+            dosage_form=req.dosage_form,
+            target_markets=req.target_markets,
+            is_generic=req.is_generic,
+            is_pediatric=req.is_pediatric,
+        )
+        return _serialize(result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/export/carbon-passport")
+async def export_carbon_passport(req: CarbonPassportRequest):
+    """Generate an ISO 14067 Carbon Passport JSON for a formulation."""
+    try:
+        import pandas as pd
+        from modules.carbon_passport import generate_carbon_passport, passport_to_json
+        db = pd.read_csv(DB_PATH)
+        passport = generate_carbon_passport(
+            req.blend, db,
+            product_name=req.product_name,
+            batch_kg=req.batch_kg,
+        )
+        return {"json": passport_to_json(passport)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/v1/pubchem/enrich")
 async def pubchem_enrich(req: PubChemRequest):
     """Enrich a list of ingredient names with PubChem identity data (CAS, SMILES, MW)."""

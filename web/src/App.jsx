@@ -11,6 +11,7 @@ import Pareto from './pages/Pareto'
 import QSAR from './pages/QSAR'
 import Reformulation from './pages/Reformulation'
 import Memory from './pages/Memory'
+import Pharma from './pages/Pharma'
 import { useAuth } from './auth/AuthContext'
 
 const queryClient = new QueryClient()
@@ -26,6 +27,7 @@ const PAGES = {
   qsar: QSAR,
   reformulation: Reformulation,
   memory: Memory,
+  pharma: Pharma,
 }
 
 export default function App() {

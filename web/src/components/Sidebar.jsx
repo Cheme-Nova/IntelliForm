@@ -8,6 +8,7 @@ import {
   Gauge,
   GitBranch,
   Leaf,
+  Microscope,
   RefreshCcw,
   Sparkles,
 } from 'lucide-react'
@@ -22,6 +23,7 @@ const NAV = [
   { id: 'pareto',         label: 'Pareto',         icon: BarChart3     },
   { id: 'qsar',           label: 'QSAR',           icon: GitBranch     },
   { id: 'reformulation',  label: 'Reformulation',  icon: RefreshCcw    },
+  { id: 'pharma',         label: 'Pharma',         icon: Microscope    },
   { id: 'memory',         label: 'Memory',         icon: Brain         },
 ]
 

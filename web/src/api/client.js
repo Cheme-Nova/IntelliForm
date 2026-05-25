@@ -95,6 +95,8 @@ export const api = {
   reformulate: (data) => client.post('/api/v1/reformulate', data),
   refine: (data) => client.post('/api/v1/refine', data),
   pubchemEnrich: (names) => client.post('/api/v1/pubchem/enrich', { names }),
+  pharmaDeepDive: (data) => client.post('/api/v1/pharma/deep-dive', data),
+  carbonPassport: (data) => client.post('/api/v1/export/carbon-passport', data),
 }
 
 export default client
