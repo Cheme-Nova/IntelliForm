@@ -34,6 +34,15 @@ pubchempy>=1.0.4
 chemprop>=2.0.0
 lightning>=2.0.0
 
+# Chemistry — molecular GP kernel for Bayesian optimizer (optional)
+# GAUCHE Tanimoto fingerprint kernel replaces the generic Matern kernel.
+# The GP learns chemical structure of the objective landscape, not just
+# tabular correlates — better convergence on structurally novel blends.
+# Reference: Griffiths et al., "GAUCHE", NeurIPS 2022. MIT licence.
+# Requires gpytorch (also a chemprop dependency — no extra size cost).
+gauche>=0.1.2
+gpytorch>=1.11.0
+
 # Optimization
 pulp>=2.7.0
 pymoo>=0.6.0                # NSGA-III Pareto; falls back to weighted-sum if unavailable
