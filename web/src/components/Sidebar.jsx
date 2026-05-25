@@ -13,32 +13,34 @@ import {
 } from 'lucide-react'
 
 const NAV = [
-  { id: 'formulate', label: 'Formulate', icon: FlaskConical },
-  { id: 'eco', label: 'EcoMetrics', icon: Leaf },
-  { id: 'certifications', label: 'Certifications', icon: CheckCircle2 },
-  { id: 'stability', label: 'Stability', icon: Beaker },
-  { id: 'carbon', label: 'Carbon', icon: Gauge },
-  { id: 'regulatory', label: 'Regulatory', icon: ClipboardCheck },
-  { id: 'pareto', label: 'Pareto', icon: BarChart3 },
-  { id: 'qsar', label: 'QSAR', icon: GitBranch },
-  { id: 'reformulation', label: 'Reformulation', icon: RefreshCcw },
-  { id: 'memory', label: 'Memory', icon: Brain },
+  { id: 'formulate',      label: 'Formulate',     icon: FlaskConical  },
+  { id: 'eco',            label: 'EcoMetrics',     icon: Leaf          },
+  { id: 'certifications', label: 'Certifications', icon: CheckCircle2  },
+  { id: 'stability',      label: 'Stability',      icon: Beaker        },
+  { id: 'carbon',         label: 'Carbon',         icon: Gauge         },
+  { id: 'regulatory',     label: 'Regulatory',     icon: ClipboardCheck },
+  { id: 'pareto',         label: 'Pareto',         icon: BarChart3     },
+  { id: 'qsar',           label: 'QSAR',           icon: GitBranch     },
+  { id: 'reformulation',  label: 'Reformulation',  icon: RefreshCcw    },
+  { id: 'memory',         label: 'Memory',         icon: Brain         },
 ]
 
-const colors = {
-  ink: '#101828',
-  muted: '#667085',
-  line: '#E4E7EC',
-  panel: '#FFFFFF',
-  accent: '#127C67',
-  accentSoft: '#EAF7F2',
+const c = {
+  ink:        '#111827',
+  muted:      '#5f6f7d',
+  steel:      '#4c6375',
+  line:       '#dce6ee',
+  surface:    '#ffffff',
+  surface2:   '#f1f5f8',
+  teal:       '#1f8a7a',
+  tealSoft:   '#eef6f3',
+  tealBorder: '#b9d1ca',
 }
 
 function NavButton({ item, active, onClick, isMobile }) {
   const Icon = item.icon
   return (
     <button
-      key={item.id}
       onClick={onClick}
       title={item.label}
       style={{
@@ -46,22 +48,23 @@ function NavButton({ item, active, onClick, isMobile }) {
         width: isMobile ? 'auto' : '100%',
         display: 'flex',
         alignItems: 'center',
-        gap: '0.6rem',
-        padding: isMobile ? '0.62rem 0.8rem' : '0.62rem 0.85rem',
+        gap: '0.55rem',
+        padding: isMobile ? '0.55rem 0.75rem' : '0.58rem 0.8rem',
         textAlign: 'left',
-        background: active ? colors.accentSoft : 'transparent',
-        color: active ? colors.accent : colors.muted,
-        border: `1px solid ${active ? '#B9E1D3' : 'transparent'}`,
-        borderRadius: '8px',
+        background: active ? c.tealSoft : 'transparent',
+        color: active ? c.teal : c.steel,
+        border: `1px solid ${active ? c.tealBorder : 'transparent'}`,
+        borderRadius: '6px',
         cursor: 'pointer',
-        fontSize: '0.84rem',
+        fontSize: '0.83rem',
         fontWeight: active ? 750 : 550,
         whiteSpace: 'nowrap',
-        minHeight: '44px',
+        minHeight: '40px',
         minWidth: 0,
+        letterSpacing: 0,
       }}
     >
-      <Icon size={16} strokeWidth={2} style={{ flex: '0 0 auto' }} />
+      <Icon size={15} strokeWidth={active ? 2.2 : 1.8} style={{ flex: '0 0 auto', opacity: active ? 1 : 0.75 }} />
       <span>{item.label}</span>
     </button>
   )
@@ -70,59 +73,39 @@ function NavButton({ item, active, onClick, isMobile }) {
 export default function Sidebar({ activePage, setActivePage, auth, isMobile = false }) {
   if (isMobile) {
     return (
-      <aside style={{
-        background: 'rgba(255,255,255,0.96)',
-        borderBottom: `1px solid ${colors.line}`,
+      <aside className="if-sidebar-mobile" style={{
         display: 'flex',
         flexDirection: 'column',
-        padding: '0.85rem 0 0.75rem',
+        padding: '0.8rem 0 0.65rem',
         position: 'sticky',
         top: 0,
         zIndex: 20,
-        backdropFilter: 'blur(18px)',
       }}>
-        <div style={{ padding: '0 0.85rem 0.75rem', display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center' }}>
+        <div style={{ padding: '0 0.85rem 0.65rem', display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center' }}>
           <div style={{ minWidth: 0 }}>
-            <div style={{ color: colors.ink, fontWeight: 850, fontSize: '1rem', letterSpacing: '0', textAlign: 'left' }}>
+            <div style={{ color: c.ink, fontWeight: 840, fontSize: '1rem', letterSpacing: 0, textAlign: 'left' }}>
               IntelliForm
             </div>
-            <div style={{ color: colors.muted, fontSize: '0.72rem', marginTop: '2px', textAlign: 'left' }}>
-              Formulation intelligence
+            <div style={{ color: c.muted, fontSize: '0.7rem', marginTop: '1px', textAlign: 'left' }}>
+              ChemeNova · Formulation intelligence
             </div>
           </div>
-          <div title="Agentic workflow" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            color: colors.accent,
-            background: colors.accentSoft,
-            border: '1px solid #B9E1D3',
-            borderRadius: '999px',
-            padding: '0.4rem 0.65rem',
-            fontSize: '0.72rem',
-            fontWeight: 750,
-            flex: '0 0 auto',
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+            color: c.teal, background: c.tealSoft, border: `1px solid ${c.tealBorder}`,
+            borderRadius: '999px', padding: '0.35rem 0.6rem',
+            fontSize: '0.7rem', fontWeight: 750, flex: '0 0 auto',
           }}>
-            <Sparkles size={14} /> Live
+            <Sparkles size={12} /> Streaming
           </div>
         </div>
         <nav style={{
-          display: 'flex',
-          gap: '0.45rem',
-          overflowX: 'auto',
-          padding: '0 0.85rem',
-          scrollbarWidth: 'none',
-          WebkitOverflowScrolling: 'touch',
-          touchAction: 'pan-x',
+          display: 'flex', gap: '0.4rem', overflowX: 'auto',
+          padding: '0 0.85rem', scrollbarWidth: 'none',
+          WebkitOverflowScrolling: 'touch', touchAction: 'pan-x',
         }}>
-          {NAV.map(item => (
-            <NavButton
-              key={item.id}
-              item={item}
-              active={activePage === item.id}
-              onClick={() => setActivePage(item.id)}
-              isMobile
-            />
+          {NAV.map((item) => (
+            <NavButton key={item.id} item={item} active={activePage === item.id} onClick={() => setActivePage(item.id)} isMobile />
           ))}
         </nav>
       </aside>
@@ -130,10 +113,8 @@ export default function Sidebar({ activePage, setActivePage, auth, isMobile = fa
   }
 
   return (
-    <aside style={{
-      width: '248px',
-      background: colors.panel,
-      borderRight: `1px solid ${colors.line}`,
+    <aside className="if-sidebar" style={{
+      width: '240px',
       display: 'flex',
       flexDirection: 'column',
       padding: '1.2rem',
@@ -142,83 +123,60 @@ export default function Sidebar({ activePage, setActivePage, auth, isMobile = fa
       minHeight: '100vh',
       boxSizing: 'border-box',
     }}>
-      <div style={{ padding: '0.2rem 0.2rem 1.4rem' }}>
+      {/* Brand */}
+      <div style={{ padding: '0.1rem 0.2rem 1.4rem' }}>
         <div style={{
-          width: '36px',
-          height: '36px',
-          borderRadius: '8px',
-          background: colors.accent,
-          display: 'grid',
-          placeItems: 'center',
-          color: '#fff',
-          marginBottom: '0.8rem',
+          width: '34px', height: '34px', borderRadius: '8px',
+          background: c.teal, display: 'grid', placeItems: 'center',
+          color: '#fff', marginBottom: '0.75rem',
+          boxShadow: '0 4px 14px rgba(31,138,122,0.28)',
         }}>
-          <Sparkles size={18} />
+          <Sparkles size={17} />
         </div>
-        <div style={{ color: colors.ink, fontWeight: 850, fontSize: '1.12rem', letterSpacing: '0' }}>
+        <div style={{ color: c.ink, fontWeight: 840, fontSize: '1.08rem', letterSpacing: 0 }}>
           IntelliForm
         </div>
-        <div style={{ color: colors.muted, fontSize: '0.76rem', marginTop: '4px', lineHeight: 1.4 }}>
-          Agentic formulation intelligence
+        <div style={{ color: c.muted, fontSize: '0.72rem', marginTop: '3px', lineHeight: 1.4 }}>
+          ChemeNova · Formulation intelligence
         </div>
       </div>
-      <nav style={{ flex: 1, display: 'grid', alignContent: 'start', gap: '0.22rem' }}>
-        {NAV.map(item => (
-          <NavButton
-            key={item.id}
-            item={item}
-            active={activePage === item.id}
-            onClick={() => setActivePage(item.id)}
-          />
+
+      {/* Nav */}
+      <nav style={{ flex: 1, display: 'grid', alignContent: 'start', gap: '0.18rem' }}>
+        {NAV.map((item) => (
+          <NavButton key={item.id} item={item} active={activePage === item.id} onClick={() => setActivePage(item.id)} />
         ))}
       </nav>
+
+      {/* Footer */}
       <div style={{
-        padding: '0.9rem',
-        border: `1px solid ${colors.line}`,
+        padding: '0.85rem',
+        border: `1px solid ${c.line}`,
         borderRadius: '8px',
-        color: colors.muted,
-        fontSize: '0.74rem',
+        background: c.surface2,
+        color: c.muted,
+        fontSize: '0.73rem',
         lineHeight: 1.5,
-        background: '#F9FAFB',
       }}>
         {auth?.supabaseEnabled ? (
           <div style={{ marginBottom: '0.75rem' }}>
             {auth.user ? (
               <>
-                <div style={{ color: colors.ink, fontSize: '0.72rem', marginBottom: '0.45rem', wordBreak: 'break-word' }}>{auth.user.email}</div>
-                <button
-                  onClick={auth.signOut}
-                  style={{
-                    background: '#fff',
-                    color: colors.muted,
-                    border: `1px solid ${colors.line}`,
-                    borderRadius: '8px',
-                    padding: '0.48rem 0.65rem',
-                    fontSize: '0.72rem',
-                    cursor: 'pointer',
-                    width: '100%',
-                    textAlign: 'left',
-                  }}
-                >
+                <div style={{ color: c.ink, fontSize: '0.71rem', marginBottom: '0.45rem', wordBreak: 'break-word' }}>{auth.user.email}</div>
+                <button onClick={auth.signOut} style={{
+                  background: c.surface, color: c.steel, border: `1px solid ${c.line}`,
+                  borderRadius: '6px', padding: '0.42rem 0.6rem', fontSize: '0.71rem',
+                  cursor: 'pointer', width: '100%', textAlign: 'left',
+                }}>
                   Sign out
                 </button>
               </>
             ) : (
-              <button
-                onClick={auth.signInWithGoogle}
-                style={{
-                  background: colors.accent,
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '0.55rem 0.75rem',
-                  fontSize: '0.74rem',
-                  cursor: 'pointer',
-                  width: '100%',
-                  textAlign: 'left',
-                  fontWeight: 700,
-                }}
-              >
+              <button onClick={auth.signInWithGoogle} style={{
+                background: c.teal, color: '#fff', border: 'none',
+                borderRadius: '6px', padding: '0.5rem 0.7rem', fontSize: '0.73rem',
+                cursor: 'pointer', width: '100%', textAlign: 'left', fontWeight: 700,
+              }}>
                 Sign in with Google
               </button>
             )}

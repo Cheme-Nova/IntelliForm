@@ -52,9 +52,8 @@ export default function App() {
         display: 'flex',
         flexDirection: isMobile ? 'column' : 'row',
         minHeight: '100vh',
-        background: '#F7F8FA',
+        background: 'transparent',
         color: '#111827',
-        fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
       }}>
         <Sidebar activePage={activePage} setActivePage={setActivePage} auth={auth} isMobile={isMobile} />
         <main style={{
@@ -65,23 +64,8 @@ export default function App() {
           overflowY: 'auto',
           overflowX: 'hidden',
           boxSizing: 'border-box',
+          background: 'transparent',
         }}>
-          {publicMode ? (
-            <div style={{
-              marginBottom: '1rem',
-              padding: isMobile ? '0.8rem 0.9rem' : '0.85rem 1rem',
-              borderRadius: '8px',
-              border: '1px solid #D5E8E2',
-              background: '#F1FAF7',
-              color: '#275E52',
-              fontSize: isMobile ? '0.82rem' : '0.9rem',
-              lineHeight: 1.6,
-              textAlign: 'left',
-              overflowWrap: 'anywhere',
-            }}>
-              Public edition: free-tier usage limits are enabled to keep IntelliForm broadly accessible. For internal, higher-volume, or enterprise use, keep the Streamlit lab app and the enterprise stack separate.
-            </div>
-          ) : null}
           <PageComponent />
         </main>
       </div>
