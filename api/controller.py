@@ -10,7 +10,9 @@ from modules.agents import run_agent_swarm
 from modules.bayesian_optimizer import run_bayesian_optimization
 from modules.carbon_credits import calculate_carbon_credits
 from modules.certification_oracle import run_certification_oracle
+from modules.chem21 import score_blend_solvents
 from modules.ecometrics import compute_ecometrics
+from modules.interaction_checker import check_interactions
 from modules.llm_parser import parse_request
 from modules.optimizer import OptResult, run_optimization
 from modules.pareto_optimizer import run_pareto_optimization
@@ -264,7 +266,16 @@ class IntelliFormController:
             stability = predict_stability(result.blend, filtered_db)
             carbon = calculate_carbon_credits(result.blend, filtered_db, batch_size)
             cert = run_certification_oracle(result.blend, filtered_db, resolved_vertical, result.bio_pct)
-            emit("proof_stack_done", "Proof stack complete — eco, regulatory, stability, carbon, certifications ready")
+            # CHEM21 solvent greenness + interaction safety check (OpenMix-inspired)
+            try:
+                chem21 = _serialize(score_blend_solvents(result.blend))
+            except Exception:
+                chem21 = None
+            try:
+                interactions = _serialize(check_interactions(result.blend, resolved_vertical))
+            except Exception:
+                interactions = None
+            emit("proof_stack_done", "Proof stack complete — eco, regulatory, stability, carbon, certifications, solvent safety ready")
         else:
             eco = None
             reg = None
@@ -272,6 +283,8 @@ class IntelliFormController:
             stability = None
             carbon = None
             cert = None
+            chem21 = None
+            interactions = None
             emit("optimize_done", f"Optimization did not converge — {result.error_msg or 'constraint infeasible'}")
 
         emit("agents", "Running 4-agent expert commentary swarm...")
@@ -291,6 +304,8 @@ class IntelliFormController:
             "stability": _serialize(stability),
             "carbon": _serialize(carbon),
             "cert": _serialize(cert),
+            "chem21": chem21,
+            "interactions": interactions,
             "agents": agents,
             "pareto": _serialize(pareto),
             "bayesian": _serialize(bayesian),
