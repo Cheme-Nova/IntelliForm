@@ -347,9 +347,10 @@ function CompToxPanel({ data }) {
   if (isStub) {
     return (
       <Section eyebrow="CompTox Screening" title="EPA OPERA QSAR regulatory screening">
-        <div style={{ ...panel, padding: '1rem', background: '#f9fafb', borderColor: '#dce6ee', boxShadow: 'none' }}>
+        <div style={{ ...panel, padding: '1rem', background: '#fffdf0', borderColor: '#e8c96b', boxShadow: 'none' }}>
+          <div style={{ color: amber, fontWeight: 780, fontSize: '0.88rem', marginBottom: '0.3rem' }}>API key required</div>
           <div style={{ color: muted, fontSize: '0.83rem', lineHeight: 1.65 }}>
-            No CompTox matches returned for this blend. The EPA CCTE API was queried but found no records for these ingredient names.
+            Email <strong>ccte_api@epa.gov</strong> to request a free EPA CTX API key, then add it as <code style={{ background: '#f1f5f8', padding: '0.1rem 0.35rem', borderRadius: '4px', fontSize: '0.79rem' }}>COMPTOX_API_KEY</code> in Render environment variables to enable live OPERA QSAR predictions.
           </div>
         </div>
       </Section>
