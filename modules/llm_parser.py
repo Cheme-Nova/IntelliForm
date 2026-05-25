@@ -69,7 +69,7 @@ Do not use markdown, code fences, or explanatory text outside the JSON.
 JSON schema:
 {
   "max_cost": <float, USD/kg, default 5.0>,
-  "min_bio": <float, bio-based percentage 0-100, default 95>,
+  "min_bio": <float, bio-based percentage 0-100, default 85>,
   "min_perf": <float, performance score 0-100, default 82>,
   "application_type": <string, one of: personal_care | industrial | agricultural | pharmaceutical | food | fabric_laundry | paint_coatings | unknown>,
   "reasoning": <string, 1-2 short sentences>
@@ -86,7 +86,8 @@ Rules:
 - "food", "beverage", "GRAS", "bakery", or "flavor" -> application_type=food.
 - "laundry", "detergent", "fabric", or "softener" -> application_type=fabric_laundry.
 - "paint", "coating", "varnish", or "binder" -> application_type=paint_coatings.
-- "98%", "99%", "100%", "fully bio", "bio-based", or "naturally derived" should raise min_bio appropriately.
+- "100%", "fully bio", or "fully natural" means maximize bio; set min_bio=93 (feasibility ceilings are enforced server-side; never use 98+).
+- "bio-based", "plant-based", or "naturally derived" should raise min_bio moderately (+5–10pp) within vertical feasibility limits.
 - Be conservative and useful. If uncertain, choose the closest application_type and explain briefly in reasoning."""
 
 _USER_PROMPT = 'Customer brief: """{text}"""'
@@ -173,12 +174,13 @@ def _build_result(data: dict, backend: str, raw_input: str) -> ParseResult:
     default_bio = profile.default_min_bio if profile else 90.0
     default_perf = profile.default_min_perf if profile else 82.0
 
-    high_bio_verticals = {"personal_care", "food"}
+    high_bio_verticals = {"personal_care"}  # food removed — ingredient pool caps ~92%
     medium_bio_verticals = {"fabric_laundry", "agricultural"}
     lower_bio_verticals = {"industrial", "paint_coatings"}
 
     if any(token in raw_text for token in ["100%", "99%", "98%", "fully bio"]):
-        default_bio = max(default_bio, 98.0)
+        # treat as "maximize" — get_vertical_constraints enforces per-vertical feasibility ceiling
+        default_bio = max(default_bio, 93.0)
     elif any(token in raw_text for token in ["bio-based", "biobased", "naturally derived", "plant-based", "renewable"]):
         if application_type in high_bio_verticals:
             default_bio = max(default_bio, min(95.0, default_bio + 10.0))
@@ -187,7 +189,7 @@ def _build_result(data: dict, backend: str, raw_input: str) -> ParseResult:
         elif application_type in lower_bio_verticals:
             default_bio = max(default_bio, min(70.0, default_bio + 10.0))
         else:
-            default_bio = max(default_bio, min(85.0, default_bio + 5.0))
+            default_bio = max(default_bio, min(90.0, default_bio + 5.0))
 
     if any(token in raw_text for token in ["industrial", "degreaser", "cleaner", "mild", "skin", "conditioner", "shampoo"]):
         default_perf = max(default_perf, 85.0)
@@ -331,16 +333,17 @@ def _parse_with_regex(text: str) -> ParseResult:
     base_perf = profile.default_min_perf if profile else 82.0
 
     if any(x in t for x in ["100%", "99%", "98%", "fully bio", "fully natural"]):
-        min_bio = 98.0
+        # feasibility caps in get_vertical_constraints enforce the ceiling
+        min_bio = 93.0
     elif any(x in t for x in ["bio-based", "biobased", "naturally derived", "high bio", "sustainable", "plant-based"]):
-        if app in {"personal_care", "food"}:
+        if app in {"personal_care"}:  # food removed — pool can only reach ~92%
             min_bio = min(95.0, base_bio + 10.0)
         elif app in {"fabric_laundry", "agricultural"}:
             min_bio = min(85.0, base_bio + 8.0)
         elif app in {"industrial", "paint_coatings"}:
             min_bio = min(70.0, base_bio + 10.0)
         else:
-            min_bio = min(85.0, base_bio + 5.0)
+            min_bio = min(90.0, base_bio + 5.0)
     else:
         min_bio = base_bio
 

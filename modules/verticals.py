@@ -285,4 +285,20 @@ def get_vertical_constraints(vertical_key: str, parsed_cost, parsed_bio, parsed_
     max_cost = min(parsed_cost, profile.default_max_cost) if parsed_cost < profile.default_max_cost * 1.5 else parsed_cost
     min_bio  = max(parsed_bio,  profile.default_min_bio)
     min_perf = max(parsed_perf, profile.default_min_perf)
+
+    # Per-vertical feasibility caps derived from ingredient database coverage.
+    # Prevents LP infeasibility when the parser escalates bio% beyond what the
+    # ingredient pool can actually achieve in a blended formulation.
+    _FEASIBILITY_CAP = {
+        "food":          92.0,
+        "personal_care": 97.0,
+        "agricultural":  97.0,
+        "fabric_laundry":88.0,
+        "industrial":    78.0,
+        "paint_coatings":72.0,
+        "pharmaceutical":85.0,
+    }
+    bio_cap = _FEASIBILITY_CAP.get(vertical_key, 99.0)
+    min_bio = min(min_bio, bio_cap)
+
     return max_cost, min_bio, min_perf
