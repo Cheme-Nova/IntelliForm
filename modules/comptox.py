@@ -11,7 +11,7 @@ Unlike IntelliForm's own QSAR models, OPERA predictions are:
   - Peer-reviewed (Mansouri et al., J Cheminformatics 2018)
 
 API base: https://api-ccte.epa.gov
-Free key: https://comptox.epa.gov/dashboard/api-access
+Free key: https://api-ccte.epa.gov/docs/
 Env var:  COMPTOX_API_KEY  (optional — graceful fallback without it)
 
 OPERA endpoints retrieved per ingredient:
@@ -442,7 +442,7 @@ def screen_blend(blend: dict, vertical: Optional[str] = None) -> BlendCompToxRep
             avg_log_kow=None,
             regulatory_citation=(
                 "EPA CompTox OPERA predictions unavailable — set COMPTOX_API_KEY "
-                "env var (free at https://comptox.epa.gov/dashboard/api-access)."
+                "env var (free at https://api-ccte.epa.gov/docs/)."
             ),
             coverage=0,
         )

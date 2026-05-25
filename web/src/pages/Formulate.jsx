@@ -231,6 +231,188 @@ function RefineChat({ currentResult, vertical, batchSize, optMode, onRefined }) 
   )
 }
 
+/* ── Interaction Safety panel ──────────────────────────────── */
+const SEV_COLOR  = { CRITICAL: '#b45858', HIGH: '#d97706', MEDIUM: '#b5893a', LOW: '#4c6375' }
+const SEV_BG     = { CRITICAL: '#fff5f5', HIGH: '#fffbeb', MEDIUM: '#fffdf0', LOW: '#f9fafb' }
+const SEV_BORDER = { CRITICAL: '#efb5b5', HIGH: '#fde68a', MEDIUM: '#e8c96b', LOW: '#dce6ee' }
+
+function InteractionPanel({ data }) {
+  if (!data) return null
+  const { flags = [], critical_count = 0, high_count = 0, medium_count = 0, low_count = 0, safe, summary } = data
+  return (
+    <Section eyebrow="Interaction Safety" title="Ingredient incompatibility check">
+      <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', marginBottom: '0.9rem', alignItems: 'stretch' }}>
+        <div style={{ ...panel, padding: '0.85rem 1rem', flex: '0 0 auto', boxShadow: 'none', background: safe ? accentSoft : '#fff5f5', borderColor: safe ? '#b9d1ca' : '#efb5b5' }}>
+          <div style={label}>Safety</div>
+          <div style={{ color: safe ? accent : '#b45858', fontWeight: 780, marginTop: '0.3rem', fontSize: '0.95rem' }}>
+            {safe ? '✓ No conflicts' : '⚠ Flags detected'}
+          </div>
+        </div>
+        {critical_count > 0 && <div style={{ ...panel, padding: '0.85rem 1rem', flex: '0 0 auto', boxShadow: 'none' }}><div style={label}>Critical</div><div style={{ color: '#b45858', fontWeight: 780, fontSize: '1.2rem', marginTop: '0.3rem' }}>{critical_count}</div></div>}
+        {high_count    > 0 && <div style={{ ...panel, padding: '0.85rem 1rem', flex: '0 0 auto', boxShadow: 'none' }}><div style={label}>High</div><div style={{ color: '#d97706', fontWeight: 780, fontSize: '1.2rem', marginTop: '0.3rem' }}>{high_count}</div></div>}
+        {medium_count  > 0 && <div style={{ ...panel, padding: '0.85rem 1rem', flex: '0 0 auto', boxShadow: 'none' }}><div style={label}>Medium</div><div style={{ color: amber, fontWeight: 780, fontSize: '1.2rem', marginTop: '0.3rem' }}>{medium_count}</div></div>}
+        {low_count     > 0 && <div style={{ ...panel, padding: '0.85rem 1rem', flex: '0 0 auto', boxShadow: 'none' }}><div style={label}>Low</div><div style={{ color: steel, fontWeight: 780, fontSize: '1.2rem', marginTop: '0.3rem' }}>{low_count}</div></div>}
+      </div>
+      <div style={{ color: safe ? accent : '#d97706', fontSize: '0.87rem', fontWeight: 650, marginBottom: flags.length ? '0.85rem' : 0 }}>
+        {summary}
+      </div>
+      {flags.map((f, i) => (
+        <div key={i} style={{ ...panel, padding: '0.9rem 1rem', marginBottom: '0.55rem', boxShadow: 'none', background: SEV_BG[f.severity], borderColor: SEV_BORDER[f.severity] }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ color: ink, fontWeight: 750, fontSize: '0.88rem', overflowWrap: 'anywhere' }}>
+              {f.ingredient_a} <span style={{ color: muted, fontWeight: 400 }}>×</span> {f.ingredient_b}
+            </div>
+            <span style={{ background: SEV_BG[f.severity], color: SEV_COLOR[f.severity], border: `1px solid ${SEV_BORDER[f.severity]}`, borderRadius: '999px', fontSize: '0.68rem', fontWeight: 800, padding: '0.2rem 0.6rem', letterSpacing: '0.06em', textTransform: 'uppercase', flex: '0 0 auto' }}>
+              {f.severity}
+            </span>
+          </div>
+          <div style={{ color: '#3d5060', fontSize: '0.83rem', lineHeight: 1.65, marginBottom: '0.4rem' }}>{f.mechanism}</div>
+          <div style={{ color: SEV_COLOR[f.severity], fontSize: '0.8rem', lineHeight: 1.6 }}>
+            <strong>Action:</strong> {f.recommendation}
+          </div>
+        </div>
+      ))}
+    </Section>
+  )
+}
+
+/* ── CHEM21 Solvent Greenness panel ────────────────────────── */
+const TIER_COLOR  = { 1: '#1f8a7a', 2: '#b5893a', 3: '#d97706', 4: '#b45858' }
+const TIER_BG     = { 1: '#eef6f3', 2: '#fffdf0', 3: '#fffbeb', 4: '#fff5f5' }
+const TIER_BORDER = { 1: '#b9d1ca', 2: '#e8c96b', 3: '#fde68a', 4: '#efb5b5' }
+const TIER_NAMES  = { 1: 'Recommended', 2: 'Problematic', 3: 'Hazardous', 4: 'Highly Hazardous' }
+
+function SolventPanel({ data }) {
+  if (!data || !data.solvents_assessed?.length) return null
+  const { weighted_score, grade, coverage_pct, solvents_assessed = [], alerts = [], substitution_suggestions = [] } = data
+  const scoreColor = weighted_score >= 80 ? accent : weighted_score >= 50 ? amber : '#b45858'
+  return (
+    <Section eyebrow="Solvent Greenness" title="CHEM21 solvent assessment">
+      <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', marginBottom: '1rem', alignItems: 'stretch' }}>
+        <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 110px', boxShadow: 'none' }}>
+          <div style={label}>Greenness Score</div>
+          <div style={{ color: scoreColor, fontWeight: 780, fontSize: '1.4rem', marginTop: '0.3rem' }}>
+            {weighted_score?.toFixed(0)}<span style={{ fontSize: '0.85rem', color: muted }}>/100</span>
+          </div>
+        </div>
+        <div style={{ ...panel, padding: '0.85rem 1rem', flex: '0 0 auto', boxShadow: 'none' }}>
+          <div style={label}>Grade</div>
+          <div style={{ color: scoreColor, fontWeight: 780, fontSize: '1.4rem', marginTop: '0.3rem' }}>{grade}</div>
+        </div>
+        <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 100px', boxShadow: 'none' }}>
+          <div style={label}>Coverage</div>
+          <div style={{ color: ink, fontWeight: 780, fontSize: '1.1rem', marginTop: '0.3rem' }}>{coverage_pct?.toFixed(0)}%</div>
+          <div style={{ color: muted, fontSize: '0.72rem' }}>of blend assessed</div>
+        </div>
+      </div>
+      {alerts.length > 0 && (
+        <div style={{ marginBottom: '0.85rem' }}>
+          {alerts.map((a, i) => <div key={i} style={{ color: '#d97706', fontSize: '0.83rem', marginBottom: '0.25rem' }}>⚠ {a}</div>)}
+        </div>
+      )}
+      <div style={{ display: 'grid', gap: '0.45rem' }}>
+        {solvents_assessed.map((s, i) => (
+          <div key={i} style={{ ...panel, padding: '0.75rem 1rem', boxShadow: 'none', background: TIER_BG[s.tier], borderColor: TIER_BORDER[s.tier] }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ color: ink, fontWeight: 680, fontSize: '0.88rem', overflowWrap: 'anywhere' }}>{s.name}</div>
+              <span style={{ color: TIER_COLOR[s.tier], background: TIER_BG[s.tier], border: `1px solid ${TIER_BORDER[s.tier]}`, borderRadius: '999px', fontSize: '0.68rem', fontWeight: 800, padding: '0.18rem 0.55rem', letterSpacing: '0.06em', textTransform: 'uppercase', flex: '0 0 auto' }}>
+                T{s.tier} · {TIER_NAMES[s.tier]}
+              </span>
+            </div>
+            <div style={{ color: muted, fontSize: '0.79rem', lineHeight: 1.55, marginTop: '0.3rem' }}>{s.rationale}</div>
+          </div>
+        ))}
+      </div>
+      {substitution_suggestions.length > 0 && (
+        <div style={{ marginTop: '0.85rem', ...panel, padding: '0.9rem 1rem', boxShadow: 'none', background: '#fffdf0', borderColor: '#e8c96b' }}>
+          <div style={{ color: amber, fontWeight: 780, fontSize: '0.83rem', marginBottom: '0.4rem' }}>Substitution suggestions</div>
+          {substitution_suggestions.map((s, i) => <div key={i} style={{ color: '#3d5060', fontSize: '0.83rem', marginBottom: '0.2rem' }}>→ {s}</div>)}
+        </div>
+      )}
+    </Section>
+  )
+}
+
+/* ── CompTox / OPERA regulatory screening panel ────────────── */
+function CompToxPanel({ data }) {
+  if (!data) return null
+  const {
+    svhc_flags = [], cmr_flags = [], reach_restricted_flags = [],
+    ready_biodeg_fraction, avg_log_bcf, avg_log_kow,
+    regulatory_citation, coverage = 0,
+  } = data
+
+  const isStub = coverage === 0
+
+  if (isStub) {
+    return (
+      <Section eyebrow="CompTox Screening" title="EPA OPERA QSAR regulatory screening">
+        <div style={{ ...panel, padding: '1rem', background: '#fffdf0', borderColor: '#e8c96b', boxShadow: 'none' }}>
+          <div style={{ color: amber, fontWeight: 780, fontSize: '0.88rem', marginBottom: '0.3rem' }}>API key not configured — stub mode</div>
+          <div style={{ color: muted, fontSize: '0.83rem', lineHeight: 1.65 }}>
+            Set <code style={{ background: '#f1f5f8', padding: '0.1rem 0.35rem', borderRadius: '4px', fontSize: '0.79rem' }}>COMPTOX_API_KEY</code> in Render environment variables to enable live OPERA QSAR predictions: SVHC/CMR flags, OECD biodegradability, log BCF, and log Kow per ingredient. Free key available at api-ccte.epa.gov/docs/.
+          </div>
+        </div>
+      </Section>
+    )
+  }
+
+  const hasConcerns = svhc_flags.length > 0 || cmr_flags.length > 0 || reach_restricted_flags.length > 0
+  return (
+    <Section eyebrow="CompTox Screening" title="EPA OPERA QSAR regulatory screening">
+      <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', marginBottom: '1rem', alignItems: 'stretch' }}>
+        <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 110px', boxShadow: 'none' }}>
+          <div style={label}>Biodegradable</div>
+          <div style={{ color: (ready_biodeg_fraction ?? 0) >= 70 ? accent : amber, fontWeight: 780, fontSize: '1.3rem', marginTop: '0.3rem' }}>{ready_biodeg_fraction?.toFixed(0)}%</div>
+          <div style={{ color: muted, fontSize: '0.72rem' }}>OECD 301B (weighted)</div>
+        </div>
+        {avg_log_bcf != null && (
+          <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 100px', boxShadow: 'none' }}>
+            <div style={label}>Avg log BCF</div>
+            <div style={{ color: avg_log_bcf > 3 ? '#d97706' : ink, fontWeight: 780, fontSize: '1.1rem', marginTop: '0.3rem' }}>{avg_log_bcf?.toFixed(2)}</div>
+            <div style={{ color: muted, fontSize: '0.72rem' }}>log L/kg (bioaccum.)</div>
+          </div>
+        )}
+        {avg_log_kow != null && (
+          <div style={{ ...panel, padding: '0.85rem 1rem', flex: '1 1 100px', boxShadow: 'none' }}>
+            <div style={label}>Avg log Kow</div>
+            <div style={{ color: ink, fontWeight: 780, fontSize: '1.1rem', marginTop: '0.3rem' }}>{avg_log_kow?.toFixed(2)}</div>
+            <div style={{ color: muted, fontSize: '0.72rem' }}>octanol-water</div>
+          </div>
+        )}
+        <div style={{ ...panel, padding: '0.85rem 1rem', flex: '0 0 auto', boxShadow: 'none' }}>
+          <div style={label}>Coverage</div>
+          <div style={{ color: ink, fontWeight: 780, fontSize: '1.1rem', marginTop: '0.3rem' }}>{coverage}%</div>
+        </div>
+      </div>
+      {svhc_flags.length > 0 && (
+        <div style={{ ...panel, padding: '0.9rem 1rem', background: '#fff5f5', borderColor: '#efb5b5', boxShadow: 'none', marginBottom: '0.55rem' }}>
+          <div style={{ color: '#b45858', fontWeight: 780, fontSize: '0.83rem', marginBottom: '0.35rem' }}>⛔ SVHC Candidates ({svhc_flags.length})</div>
+          {svhc_flags.map((n, i) => <div key={i} style={{ color: '#3d5060', fontSize: '0.83rem', marginBottom: '0.2rem' }}>· {n}</div>)}
+        </div>
+      )}
+      {cmr_flags.length > 0 && (
+        <div style={{ ...panel, padding: '0.9rem 1rem', background: '#fff5f5', borderColor: '#efb5b5', boxShadow: 'none', marginBottom: '0.55rem' }}>
+          <div style={{ color: '#b45858', fontWeight: 780, fontSize: '0.83rem', marginBottom: '0.35rem' }}>⚠ CMR Classified ({cmr_flags.length})</div>
+          {cmr_flags.map((n, i) => <div key={i} style={{ color: '#3d5060', fontSize: '0.83rem', marginBottom: '0.2rem' }}>· {n}</div>)}
+        </div>
+      )}
+      {reach_restricted_flags.length > 0 && (
+        <div style={{ ...panel, padding: '0.9rem 1rem', background: '#fffbeb', borderColor: '#fde68a', boxShadow: 'none', marginBottom: '0.55rem' }}>
+          <div style={{ color: '#d97706', fontWeight: 780, fontSize: '0.83rem', marginBottom: '0.35rem' }}>REACH Restricted ({reach_restricted_flags.length})</div>
+          {reach_restricted_flags.map((n, i) => <div key={i} style={{ color: '#3d5060', fontSize: '0.83rem', marginBottom: '0.2rem' }}>· {n}</div>)}
+        </div>
+      )}
+      {!hasConcerns && (
+        <div style={{ color: accent, fontSize: '0.87rem' }}>✓ No SVHC, CMR, or REACH restrictions detected in this blend.</div>
+      )}
+      {regulatory_citation && (
+        <div style={{ color: muted, fontSize: '0.75rem', marginTop: '0.75rem', lineHeight: 1.55 }}>{regulatory_citation}</div>
+      )}
+    </Section>
+  )
+}
+
 const optModes = [
   { value: 'auto',   label: 'Auto' },
   { value: 'pareto', label: 'Pareto' },
@@ -585,6 +767,15 @@ export default function Formulate() {
               </div>
             ) : null}
           </Section>
+
+          {/* Interaction safety */}
+          <InteractionPanel data={result?.interactions} />
+
+          {/* CHEM21 solvent greenness */}
+          <SolventPanel data={result?.chem21} />
+
+          {/* CompTox OPERA screening */}
+          <CompToxPanel data={result?.comptox} />
 
           {/* Agent commentary */}
           <Section eyebrow="Technical Review" title="Commercial and scientific assessment">
