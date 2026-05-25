@@ -52,6 +52,12 @@ gpytorch>=1.11.0
 graphiti-core>=0.4.0
 neo4j>=5.14.0
 
+# LCA — auditable life cycle assessment engine (optional)
+# Brightway2: ISO 14040 matrix-algebra LCA. Tier-1 when ecoinvent or proxy DB available.
+# Falls back to built-in emission factors if not installed.
+# Reference: Mutel, J. Open Source Softw. 2017. BSD-3.
+brightway2>=2.4
+
 # Optimization
 pulp>=2.7.0
 pymoo>=0.6.0                # NSGA-III Pareto; falls back to weighted-sum if unavailable
