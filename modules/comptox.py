@@ -429,24 +429,6 @@ def screen_blend(blend: dict, vertical: Optional[str] = None) -> BlendCompToxRep
     Returns:
         BlendCompToxReport with per-ingredient OPERA data and regulatory flags.
     """
-    if not _api_key():
-        # No key — return a stub report with a clear note rather than burning
-        # unauthenticated request quota on cold-start
-        return BlendCompToxReport(
-            ingredients={},
-            svhc_flags=[],
-            cmr_flags=[],
-            reach_restricted_flags=[],
-            ready_biodeg_fraction=None,
-            avg_log_bcf=None,
-            avg_log_kow=None,
-            regulatory_citation=(
-                "EPA CompTox OPERA predictions unavailable — set COMPTOX_API_KEY "
-                "env var (search 'EPA CCTE API key' on epa.gov to register)."
-            ),
-            coverage=0,
-        )
-
     results: Dict[str, CompToxResult] = {}
     names = list(blend.keys())
 
