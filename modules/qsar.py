@@ -1022,6 +1022,16 @@ def submit_feedback(smiles: str, target: str, actual_value: float,
         _MODEL_CARD.al_feedback_count       = len(records)
         _MODEL_CARD.al_last_retrain         = now
 
+    if retrain_msg:
+        try:
+            from modules.webhook import fire_event
+            fire_event("model.retrained", source="qsar",
+                       al_round=al_round,
+                       total_feedback=len(records),
+                       details={"target": target, "model": _ACTIVE_TIER})
+        except Exception:
+            pass
+
     label = smiles[:30] + ("..." if len(smiles) > 30 else "")
     return (f"✅ Feedback stored (round {al_round}): "
             f"{target}={actual_value:.2f} for {label}.{retrain_msg}")
@@ -1168,6 +1178,16 @@ def submit_feedback_batch(
         _MODEL_CARD.active_learning_rounds += 1
         _MODEL_CARD.al_feedback_count       = len(existing)
         _MODEL_CARD.al_last_retrain         = now
+
+    if retrained:
+        try:
+            from modules.webhook import fire_event
+            fire_event("batch.ingested", source="qsar",
+                       al_round=al_round,
+                       total_feedback=len(existing),
+                       details={"added": len(added), "errors": len(errors)})
+        except Exception:
+            pass
 
     return {
         "added":          len(added),

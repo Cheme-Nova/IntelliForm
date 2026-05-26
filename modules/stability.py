@@ -679,6 +679,14 @@ def submit_stability_feedback(
                 os.remove(STAB_CACHE_PATH)
             except Exception:
                 pass
+            try:
+                from modules.webhook import fire_event
+                fire_event("stability.retrained", source="stability",
+                           al_round=al_round,
+                           total_feedback=len(feedback),
+                           details={"target": target})
+            except Exception:
+                pass
             return (f"✅ Stability model retrained — round {al_round}, "
                     f"{len(feedback)} lab point(s) total.")
     return f"✅ Feedback recorded (round {al_round}). Install scikit-learn to enable ML retraining."

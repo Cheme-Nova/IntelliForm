@@ -15,6 +15,7 @@ from api.models import (
     FormulateRequest, ParetoRequest, BayesianRequest,
     QSARRequest, ReformulateRequest, HealthResponse,
     ALFeedbackRequest, ALFeedbackBatchRequest,
+    WebhookRegisterRequest, WebhookResponse,
 )
 
 class RefineRequest(BaseModel):
@@ -501,6 +502,62 @@ async def pubchem_enrich(req: PubChemRequest):
             return {}
         blend = {n: 0 for n in req.names[:30]}  # cap at 30 names
         return enrich_blend(blend)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Webhook management endpoints ─────────────────────────────────────────────
+
+@app.post("/api/v1/webhooks", response_model=WebhookResponse)
+async def register_webhook(req: WebhookRegisterRequest, request: Request):
+    """Register a URL to receive POST events when IntelliForm models retrain."""
+    _check_lims_key(request)
+    try:
+        from modules.webhook import register_webhook as _reg
+        hook = _reg(url=req.url, events=req.events or None, description=req.description or "")
+        return WebhookResponse(**hook.__dict__)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/webhooks", response_model=list[WebhookResponse])
+async def list_webhooks(request: Request):
+    """List all registered webhooks."""
+    _check_lims_key(request)
+    try:
+        from modules.webhook import list_webhooks as _list
+        return [WebhookResponse(**h.__dict__) for h in _list()]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/v1/webhooks/{webhook_id}")
+async def delete_webhook(webhook_id: str, request: Request):
+    """Delete a webhook by ID."""
+    _check_lims_key(request)
+    try:
+        from modules.webhook import delete_webhook as _del
+        found = _del(webhook_id)
+        if not found:
+            raise HTTPException(status_code=404, detail=f"Webhook '{webhook_id}' not found.")
+        return {"status": "deleted", "id": webhook_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/webhooks/test")
+async def test_webhook(request: Request):
+    """Fire a test.ping event to all registered webhooks immediately."""
+    _check_lims_key(request)
+    try:
+        from modules.webhook import fire_event
+        result = fire_event("test.ping", source="api",
+                            details={"message": "IntelliForm webhook test"})
+        return {"status": "ok", **result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -53,3 +53,19 @@ class ALFeedbackRecord(BaseModel):
 class ALFeedbackBatchRequest(BaseModel):
     records: List[ALFeedbackRecord] = Field(..., description="List of lab results to submit (max 200)")
     source_system: Optional[str] = Field(None, description="LIMS system identifier")
+
+
+# ── Webhook endpoints ─────────────────────────────────────────────────────────
+
+class WebhookRegisterRequest(BaseModel):
+    url: str = Field(..., description="HTTPS endpoint that will receive POST events")
+    events: Optional[List[str]] = Field(None, description="Event names to subscribe to (default: all)")
+    description: Optional[str] = Field("", description="Human-readable label for this webhook")
+
+class WebhookResponse(BaseModel):
+    id: str
+    url: str
+    events: List[str]
+    created_at: str
+    active: bool
+    description: str
