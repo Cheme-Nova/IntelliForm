@@ -285,7 +285,8 @@ from modules.bayesian_optimizer import run_bayesian_optimization, BAYES_OK
 from modules.agents            import run_agent_swarm
 from modules.chem_utils        import draw_mol, enrich_db
 from modules.ecometrics        import compute_ecometrics, ecometrics_radar_data
-from modules.qsar              import initialize_models, predict_properties, submit_feedback
+from modules.qsar              import (initialize_models, predict_properties, submit_feedback,
+                                        query_uncertain_candidates, al_stats, get_feedback_records)
 from modules.regulatory        import get_blend_report, regulatory_table_df
 from modules.vertical_regulatory import generate_vertical_regulatory_report
 from modules.verticals         import (VERTICAL_OPTIONS, get_profile,
@@ -1000,19 +1001,25 @@ with t_pareto:
                            "IntelliForm_Pareto.csv", "text/csv")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TAB 6 — QSAR MODEL CARD
+# TAB 6 — QSAR MODEL CARD + ACTIVE LEARNING
 # ─────────────────────────────────────────────────────────────────────────────
 with t_qsar:
-    st.subheader("🔬 QSAR Engine + Model Card")
+    st.subheader("🔬 QSAR Engine + Active Learning")
     st.caption("Makani S.S., ChemRxiv 2026 · DOI: 10.26434/chemrxiv.15000857 · NJIT Showcase 2025 · UIC Indigo 2025")
 
     mc2 = st.session_state.model_card
+
+    # ── Model Card ────────────────────────────────────────────────────────────
     if mc2:
-        qi1, qi2, qi3, qi4 = st.columns(4)
-        qi1.metric("N Ingredients", mc2.n_training)
+        _al = al_stats()
+        qi1, qi2, qi3, qi4, qi5, qi6 = st.columns(6)
+        qi1.metric("Ingredients",   mc2.n_training)
         qi2.metric("DB Hash",       mc2.training_hash[:8] if mc2.training_hash else "—")
-        qi3.metric("sklearn",       mc2.sklearn_version[:8] if mc2.sklearn_version else "—")
-        qi4.metric("AL Rounds",     mc2.active_learning_rounds)
+        qi3.metric("Active Tier",   getattr(mc2, "active_tier", "gbr_morgan").replace("_", " ").upper()[:12])
+        qi4.metric("AL Rounds",     _al["al_rounds"])
+        qi5.metric("Validated Pts", _al["total_feedback"])
+        qi6.metric("Ensemble",      "✓ Active" if _al["ensemble_active"] else "○ Building")
+
         st.divider()
         for target, bench in mc2.benchmarks.items():
             with st.expander(f"**{target}** — R²={bench['cv_r2']} · RMSE={bench['cv_rmse']}", expanded=True):
@@ -1020,34 +1027,154 @@ with t_qsar:
                 bc1.metric("5-fold R²",  bench["cv_r2"])
                 bc2.metric("CV RMSE",    f"{bench['cv_rmse']}")
                 bc3.metric("Unit",       bench["unit"][:12] if bench.get("unit") else "—")
-                bc4.metric("Algorithm",  "GBR")
-                st.caption(f"**Model**: {bench['model']} · **Descriptors**: {bench['descriptor']}")
+                bc4.metric("Algorithm",  bench.get("model","GBR")[:18])
+                st.caption(f"**Descriptors**: {bench['descriptor']}")
 
+    # ── Experiment Queue ──────────────────────────────────────────────────────
     st.divider()
-    st.subheader("🔮 Live SMILES Prediction")
-    test_smi = st.text_input("SMILES", value="CCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O")
-    if st.button("Predict", type="primary"):
-        qp = predict_properties(test_smi)
-        qc1, qc2, qc3 = st.columns(3)
-        qc1.metric("Biodegradability", f"{qp.biodegradability:.1f}%")
-        qc2.metric("Ecotoxicity",      f"{qp.ecotoxicity:.1f}/10")
-        qc3.metric("Performance",      f"{qp.performance:.1f}/100")
-        st.caption(f"{'ML model' if qp.used_ml else 'Rule-based'} · Confidence: {qp.confidence}")
-        for w in qp.warnings: st.warning(w)
+    st.subheader("🎯 Experiment Queue")
+    st.caption(
+        "Ingredients ranked by model uncertainty — the ensemble of 5 GBR models disagrees most "
+        "on these. Running lab tests on the top rows will compress uncertainty the fastest.")
 
+    _eq_col1, _eq_col2 = st.columns([3, 1])
+    with _eq_col2:
+        _eq_k = st.number_input("Show top N", min_value=3, max_value=30, value=10, key="eq_k")
+
+    _al2 = al_stats()
+    if not _al2["ensemble_active"]:
+        st.info(
+            "Uncertainty ensemble is not yet trained. Submit at least one feedback point "
+            "or wait for `initialize_models()` to finish building the ensemble.",
+            icon="⚗",
+        )
+    else:
+        with st.spinner("Ranking ingredients by uncertainty…"):
+            _eq_df = query_uncertain_candidates(ingredients_db, top_k=int(_eq_k))
+
+        if _eq_df.empty:
+            st.info("No SMILES available in the ingredient DB — cannot compute uncertainty.", icon="⚗")
+        else:
+            # Colour-code uncertainty columns: higher = warmer
+            def _uncertainty_style(s):
+                normed = (s - s.min()) / (s.max() - s.min() + 1e-9)
+                return [
+                    f"background-color: rgba(217,{int(119*(1-v))},6,{0.1+v*0.5:.2f}); color:#f1f5f9"
+                    for v in normed
+                ]
+
+            styled = (
+                _eq_df.style
+                .apply(_uncertainty_style, subset=["uncertainty_bio", "uncertainty_etox",
+                                                    "uncertainty_perf", "mean_uncertainty"])
+                .format({
+                    "uncertainty_bio":  "{:.2f}",
+                    "uncertainty_etox": "{:.3f}",
+                    "uncertainty_perf": "{:.2f}",
+                    "mean_uncertainty": "{:.4f}",
+                })
+            )
+            st.dataframe(styled, use_container_width=True, hide_index=True)
+            st.caption(
+                "**uncertainty_bio** = σ of 5 ensemble predictions for biodegradability (%). "
+                "**mean_uncertainty** = normalised average across all three endpoints. "
+                "Copy a SMILES from the top row to the Submit Feedback form below after running the test.")
+
+            st.download_button(
+                "📥 Export Experiment Queue CSV",
+                _eq_df.to_csv(index=False),
+                f"IntelliForm_ExperimentQueue_{datetime.now().strftime('%Y%m%d')}.csv",
+                "text/csv",
+            )
+
+    # ── Submit Feedback ───────────────────────────────────────────────────────
     st.divider()
-    st.subheader("📬 Active Learning — Submit Validated Data")
-    al_smi = st.text_input("SMILES (validated compound)", key="al_smi")
-    al_tgt = st.selectbox("Property", ["Biodegradability","Ecotoxicity","Performance"])
-    al_val = st.number_input("Measured value", 0.0, 100.0, 90.0)
-    if st.button("Submit Feedback"):
-        if al_smi:
-            qp2  = predict_properties(al_smi)
-            pred = {"Biodegradability": qp2.biodegradability,
-                    "Ecotoxicity": qp2.ecotoxicity,
-                    "Performance": qp2.performance}[al_tgt]
-            db_save_feedback(get_session_id(), al_smi, al_tgt, pred, al_val)
-            st.success(submit_feedback(al_smi, al_tgt, al_val, ingredients_db))
+    st.subheader("📬 Submit Lab Result")
+    st.caption("Enter a confirmed measurement to retrain the model and update the experiment queue.")
+
+    _fb_cols = st.columns([3, 2, 2, 2])
+    with _fb_cols[0]:
+        al_smi = st.text_input("SMILES", placeholder="Paste from Experiment Queue above", key="al_smi")
+    with _fb_cols[1]:
+        al_tgt = st.selectbox("Property", ["Biodegradability", "Ecotoxicity", "Performance"])
+    with _fb_cols[2]:
+        _val_ranges = {"Biodegradability": (0.0, 100.0, 90.0),
+                       "Ecotoxicity":      (1.0,  10.0,  7.0),
+                       "Performance":      (0.0, 100.0, 75.0)}
+        _vmin, _vmax, _vdef = _val_ranges[al_tgt]
+        al_val = st.number_input("Measured value", _vmin, _vmax, _vdef, key="al_val")
+    with _fb_cols[3]:
+        st.markdown("<br>", unsafe_allow_html=True)
+        _submit_fb = st.button("⚗ Submit & Retrain", type="primary", use_container_width=True)
+
+    if _submit_fb:
+        if not al_smi:
+            st.warning("Paste a SMILES string first.")
+        else:
+            with st.spinner("Retraining GBR + uncertainty ensemble…"):
+                qp2  = predict_properties(al_smi)
+                pred = {"Biodegradability": qp2.biodegradability,
+                        "Ecotoxicity":      qp2.ecotoxicity,
+                        "Performance":      qp2.performance}[al_tgt]
+                db_save_feedback(get_session_id(), al_smi, al_tgt, pred, al_val)
+                _msg = submit_feedback(al_smi, al_tgt, al_val, ingredients_db)
+            st.success(_msg)
+            st.rerun()
+
+    # ── Feedback History ──────────────────────────────────────────────────────
+    _fb_records = get_feedback_records()
+    if _fb_records:
+        st.divider()
+        st.subheader(f"📋 Feedback History — {len(_fb_records)} validated point(s)")
+        _fb_rows = [{
+            "Round":   r.al_round,
+            "Target":  r.target,
+            "Value":   round(r.actual_value, 3),
+            "SMILES":  r.smiles[:40] + ("…" if len(r.smiles) > 40 else ""),
+            "Date":    r.timestamp[:10],
+        } for r in reversed(_fb_records)]
+        st.dataframe(pd.DataFrame(_fb_rows), use_container_width=True, hide_index=True)
+
+        _by = _al2["by_target"]
+        fb1, fb2, fb3 = st.columns(3)
+        fb1.metric("Biodegradability", _by["Biodegradability"])
+        fb2.metric("Ecotoxicity",      _by["Ecotoxicity"])
+        fb3.metric("Performance",      _by["Performance"])
+
+        if _al2["last_retrain"]:
+            st.caption(f"Last retrain: {_al2['last_retrain'][:19]}")
+
+        if _al2["total_feedback"] >= 20:
+            st.info(
+                f"✅ {_al2['total_feedback']} validated points accumulated. "
+                "Consider retraining the Chemprop D-MPNN tier for maximum accuracy.",
+                icon="🧠",
+            )
+            if st.button("🧠 Retrain Chemprop D-MPNN (runs offline, ~5 min CPU)",
+                         use_container_width=True, key="retrain_chemprop"):
+                from modules.qsar import train_chemprop_models
+                with st.spinner("Training Chemprop D-MPNN — this may take several minutes…"):
+                    ok = train_chemprop_models(ingredients_db, epochs=40)
+                if ok:
+                    st.success("✅ Chemprop checkpoints updated. Reload the app to activate tier-1 inference.")
+                else:
+                    st.error("Chemprop training failed — ensure `chemprop>=2.0.0` and `lightning>=2.0.0` are installed.")
+
+    # ── Live SMILES Prediction ────────────────────────────────────────────────
+    st.divider()
+    with st.expander("🔮 Live SMILES Prediction (dev tool)"):
+        test_smi = st.text_input("SMILES", value="CCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O", key="test_smi")
+        if st.button("Predict", type="primary", key="predict_btn"):
+            qp = predict_properties(test_smi)
+            qc1, qc2, qc3 = st.columns(3)
+            qc1.metric("Biodegradability", f"{qp.biodegradability:.1f}%")
+            qc2.metric("Ecotoxicity",      f"{qp.ecotoxicity:.1f}/10")
+            qc3.metric("Performance",      f"{qp.performance:.1f}/100")
+            st.caption(
+                f"{'Chemprop D-MPNN' if qp.used_chemprop else 'Mordred GBR' if qp.used_mordred else 'Morgan GBR' if qp.used_ml else 'Rule-based'} "
+                f"· Confidence: {qp.confidence}")
+            for w in qp.warnings:
+                st.warning(w)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 7 — STABILITY & VISCOSITY
