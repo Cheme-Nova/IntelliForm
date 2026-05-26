@@ -299,7 +299,8 @@ from modules.reformulation_intelligence import (
     run_reformulation_intelligence, FAILURE_TYPES, ReformulationReport)
 from modules.memory_network    import get_memory_network, FormulationMemoryNetwork
 from modules.pdf_proposal      import generate_proposal_pdf
-from modules.stability         import predict_stability
+from modules.stability         import (predict_stability, initialize_stability_models,
+                                        submit_stability_feedback, stability_model_card)
 from modules.notifications     import send_pilot_booking_confirmation
 from modules.persistence       import (save_project, load_projects, save_booking,
                                         save_feedback as db_save_feedback,
@@ -340,6 +341,11 @@ def load_models(n: int, db_hash: str):
     db = load_db()
     return initialize_models(db)
 
+@st.cache_resource
+def load_stability_models(n: int, db_hash: str):
+    db = load_db()
+    return initialize_stability_models(db)
+
 # ── SESSION STATE ─────────────────────────────────────────────────────────────
 def _init_state():
     defaults = {
@@ -375,6 +381,8 @@ _db_hash = str(len(ingredients_db)) + str(
 
 if st.session_state.model_card is None:
     st.session_state.model_card = load_models(len(ingredients_db), _db_hash)
+
+load_stability_models(len(ingredients_db), _db_hash)  # primes cache; no return value needed
 
 if st.session_state.memory_net is None:
     st.session_state.memory_net = get_memory_network()
@@ -1395,15 +1403,52 @@ with t_qsar:
 # ─────────────────────────────────────────────────────────────────────────────
 with t_stab:
     st.subheader("🧪 Stability & Viscosity Prediction")
+
+    # ── ML model card ─────────────────────────────────────────────────────────
+    _smc = stability_model_card()
+    if _smc:
+        _sm1, _sm2, _sm3, _sm4, _sm5 = st.columns(5)
+        _sm1.metric("Training pts",  _smc.n_training)
+        _sm2.metric("Synth samples", _smc.synth_samples)
+        _sm3.metric("Lab feedback",  _smc.n_feedback)
+        _sm4.metric("AL rounds",     _smc.al_rounds)
+        _sm5.metric("Tier", "GBR+ICP" if _smc.conformal_active else "Rule-based")
+        if _smc.conformal_active:
+            st.success(
+                f"✓ ML active — conformal prediction on {_smc.conformal_n_cal} calibration samples "
+                f"· ensemble {'active' if _smc.ensemble_active else 'building'}",
+                icon="📐",
+            )
+        else:
+            st.info("ML models building — rule-based predictions shown until training completes.", icon="📐")
+        st.divider()
+
     stab = st.session_state.last_stability
     if not stab:
         st.info("Run a formulation first.", icon="🧪")
     else:
+        _ml_badge = " *(ML)*" if getattr(stab, "ml_active", False) else " *(rule-based)*"
         s1, s2, s3, s4 = st.columns(4)
         s1.metric("Shelf Life",  stab.shelf_life_range)
         s2.metric("Viscosity",   stab.viscosity_range[:15] if stab.viscosity_range else "—")
         s3.metric("pH Range",    f"{stab.ph_min:.1f} – {stab.ph_max:.1f}")
-        s4.metric("Stability",   stab.overall_rating[:15] if stab.overall_rating else "—")
+        s4.metric("Stability",   stab.overall_rating[:15] + ("★" if getattr(stab, "ml_active", False) else ""))
+        st.caption(f"Confidence: **{stab.confidence}**{_ml_badge}")
+
+        # ICP intervals
+        if getattr(stab, "intervals", None):
+            st.divider()
+            st.subheader("📐 Conformal Prediction Intervals")
+            _iv = stab.intervals
+            _ic1, _ic2 = st.columns(2)
+            for col, target, unit in [(_ic1, "Viscosity", " cP"), (_ic2, "ShelfLife", " mo")]:
+                with col:
+                    st.markdown(f"**{target}**")
+                    for lv_str, label in [("95","95%"), ("90","90%"), ("80","80%")]:
+                        band = _iv.get(target, {}).get(lv_str)
+                        if band:
+                            st.caption(f"{label}: [{band[0]:,.0f}{unit} — {band[1]:,.0f}{unit}]")
+
         st.divider()
         sr1, sr2 = st.columns(2)
         with sr1:
@@ -1415,6 +1460,35 @@ with t_stab:
         st.divider()
         st.subheader("Packaging Recommendation")
         st.info(stab.recommended_packaging)
+
+        # ── Submit lab measurement ────────────────────────────────────────────
+        st.divider()
+        st.subheader("📬 Submit Lab Measurement")
+        st.caption("Enter a confirmed lab result to retrain the stability ML model.")
+        _fb_stab_cols = st.columns([2, 2, 2, 1])
+        with _fb_stab_cols[0]:
+            _stab_target = st.selectbox("Property", ["Viscosity", "ShelfLife"],
+                                        format_func=lambda x: "Viscosity (cP)" if x == "Viscosity" else "Shelf Life (months)",
+                                        key="stab_fb_target")
+        with _fb_stab_cols[1]:
+            _stab_ranges = {"Viscosity": (1.0, 50000.0, float(stab.viscosity_cp)),
+                            "ShelfLife": (1.0, 60.0, float(stab.shelf_life_months))}
+            _sv_min, _sv_max, _sv_def = _stab_ranges[_stab_target]
+            _stab_val = st.number_input("Measured value", _sv_min, _sv_max, _sv_def, key="stab_fb_val")
+        with _fb_stab_cols[2]:
+            st.markdown("<br>", unsafe_allow_html=True)
+            _submit_stab = st.button("⚗ Submit & Retrain", type="primary",
+                                     use_container_width=True, key="stab_fb_submit")
+        if _submit_stab:
+            _stab_blend = st.session_state.last_result.blend if st.session_state.last_result else {}
+            if not _stab_blend:
+                st.warning("No active formulation to associate this measurement with.")
+            else:
+                with st.spinner("Retraining stability models…"):
+                    _stab_msg = submit_stability_feedback(
+                        _stab_blend, _stab_target, _stab_val, ingredients_db)
+                st.success(_stab_msg)
+                st.rerun()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 8 — CARBON (Passport + CBAM + Credits)
