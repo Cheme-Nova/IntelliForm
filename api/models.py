@@ -69,3 +69,23 @@ class WebhookResponse(BaseModel):
     created_at: str
     active: bool
     description: str
+
+
+# ── Admin API key endpoints ───────────────────────────────────────────────────
+
+class APIKeyCreateRequest(BaseModel):
+    org_name: str = Field(..., description="Organisation or customer name")
+    scopes: Optional[List[str]] = Field(None, description="Subset of ALL_SCOPES; defaults to all")
+    rate_limit_per_hour: int = Field(200, description="Max requests per sliding 1-hour window")
+    description: str = Field("", description="Human-readable label for this key")
+
+class APIKeyResponse(BaseModel):
+    id: str
+    key_prefix: str
+    org_name: str
+    scopes: List[str]
+    rate_limit_per_hour: int
+    created_at: str
+    last_used_at: Optional[str]
+    active: bool
+    description: str

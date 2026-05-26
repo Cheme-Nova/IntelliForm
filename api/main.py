@@ -16,6 +16,7 @@ from api.models import (
     QSARRequest, ReformulateRequest, HealthResponse,
     ALFeedbackRequest, ALFeedbackBatchRequest,
     WebhookRegisterRequest, WebhookResponse,
+    APIKeyCreateRequest, APIKeyResponse,
 )
 
 class RefineRequest(BaseModel):
@@ -251,14 +252,32 @@ def _ensure_qsar_initialized():
     return _qsar_db
 
 
-def _check_lims_key(request: Request):
-    """Verify X-Api-Key header against LIMS_API_KEY env var. Open if env var unset."""
-    required = os.getenv("LIMS_API_KEY", "")
-    if not required:
+def _require_scope(request: Request, scope: str):
+    """
+    Validate X-Api-Key and assert it carries the required scope.
+    Falls back to the legacy LIMS_API_KEY env var check when no key store entry matches
+    (backward compat). No-op when neither LIMS_API_KEY nor any registered key is present.
+    """
+    from modules.api_key_store import validate_api_key, has_scope
+    raw_key = request.headers.get("X-Api-Key", "")
+
+    # If no key is provided and env gate is also unset → open (dev mode)
+    if not raw_key and not os.getenv("LIMS_API_KEY", ""):
         return
-    provided = request.headers.get("X-Api-Key", "")
-    if provided != required:
-        raise HTTPException(status_code=401, detail="Invalid or missing X-Api-Key header.")
+
+    key = validate_api_key(raw_key)
+    if key is None:
+        raise HTTPException(status_code=401, detail="Invalid, revoked, or rate-limited API key.")
+    if not has_scope(key, scope):
+        raise HTTPException(status_code=403, detail=f"Key does not have required scope: {scope}")
+
+
+def _check_admin_key(request: Request):
+    """Assert the key carries admin scope (or is the ADMIN_API_KEY env override)."""
+    admin_override = os.getenv("ADMIN_API_KEY", "")
+    if admin_override and request.headers.get("X-Api-Key", "") == admin_override:
+        return
+    _require_scope(request, "admin")
 
 
 @app.post("/api/v1/predict/qsar")
@@ -280,7 +299,7 @@ async def predict_qsar(req: QSARRequest):
 @app.get("/api/v1/al/stats")
 async def al_stats_endpoint(request: Request):
     """Return active learning model card stats (feedback count, rounds, conformal status)."""
-    _check_lims_key(request)
+    _require_scope(request, "queue:read")
     try:
         from modules.qsar import al_stats
         _ensure_qsar_initialized()
@@ -292,7 +311,7 @@ async def al_stats_endpoint(request: Request):
 @app.get("/api/v1/al/feedback")
 async def al_feedback_list(request: Request, limit: int = 100):
     """Return the most recent lab feedback records (newest first)."""
-    _check_lims_key(request)
+    _require_scope(request, "queue:read")
     try:
         from modules.qsar import get_feedback_records
         _ensure_qsar_initialized()
@@ -306,7 +325,7 @@ async def al_feedback_list(request: Request, limit: int = 100):
 @app.get("/api/v1/al/experiment-queue")
 async def al_experiment_queue(request: Request, top_k: int = 10, vertical: str = "personal_care"):
     """Return top-k high-uncertainty ingredient candidates for the next lab round."""
-    _check_lims_key(request)
+    _require_scope(request, "queue:read")
     try:
         import pandas as pd
         from modules.qsar import query_uncertain_candidates
@@ -329,7 +348,7 @@ async def al_experiment_queue(request: Request, top_k: int = 10, vertical: str =
 @app.post("/api/v1/al/feedback")
 async def al_submit_feedback(req: ALFeedbackRequest, request: Request):
     """Submit a single lab result. Triggers immediate model retrain."""
-    _check_lims_key(request)
+    _require_scope(request, "feedback:write")
     try:
         import pandas as pd
         from modules.qsar import submit_feedback
@@ -355,7 +374,7 @@ async def al_submit_feedback(req: ALFeedbackRequest, request: Request):
 @app.post("/api/v1/al/feedback/batch")
 async def al_submit_feedback_batch(req: ALFeedbackBatchRequest, request: Request):
     """Submit up to 200 lab results in one call. Single retrain after all records are stored."""
-    _check_lims_key(request)
+    _require_scope(request, "feedback:write")
     try:
         from modules.qsar import submit_feedback_batch
         db = _ensure_qsar_initialized()
@@ -511,7 +530,7 @@ async def pubchem_enrich(req: PubChemRequest):
 @app.post("/api/v1/webhooks", response_model=WebhookResponse)
 async def register_webhook(req: WebhookRegisterRequest, request: Request):
     """Register a URL to receive POST events when IntelliForm models retrain."""
-    _check_lims_key(request)
+    _require_scope(request, "webhooks:write")
     try:
         from modules.webhook import register_webhook as _reg
         hook = _reg(url=req.url, events=req.events or None, description=req.description or "")
@@ -525,7 +544,7 @@ async def register_webhook(req: WebhookRegisterRequest, request: Request):
 @app.get("/api/v1/webhooks", response_model=list[WebhookResponse])
 async def list_webhooks(request: Request):
     """List all registered webhooks."""
-    _check_lims_key(request)
+    _require_scope(request, "webhooks:write")
     try:
         from modules.webhook import list_webhooks as _list
         return [WebhookResponse(**h.__dict__) for h in _list()]
@@ -536,7 +555,7 @@ async def list_webhooks(request: Request):
 @app.delete("/api/v1/webhooks/{webhook_id}")
 async def delete_webhook(webhook_id: str, request: Request):
     """Delete a webhook by ID."""
-    _check_lims_key(request)
+    _require_scope(request, "webhooks:write")
     try:
         from modules.webhook import delete_webhook as _del
         found = _del(webhook_id)
@@ -552,12 +571,86 @@ async def delete_webhook(webhook_id: str, request: Request):
 @app.post("/api/v1/webhooks/test")
 async def test_webhook(request: Request):
     """Fire a test.ping event to all registered webhooks immediately."""
-    _check_lims_key(request)
+    _require_scope(request, "webhooks:write")
     try:
         from modules.webhook import fire_event
         result = fire_event("test.ping", source="api",
                             details={"message": "IntelliForm webhook test"})
         return {"status": "ok", **result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Admin: API key management ─────────────────────────────────────────────────
+
+@app.post("/api/v1/admin/api-keys", response_model=dict)
+async def admin_create_api_key(req: APIKeyCreateRequest, request: Request):
+    """Create a new scoped API key. Returns the raw key once — store it securely."""
+    _check_admin_key(request)
+    try:
+        from modules.api_key_store import create_api_key
+        key, raw_key = create_api_key(
+            org_name=req.org_name,
+            scopes=req.scopes,
+            rate_limit_per_hour=req.rate_limit_per_hour,
+            description=req.description,
+        )
+        return {
+            "raw_key": raw_key,  # shown only once
+            "key": APIKeyResponse(
+                id=key.id,
+                key_prefix=key.key_prefix,
+                org_name=key.org_name,
+                scopes=key.scopes,
+                rate_limit_per_hour=key.rate_limit_per_hour,
+                created_at=key.created_at,
+                last_used_at=key.last_used_at,
+                active=key.active,
+                description=key.description,
+            ).model_dump(),
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/admin/api-keys", response_model=list[APIKeyResponse])
+async def admin_list_api_keys(request: Request):
+    """List all registered API keys (hashes never returned)."""
+    _check_admin_key(request)
+    try:
+        from modules.api_key_store import list_api_keys
+        return [
+            APIKeyResponse(
+                id=k.id,
+                key_prefix=k.key_prefix,
+                org_name=k.org_name,
+                scopes=k.scopes,
+                rate_limit_per_hour=k.rate_limit_per_hour,
+                created_at=k.created_at,
+                last_used_at=k.last_used_at,
+                active=k.active,
+                description=k.description,
+            )
+            for k in list_api_keys()
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/v1/admin/api-keys/{key_id}")
+async def admin_revoke_api_key(key_id: str, request: Request):
+    """Revoke (deactivate) an API key by ID."""
+    _check_admin_key(request)
+    try:
+        from modules.api_key_store import revoke_api_key
+        found = revoke_api_key(key_id)
+        if not found:
+            raise HTTPException(status_code=404, detail=f"Key '{key_id}' not found or already inactive.")
+        return {"status": "revoked", "id": key_id}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

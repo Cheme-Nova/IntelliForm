@@ -304,7 +304,8 @@ from modules.stability         import (predict_stability, initialize_stability_m
 from modules.notifications     import send_pilot_booking_confirmation
 from modules.persistence       import (save_project, load_projects, save_booking,
                                         save_feedback as db_save_feedback,
-                                        is_connected, MIGRATION_SQL)
+                                        is_connected, MIGRATION_SQL,
+                                        load_project_lineage)
 from modules.pharma            import (run_pharma_deep_dive, BCS_STRATEGIES,
                                         DOSAGE_FORMS, REGULATORY_PATHWAYS,
                                         ICH_STABILITY_ZONES)
@@ -367,6 +368,7 @@ def _init_state():
         "projects":         [],
         "blend_history":    [],
         "pilot_sent":       False,
+        "last_project_id":  None,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -802,7 +804,11 @@ with t_form:
             "optimizer":   _opt_mode.lower(),
         }
         st.session_state.projects.append(project)
-        save_project(project, get_session_id())
+        _saved_id = save_project(
+            project, get_session_id(),
+            parent_id=st.session_state.get("last_project_id"),
+        )
+        st.session_state["last_project_id"] = _saved_id
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 2 — CERTIFY (CertificationOracle™)
@@ -1833,6 +1839,46 @@ with t_hist:
             comp_df = pd.DataFrame({"Ingredient":all_ings,"Blend A %":vals_a,"Blend B %":vals_b})
             st.download_button("📥 Download Comparison CSV", comp_df.to_csv(index=False),
                                "IntelliForm_Comparison.csv", "text/csv")
+
+        # ── Formulation Lineage ───────────────────────────────────────────────
+        _cur_pid = st.session_state.get("last_project_id")
+        if _cur_pid:
+            st.divider()
+            st.subheader("🔗 Formulation Lineage")
+            st.caption("Ancestry chain from the original formulation to the current one.")
+            try:
+                _lineage = load_project_lineage(_cur_pid)
+            except Exception:
+                _lineage = []
+            if len(_lineage) <= 1:
+                st.info("This is a root formulation — no parent exists yet. "
+                        "Re-formulate to create a child.", icon="🔗")
+            else:
+                for _li, _lp in enumerate(_lineage):
+                    _blend_l = _lp.get("blend") or {}
+                    _label   = f"**Gen {_li}** — {_lp.get('application','?').replace('_',' ').title()} · " \
+                               f"${_lp.get('cost_per_kg','?')}/kg · Bio {_lp.get('bio_pct','?')}% · " \
+                               f"Perf {_lp.get('perf_score','?')}/100"
+                    with st.expander(_label, expanded=(_li == len(_lineage)-1)):
+                        st.json(_blend_l)
+                # Diff between last two generations
+                if len(_lineage) >= 2:
+                    _prev = _lineage[-2].get("blend") or {}
+                    _curr = _lineage[-1].get("blend") or {}
+                    _all  = sorted(set(list(_prev.keys()) + list(_curr.keys())))
+                    _diffs = [
+                        {
+                            "Ingredient": ing,
+                            "Gen N-1 %":  round(_prev.get(ing, 0), 2),
+                            "Gen N %":    round(_curr.get(ing, 0), 2),
+                            "Δ %":        round(_curr.get(ing, 0) - _prev.get(ing, 0), 2),
+                        }
+                        for ing in _all
+                        if abs(_curr.get(ing, 0) - _prev.get(ing, 0)) > 0.01
+                    ]
+                    if _diffs:
+                        st.markdown("**Changes Gen N-1 → Gen N**")
+                        st.dataframe(pd.DataFrame(_diffs), use_container_width=True)
 
     if not is_connected():
         st.divider()
