@@ -660,7 +660,12 @@ with t_form:
 
         # Agent swarm
         with st.spinner("🤖 Agent swarm…"):
-            for comment in run_agent_swarm(result, parsed):
+            for comment in run_agent_swarm(
+                result, parsed,
+                db=ingredients_db,
+                memory_net=memory,
+                vertical=selected_vertical,
+            ):
                 st.info(comment)
 
         # Compute downstream
