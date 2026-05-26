@@ -80,3 +80,7 @@ uvicorn>=0.30.0             # FastAPI production/server runtime
 
 # Analytics
 posthog>=3.3.0
+
+# SHAP ingredient attribution (TreeExplainer on GBR models)
+# Lundberg & Lee, NeurIPS 2017. MIT licence.
+shap>=0.44.0

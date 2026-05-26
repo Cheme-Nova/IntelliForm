@@ -287,6 +287,7 @@ from modules.chem_utils        import draw_mol, enrich_db
 from modules.ecometrics        import compute_ecometrics, ecometrics_radar_data
 from modules.qsar              import (initialize_models, predict_properties, submit_feedback,
                                         query_uncertain_candidates, al_stats, get_feedback_records)
+from modules.shap_explainer    import explain_blend, SHAP_OK as SHAP_AVAILABLE
 from modules.regulatory        import get_blend_report, regulatory_table_df
 from modules.vertical_regulatory import generate_vertical_regulatory_report
 from modules.verticals         import (VERTICAL_OPTIONS, get_profile,
@@ -1050,6 +1051,96 @@ with t_qsar:
                 bc3.metric("Unit",       bench["unit"][:12] if bench.get("unit") else "—")
                 bc4.metric("Algorithm",  bench.get("model","GBR")[:18])
                 st.caption(f"**Descriptors**: {bench['descriptor']}")
+
+    # ── SHAP Blend Attribution ────────────────────────────────────────────────
+    st.divider()
+    st.subheader("🔍 Blend Attribution")
+    _attr_result = st.session_state.get("last_result")
+    if _attr_result is None or not getattr(_attr_result, "success", False):
+        st.info("Formulate a blend first — attribution will appear here.", icon="🔍")
+    else:
+        if not SHAP_AVAILABLE:
+            st.warning(
+                "SHAP not installed — showing weighted-delta attribution. "
+                "Run `pip install shap` for full TreeExplainer feature attribution.",
+                icon="⚠",
+            )
+        with st.spinner("Computing ingredient attribution…"):
+            _attr = explain_blend(_attr_result.blend, ingredients_db)
+
+        st.caption(
+            f"Method: **{_attr.method.replace('_', ' ').title()}** — "
+            f"blend averages: Bio {_attr.blend_bio}% · Etox {_attr.blend_etox}/10 · Perf {_attr.blend_perf}/100. "
+            "Bars show each ingredient's pct-weighted deviation from those averages (green = above, red = below)."
+        )
+
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+
+        ings       = [a.ingredient[:22] for a in _attr.ingredients]
+        bio_vals   = [a.bio_contribution  for a in _attr.ingredients]
+        etox_vals  = [a.etox_contribution for a in _attr.ingredients]
+        perf_vals  = [a.perf_contribution for a in _attr.ingredients]
+
+        def _bar_colors(vals):
+            return ["#10b981" if v >= 0 else "#ef4444" for v in vals]
+
+        fig = make_subplots(
+            rows=1, cols=3,
+            subplot_titles=["Biodegradability (% pts)", "Ecotoxicity (unit)", "Performance (pts)"],
+            shared_yaxes=True,
+        )
+        fig.add_trace(go.Bar(
+            x=bio_vals, y=ings, orientation="h",
+            marker_color=_bar_colors(bio_vals), showlegend=False,
+            hovertemplate="%{y}: %{x:+.2f}%<extra></extra>",
+        ), row=1, col=1)
+        fig.add_trace(go.Bar(
+            x=etox_vals, y=ings, orientation="h",
+            marker_color=_bar_colors(etox_vals), showlegend=False,
+            hovertemplate="%{y}: %{x:+.3f}<extra></extra>",
+        ), row=1, col=2)
+        fig.add_trace(go.Bar(
+            x=perf_vals, y=ings, orientation="h",
+            marker_color=_bar_colors(perf_vals), showlegend=False,
+            hovertemplate="%{y}: %{x:+.2f} pts<extra></extra>",
+        ), row=1, col=3)
+
+        n_ings = max(len(ings), 1)
+        fig.update_layout(
+            height=max(240, 44 * n_ings),
+            margin=dict(l=0, r=0, t=36, b=0),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#cbd5e1"),
+        )
+        for i in range(1, 4):
+            fig.update_xaxes(zeroline=True, zerolinecolor="#475569", row=1, col=i)
+            fig.update_yaxes(autorange="reversed", row=1, col=i)
+        st.plotly_chart(fig, use_container_width=True)
+
+        # Per-ingredient SHAP feature breakdown
+        if _attr.shap_available:
+            with st.expander("🧬 Top driving features per ingredient (SHAP)"):
+                for a in _attr.ingredients:
+                    st.markdown(f"**{a.ingredient}** ({a.pct:.1f}%)")
+                    _fc1, _fc2, _fc3 = st.columns(3)
+                    with _fc1:
+                        st.caption("**Bio top features**")
+                        for fname, fval in a.bio_top_features:
+                            arrow = "▲" if fval > 0 else "▼"
+                            st.caption(f"{arrow} `{fname}` {fval:+.3f}")
+                    with _fc2:
+                        st.caption("**Etox top features**")
+                        for fname, fval in a.etox_top_features:
+                            arrow = "▲" if fval > 0 else "▼"
+                            st.caption(f"{arrow} `{fname}` {fval:+.3f}")
+                    with _fc3:
+                        st.caption("**Perf top features**")
+                        for fname, fval in a.perf_top_features:
+                            arrow = "▲" if fval > 0 else "▼"
+                            st.caption(f"{arrow} `{fname}` {fval:+.3f}")
+                    st.divider()
 
     # ── Experiment Queue ──────────────────────────────────────────────────────
     st.divider()

@@ -596,6 +596,11 @@ def _get_training_hash(db: pd.DataFrame) -> str:
     return hashlib.md5(key.encode()).hexdigest()[:8]
 
 
+def get_gbr_models() -> Tuple[Optional[Dict], bool]:
+    """Return (gbr_model_dict, used_mordred) for external SHAP attribution use."""
+    return _GBR_CACHE, _USED_MORDRED
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def initialize_models(db: pd.DataFrame) -> ModelCard:
