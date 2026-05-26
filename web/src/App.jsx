@@ -12,6 +12,9 @@ import QSAR from './pages/QSAR'
 import Reformulation from './pages/Reformulation'
 import Memory from './pages/Memory'
 import Pharma from './pages/Pharma'
+import Suppliers from './pages/Suppliers'
+import SDS from './pages/SDS'
+import History from './pages/History'
 import { useAuth } from './auth/AuthContext'
 
 const queryClient = new QueryClient()
@@ -28,6 +31,9 @@ const PAGES = {
   reformulation: Reformulation,
   memory: Memory,
   pharma: Pharma,
+  suppliers: Suppliers,
+  sds: SDS,
+  history: History,
 }
 
 export default function App() {

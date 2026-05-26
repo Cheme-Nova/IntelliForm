@@ -4,13 +4,16 @@ import {
   Brain,
   CheckCircle2,
   ClipboardCheck,
+  FileText,
   FlaskConical,
   Gauge,
   GitBranch,
+  History,
   Leaf,
   Microscope,
   RefreshCcw,
   Sparkles,
+  Store,
 } from 'lucide-react'
 
 const NAV = [
@@ -25,6 +28,9 @@ const NAV = [
   { id: 'reformulation',  label: 'Reformulation',  icon: RefreshCcw    },
   { id: 'pharma',         label: 'Pharma',         icon: Microscope    },
   { id: 'memory',         label: 'Memory',         icon: Brain         },
+  { id: 'sds',            label: 'Safety Sheet',   icon: FileText      },
+  { id: 'suppliers',      label: 'Suppliers',      icon: Store         },
+  { id: 'history',        label: 'History',        icon: History       },
 ]
 
 /* Grouped so there's a visual break before the secondary tools */
