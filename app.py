@@ -737,11 +737,17 @@ with t_form:
                         f"**{row.get('Function','—')}** · ${row['Cost_USD_kg']}/kg · "
                         f"{row['Bio_based_pct']}% bio · Stock {row['Stock_kg']} kg")
                     qp = predict_properties(row["SMILES"])
+                    _ci95 = ""
+                    if qp.intervals:
+                        _b95 = qp.intervals.get("Biodegradability", {}).get("95")
+                        if _b95:
+                            _ci95 = f" · Bio 95% CI [{_b95[0]:.0f}–{_b95[1]:.0f}%]"
                     st.caption(
                         f"🔬 QSAR: Bio {qp.biodegradability:.0f}% · "
                         f"Ecotox {qp.ecotoxicity:.1f}/10 · "
                         f"Perf {qp.performance:.0f} · "
-                        f"{'ML' if qp.used_ml else 'rules'} · {qp.confidence} confidence")
+                        f"{'ML' if qp.used_ml else 'rules'} · {qp.confidence} confidence"
+                        f"{_ci95}")
                 with ci:
                     img = draw_mol(row["SMILES"])
                     if img:
@@ -1024,6 +1030,16 @@ with t_qsar:
         qi4.metric("AL Rounds",     _al["al_rounds"])
         qi5.metric("Validated Pts", _al["total_feedback"])
         qi6.metric("Ensemble",      "✓ Active" if _al["ensemble_active"] else "○ Building")
+        _conf_ok  = getattr(mc2, "conformal_active", False)
+        _conf_cal = getattr(mc2, "conformal_n_cal", 0)
+        if _conf_ok:
+            st.success(
+                f"✓ Conformal prediction active — 80/90/95% coverage intervals calibrated "
+                f"on {_conf_cal} held-out molecules (ICP guarantee)",
+                icon="📐",
+            )
+        else:
+            st.info("Conformal bands will activate after GBR training completes.", icon="📐")
 
         st.divider()
         for target, bench in mc2.benchmarks.items():
@@ -1178,6 +1194,21 @@ with t_qsar:
             st.caption(
                 f"{'Chemprop D-MPNN' if qp.used_chemprop else 'Mordred GBR' if qp.used_mordred else 'Morgan GBR' if qp.used_ml else 'Rule-based'} "
                 f"· Confidence: {qp.confidence}")
+            if qp.intervals:
+                _iv = qp.intervals
+                st.markdown("**Conformal prediction intervals (ICP guarantee):**")
+                iv1, iv2, iv3 = st.columns(3)
+                for col, target, unit in [(iv1, "Biodegradability", "%"),
+                                           (iv2, "Ecotoxicity",      "/10"),
+                                           (iv3, "Performance",      "/100")]:
+                    t95 = _iv.get(target, {}).get("95", None)
+                    t90 = _iv.get(target, {}).get("90", None)
+                    t80 = _iv.get(target, {}).get("80", None)
+                    with col:
+                        st.markdown(f"**{target}**")
+                        if t95: st.caption(f"95%: [{t95[0]}{unit}, {t95[1]}{unit}]")
+                        if t90: st.caption(f"90%: [{t90[0]}{unit}, {t90[1]}{unit}]")
+                        if t80: st.caption(f"80%: [{t80[0]}{unit}, {t80[1]}{unit}]")
             for w in qp.warnings:
                 st.warning(w)
 

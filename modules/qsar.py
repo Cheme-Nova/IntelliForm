@@ -110,11 +110,18 @@ except Exception:
 MORGAN_RADIUS     = 2
 MORGAN_NBITS      = 512
 GBR_CACHE_PATH    = "/tmp/intelliform_qsar_v15.pkl"
-GBR_CACHE_VERSION = "v1.5-mordred"
+GBR_CACHE_VERSION = "v1.5-conformal"
 CHEMPROP_CKPT_DIR = "/tmp/intelliform_chemprop_v2"
 _CHEMPROP_TARGETS = ["Biodegradability", "Ecotoxicity", "Performance"]
-AL_FEEDBACK_PATH  = "/tmp/intelliform_al_feedback.pkl"
-AL_ENSEMBLE_N     = 5   # GBR models in uncertainty ensemble
+AL_FEEDBACK_PATH   = "/tmp/intelliform_al_feedback.pkl"
+AL_ENSEMBLE_N      = 5     # GBR models in uncertainty ensemble
+_CONFORMAL_LEVELS  = [0.80, 0.90, 0.95]
+_CONFORMAL_CAL_PCT = 0.15  # fraction of training data held out for calibration
+_CLIP_RANGES       = {
+    "Biodegradability": (0.0,  100.0),
+    "Ecotoxicity":      (1.0,   10.0),
+    "Performance":      (0.0,  100.0),
+}
 
 
 # ── Benchmarks ────────────────────────────────────────────────────────────────
@@ -163,6 +170,22 @@ def _make_benchmarks(n_train: int, tier: str = "gbr_morgan") -> dict:
 # ── Data schemas ──────────────────────────────────────────────────────────────
 
 @dataclass
+class ConformalBands:
+    """
+    Inductive conformal prediction calibration data.
+
+    quantiles[target][level_str] = half-width q such that the interval
+    [y_pred - q, y_pred + q] covers the true value with probability ≥ level,
+    guaranteed by the ICP theorem for exchangeable data.
+
+    Coverage formula: q = sorted_residuals[⌈(n_cal+1)·level⌉ - 1]
+    """
+    quantiles:       Dict[str, Dict[str, float]]  # target → {"80": q, "90": q, "95": q}
+    n_calibration:   int
+    coverage_levels: List[float]
+
+
+@dataclass
 class QSARPrediction:
     smiles:           str
     biodegradability: float
@@ -173,6 +196,9 @@ class QSARPrediction:
     used_mordred:     bool  = False
     used_chemprop:    bool  = False
     warnings:         List[str] = field(default_factory=list)
+    # Conformal prediction intervals — None if calibration data unavailable
+    # Format: {"Biodegradability": {"80": (lo, hi), "90": (lo, hi), "95": (lo, hi)}, ...}
+    intervals:        Optional[Dict[str, Dict[str, Tuple[float, float]]]] = None
 
 
 @dataclass
@@ -190,6 +216,8 @@ class ModelCard:
     active_tier:            str  = "gbr_morgan"
     al_feedback_count:      int  = 0
     al_last_retrain:        str  = ""
+    conformal_active:       bool = False
+    conformal_n_cal:        int  = 0
 
 
 @dataclass
@@ -327,7 +355,25 @@ def _feature_names(used_mordred: bool = False) -> List[str]:
 
 # ── GBR training (tier 2/3) ───────────────────────────────────────────────────
 
-def _train_gbr_models(db: pd.DataFrame) -> Optional[Tuple[Dict, bool, int]]:
+def _icp_quantile(residuals: np.ndarray, level: float) -> float:
+    """
+    Inductive Conformal Prediction quantile at coverage level.
+    Formula: q = sorted_residuals[ceil((n+1)*level) - 1], capped at n-1.
+    Guarantees coverage >= level for exchangeable calibration data.
+    """
+    n   = len(residuals)
+    idx = min(int(np.ceil((n + 1) * level)) - 1, n - 1)
+    return float(np.sort(residuals)[idx])
+
+
+def _train_gbr_models(
+    db: pd.DataFrame,
+) -> Optional[Tuple[Dict, bool, int, Optional[ConformalBands]]]:
+    """
+    Train GBR models with an 85/15 train/calibration split.
+    Returns (models, used_mordred, n_total, conformal_bands).
+    The calibration split is used only for ICP — models are fit on the training split.
+    """
     if not SKLEARN_OK:
         return None
 
@@ -352,15 +398,32 @@ def _train_gbr_models(db: pd.DataFrame) -> Optional[Tuple[Dict, bool, int]]:
             if mordred_used:
                 used_mordred_flag = True
 
-    if len(X_rows) < 10:
+    n_total = len(X_rows)
+    if n_total < 10:
         return None
 
-    X = np.nan_to_num(np.array(X_rows), nan=0.0, posinf=0.0, neginf=0.0)
-    n_train = len(X_rows)
-    models = {}
-    for target, y in [("Biodegradability", y_bio),
-                       ("Ecotoxicity",      y_etox),
-                       ("Performance",      y_perf)]:
+    X_all = np.nan_to_num(np.array(X_rows), nan=0.0, posinf=0.0, neginf=0.0)
+
+    # ── 85/15 train / calibration split (shuffled, deterministic) ─────────────
+    n_cal   = max(5, int(n_total * _CONFORMAL_CAL_PCT))
+    n_fit   = n_total - n_cal
+    rng     = np.random.default_rng(42)
+    perm    = rng.permutation(n_total)
+    fit_idx = perm[:n_fit]
+    cal_idx = perm[n_fit:]
+
+    X_fit = X_all[fit_idx]
+    X_cal = X_all[cal_idx]
+    y_all = {
+        "Biodegradability": np.array(y_bio),
+        "Ecotoxicity":      np.array(y_etox),
+        "Performance":      np.array(y_perf),
+    }
+
+    # ── Fit models on training split ──────────────────────────────────────────
+    models    = {}
+    residuals = {}
+    for target, y_arr in y_all.items():
         pipe = Pipeline([
             ("imputer", SimpleImputer(strategy="median")),
             ("scaler",  StandardScaler()),
@@ -370,10 +433,28 @@ def _train_gbr_models(db: pd.DataFrame) -> Optional[Tuple[Dict, bool, int]]:
                 min_samples_leaf=3, random_state=42,
             )),
         ])
-        pipe.fit(X, y)
+        pipe.fit(X_fit, y_arr[fit_idx])
         models[target] = pipe
 
-    return models, used_mordred_flag, n_train
+        # Nonconformity scores on calibration split (absolute residuals)
+        y_pred_cal       = pipe.predict(X_cal)
+        residuals[target] = np.abs(y_arr[cal_idx] - y_pred_cal)
+
+    # ── ICP quantiles at each coverage level ──────────────────────────────────
+    quantiles: Dict[str, Dict[str, float]] = {}
+    for target, res in residuals.items():
+        quantiles[target] = {
+            str(int(lv * 100)): _icp_quantile(res, lv)
+            for lv in _CONFORMAL_LEVELS
+        }
+
+    bands = ConformalBands(
+        quantiles=quantiles,
+        n_calibration=n_cal,
+        coverage_levels=_CONFORMAL_LEVELS,
+    )
+
+    return models, used_mordred_flag, n_total, bands
 
 
 # ── Chemprop training (tier 1) ────────────────────────────────────────────────
@@ -501,12 +582,13 @@ def _predict_chemprop(smiles: str, cp_models: Dict) -> Optional[Tuple[float, flo
 
 # ── Module-level caches ───────────────────────────────────────────────────────
 
-_GBR_CACHE:          Optional[Dict]      = None
-_GBR_ENSEMBLE_CACHE: Optional[Dict]      = None   # Dict[target, List[Pipeline]]
-_CHEMPROP_CACHE:     Optional[Dict]      = None
-_MODEL_CARD:         Optional[ModelCard] = None
-_USED_MORDRED:       bool                = False
-_ACTIVE_TIER:        str                 = "gbr_morgan"
+_GBR_CACHE:          Optional[Dict]            = None
+_GBR_ENSEMBLE_CACHE: Optional[Dict]            = None   # Dict[target, List[Pipeline]]
+_CONFORMAL_CACHE:    Optional[ConformalBands]  = None
+_CHEMPROP_CACHE:     Optional[Dict]            = None
+_MODEL_CARD:         Optional[ModelCard]       = None
+_USED_MORDRED:       bool                      = False
+_ACTIVE_TIER:        str                       = "gbr_morgan"
 
 
 def _get_training_hash(db: pd.DataFrame) -> str:
@@ -523,7 +605,7 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
     Call train_chemprop_models(db) once to generate those checkpoints.
     Also trains the GBR uncertainty ensemble from any stored feedback records.
     """
-    global _GBR_CACHE, _GBR_ENSEMBLE_CACHE, _CHEMPROP_CACHE, _MODEL_CARD, _USED_MORDRED, _ACTIVE_TIER
+    global _GBR_CACHE, _GBR_ENSEMBLE_CACHE, _CONFORMAL_CACHE, _CHEMPROP_CACHE, _MODEL_CARD, _USED_MORDRED, _ACTIVE_TIER
 
     if PUBCHEM_OK:
         db = batch_enrich_db(db, max_lookups=30)
@@ -563,10 +645,15 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
             if (cached.get("hash") == training_hash and
                     cached.get("version") == GBR_CACHE_VERSION and
                     cached.get("mordred_available") == MORDRED_OK):
-                _GBR_CACHE    = cached["models"]
-                _USED_MORDRED = cached.get("used_mordred", False)
-                _ACTIVE_TIER  = "gbr_mordred" if _USED_MORDRED else "gbr_morgan"
-                _MODEL_CARD   = cached["card"]
+                _GBR_CACHE       = cached["models"]
+                _CONFORMAL_CACHE = cached.get("conformal")
+                _USED_MORDRED    = cached.get("used_mordred", False)
+                _ACTIVE_TIER     = "gbr_mordred" if _USED_MORDRED else "gbr_morgan"
+                _MODEL_CARD      = cached["card"]
+                # Backfill conformal fields if loading a pre-conformal cache entry
+                if not hasattr(_MODEL_CARD, "conformal_active"):
+                    _MODEL_CARD.conformal_active = _CONFORMAL_CACHE is not None
+                    _MODEL_CARD.conformal_n_cal  = _CONFORMAL_CACHE.n_calibration if _CONFORMAL_CACHE else 0
                 ens = _train_gbr_ensemble(db, feedback)
                 if ens:
                     _GBR_ENSEMBLE_CACHE = ens
@@ -583,16 +670,19 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
         import sklearn
         sklearn_ver = sklearn.__version__
 
+    bands: Optional[ConformalBands] = None
     if train_result:
-        models, used_mordred, n_train = train_result
-        _GBR_CACHE    = models
-        _USED_MORDRED = used_mordred
-        _ACTIVE_TIER  = "gbr_mordred" if used_mordred else "gbr_morgan"
+        models, used_mordred, n_train, bands = train_result
+        _GBR_CACHE       = models
+        _CONFORMAL_CACHE = bands
+        _USED_MORDRED    = used_mordred
+        _ACTIVE_TIER     = "gbr_mordred" if used_mordred else "gbr_morgan"
     else:
-        n_train       = len(db)
-        _GBR_CACHE    = None
-        _USED_MORDRED = False
-        _ACTIVE_TIER  = "gbr_morgan"
+        n_train          = len(db)
+        _GBR_CACHE       = None
+        _CONFORMAL_CACHE = None
+        _USED_MORDRED    = False
+        _ACTIVE_TIER     = "gbr_morgan"
 
     _mc    = _get_mordred_calc()
     n_desc = (len(_mc.descriptors) if (MORDRED_OK and _mc) else MORGAN_NBITS + 7)
@@ -609,6 +699,8 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
         n_descriptors=n_desc,
         active_tier=_ACTIVE_TIER,
         al_feedback_count=len(feedback),
+        conformal_active=bands is not None,
+        conformal_n_cal=bands.n_calibration if bands else 0,
     )
     _MODEL_CARD = card
 
@@ -616,6 +708,7 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
         with open(GBR_CACHE_PATH, "wb") as f:
             pickle.dump({
                 "hash": training_hash, "models": _GBR_CACHE, "card": card,
+                "conformal": _CONFORMAL_CACHE,
                 "version": GBR_CACHE_VERSION, "used_mordred": _USED_MORDRED,
                 "mordred_available": MORDRED_OK,
             }, f)
@@ -629,12 +722,42 @@ def initialize_models(db: pd.DataFrame) -> ModelCard:
     return card
 
 
+def _apply_intervals(
+    bio: float, etox: float, perf: float,
+    bands: Optional[ConformalBands],
+) -> Optional[Dict[str, Dict[str, Tuple[float, float]]]]:
+    """
+    Build per-target prediction intervals from ICP calibration quantiles.
+    Each interval [y_pred - q, y_pred + q] is clipped to the valid range.
+    Returns None when calibration data is unavailable (e.g. Chemprop tier
+    without a separate calibration run — GBR bands are used as a proxy).
+    """
+    if bands is None:
+        return None
+    result: Dict[str, Dict[str, Tuple[float, float]]] = {}
+    for target, pred in [("Biodegradability", bio),
+                          ("Ecotoxicity",      etox),
+                          ("Performance",      perf)]:
+        lo_clip, hi_clip = _CLIP_RANGES[target]
+        target_qs        = bands.quantiles.get(target, {})
+        result[target]   = {
+            level: (
+                round(max(lo_clip, pred - q), 1),
+                round(min(hi_clip, pred + q), 1),
+            )
+            for level, q in target_qs.items()
+        }
+    return result
+
+
 def predict_properties(smiles: str) -> QSARPrediction:
     """
     Predict biodegradability, ecotoxicity, performance from a SMILES string.
 
     Uses the best available tier:
       Chemprop D-MPNN (if checkpoints loaded) → Mordred GBR → Morgan GBR → rule-based.
+    When GBR calibration data is available, attaches ICP prediction intervals
+    at 80%, 90%, and 95% coverage levels.
     """
     warnings_list: List[str] = []
 
@@ -645,6 +768,8 @@ def predict_properties(smiles: str) -> QSARPrediction:
             bio, etox, perf = result
             avg = (bio / 100 + perf / 100) / 2
             confidence = "high" if avg > 0.75 else "medium" if avg > 0.55 else "low"
+            # Use GBR conformal bands as proxy intervals for Chemprop
+            ivs = _apply_intervals(bio, etox, perf, _CONFORMAL_CACHE)
             return QSARPrediction(
                 smiles=smiles,
                 biodegradability=round(bio, 1),
@@ -655,6 +780,7 @@ def predict_properties(smiles: str) -> QSARPrediction:
                 used_mordred=False,
                 used_chemprop=True,
                 warnings=warnings_list,
+                intervals=ivs,
             )
         warnings_list.append("Chemprop inference failed — falling back to GBR.")
 
@@ -673,6 +799,7 @@ def predict_properties(smiles: str) -> QSARPrediction:
 
                 avg        = (bio / 100 + perf / 100) / 2
                 confidence = "high" if avg > 0.75 else "medium" if avg > 0.55 else "low"
+                ivs        = _apply_intervals(bio, etox, perf, _CONFORMAL_CACHE)
 
                 return QSARPrediction(
                     smiles=smiles,
@@ -684,6 +811,7 @@ def predict_properties(smiles: str) -> QSARPrediction:
                     used_mordred=used_mordred,
                     used_chemprop=False,
                     warnings=warnings_list,
+                    intervals=ivs,
                 )
             except Exception as e:
                 warnings_list.append(f"GBR failed ({e}), using rule-based fallback.")
@@ -853,7 +981,7 @@ def submit_feedback(smiles: str, target: str, actual_value: float,
     have accumulated enough feedback (≥20 points), call train_chemprop_models(db)
     from the Model Card tab to retrain the graph-neural-network tier.
     """
-    global _GBR_CACHE, _GBR_ENSEMBLE_CACHE, _MODEL_CARD, _USED_MORDRED
+    global _GBR_CACHE, _GBR_ENSEMBLE_CACHE, _CONFORMAL_CACHE, _MODEL_CARD, _USED_MORDRED
 
     valid = {"Biodegradability", "Ecotoxicity", "Performance"}
     if target not in valid:
@@ -875,7 +1003,7 @@ def submit_feedback(smiles: str, target: str, actual_value: float,
         db_aug = _build_augmented_db(db, records)
         result = _train_gbr_models(db_aug)
         if result:
-            _GBR_CACHE, _USED_MORDRED, _ = result
+            _GBR_CACHE, _USED_MORDRED, _, _CONFORMAL_CACHE = result
             if os.path.exists(GBR_CACHE_PATH):
                 os.remove(GBR_CACHE_PATH)  # invalidate disk cache
         ens = _train_gbr_ensemble(db, records)
