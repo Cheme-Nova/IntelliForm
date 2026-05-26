@@ -73,6 +73,57 @@ class WebhookResponse(BaseModel):
 
 # ── Admin API key endpoints ───────────────────────────────────────────────────
 
+# ── Supply chain / supplier portal ───────────────────────────────────────────
+
+class SupplierRegisterRequest(BaseModel):
+    name: str = Field(..., description="Company or individual supplier name")
+    email: str = Field(..., description="Primary contact email")
+    country: str = Field(..., description="Country of operation (ISO alpha-2 or full name)")
+    certifications: Optional[List[str]] = Field([], description="e.g. ISO9001, Ecocert, REACH")
+    description: str = Field("", description="Short company bio / product focus")
+
+class SupplierResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    country: str
+    certifications: List[str]
+    status: str
+    api_key_prefix: str
+    joined_at: str
+    description: str
+
+class SupplierListingRequest(BaseModel):
+    ingredient_name: str
+    price_per_kg: float = Field(..., gt=0)
+    currency: str = "USD"
+    moq_kg: float = Field(25.0, gt=0, description="Minimum order quantity in kg")
+    lead_time_days: int = Field(14, ge=1, description="Typical lead time in days")
+    availability: str = Field("in_stock", description="in_stock | limited | out_of_stock")
+    certifications: Optional[List[str]] = []
+    valid_until: Optional[str] = Field(None, description="ISO date until which price is valid")
+
+class SupplierListingResponse(BaseModel):
+    id: str
+    supplier_id: str
+    supplier_name: str
+    ingredient_name: str
+    price_per_kg: float
+    currency: str
+    moq_kg: float
+    lead_time_days: int
+    availability: str
+    certifications: List[str]
+    valid_until: Optional[str]
+    created_at: str
+    updated_at: str
+
+class SupplyChainBlendRequest(BaseModel):
+    blend: Dict[str, Any] = Field(..., description="ingredient → weight %")
+
+
+# ── Admin API key endpoints ───────────────────────────────────────────────────
+
 class APIKeyCreateRequest(BaseModel):
     org_name: str = Field(..., description="Organisation or customer name")
     scopes: Optional[List[str]] = Field(None, description="Subset of ALL_SCOPES; defaults to all")

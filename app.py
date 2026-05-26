@@ -554,13 +554,14 @@ _base_tabs = [
     "📄 Proposal",
     "📊 History",
     "⚡ Pro",
+    "🏭 Suppliers",
 ]
 _show_pharma = (selected_vertical == "pharmaceutical")
 if _show_pharma:
-    _all_tabs = _base_tabs + ["💊 Pharma"]
-    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_mem, t_prop, t_hist, t_pro, t_pharma = st.tabs(_all_tabs)
+    _all_tabs = _base_tabs[:-1] + ["💊 Pharma", "🏭 Suppliers"]
+    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_mem, t_prop, t_hist, t_pro, t_pharma, t_supp = st.tabs(_all_tabs)
 else:
-    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_mem, t_prop, t_hist, t_pro = st.tabs(_base_tabs)
+    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_mem, t_prop, t_hist, t_pro, t_supp = st.tabs(_base_tabs)
     t_pharma = None
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2131,6 +2132,193 @@ if t_pharma:
                         })
                     if sz_rows:
                         st.dataframe(pd.DataFrame(sz_rows), use_container_width=True, hide_index=True)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TAB — SUPPLIER PORTAL
+# ─────────────────────────────────────────────────────────────────────────────
+with t_supp:
+    st.subheader("🏭 Supplier Portal")
+    st.caption("List your ingredients on IntelliForm — get in front of every formulation run.")
+
+    from modules.supply_chain import (
+        register_supplier, validate_supplier_key,
+        get_listings_for_supplier, submit_listing,
+        delete_listing, get_demand_signals, SUPPORTED_CERTS,
+        score_supply_risk, get_best_pricing,
+    )
+
+    _supp_tabs = st.tabs(["📋 Register", "📦 Manage Listings", "📈 Demand Signals", "🔍 Market Pricing"])
+
+    # ── Register ──────────────────────────────────────────────────────────────
+    with _supp_tabs[0]:
+        st.markdown(
+            "Join the IntelliForm supplier network. Once registered, "
+            "ChemeNova will review your application and send your API key by email."
+        )
+        with st.form("supplier_register_form", clear_on_submit=True):
+            sr_name  = st.text_input("Company name *")
+            sr_email = st.text_input("Contact email *")
+            sr_country = st.text_input("Country *", placeholder="e.g. United States")
+            sr_certs = st.multiselect("Certifications", SUPPORTED_CERTS)
+            sr_desc  = st.text_area("Brief company / product description", height=80)
+            sr_sub   = st.form_submit_button("Apply to Join", type="primary", use_container_width=True)
+        if sr_sub:
+            if not sr_name or not sr_email or not sr_country:
+                st.error("Company name, email, and country are required.")
+            else:
+                try:
+                    profile = register_supplier(sr_name, sr_email, sr_country, sr_certs, sr_desc)
+                    st.success(
+                        f"Application submitted! Your supplier ID is **{profile.id}**. "
+                        "ChemeNova will email your API key once approved (usually within 1 business day)."
+                    )
+                except ValueError as _e:
+                    st.warning(str(_e))
+
+    # ── Manage Listings ───────────────────────────────────────────────────────
+    with _supp_tabs[1]:
+        st.markdown("Enter your **Supplier API key** (starts with `ifs_`) to manage your ingredient listings.")
+        _ifs_key = st.text_input("Supplier API key", type="password", key="ifs_key_input")
+        _sup_profile = validate_supplier_key(_ifs_key) if _ifs_key else None
+        if _ifs_key and not _sup_profile:
+            st.error("Invalid or inactive key.")
+        elif _sup_profile:
+            st.success(f"Authenticated as **{_sup_profile.name}** ({_sup_profile.country})")
+
+            # Add / update listing
+            with st.expander("➕ Add / Update Listing", expanded=True):
+                with st.form("listing_form"):
+                    lf_ing   = st.text_input("Ingredient name (must match IntelliForm DB)")
+                    lfc1, lfc2 = st.columns(2)
+                    lf_price = lfc1.number_input("Price (USD/kg)", min_value=0.01, value=5.0, step=0.01)
+                    lf_moq   = lfc2.number_input("MOQ (kg)", min_value=0.1, value=25.0, step=1.0)
+                    lfc3, lfc4 = st.columns(2)
+                    lf_lead  = lfc3.number_input("Lead time (days)", min_value=1, value=14, step=1)
+                    lf_avail = lfc4.selectbox("Availability", ["in_stock", "limited", "out_of_stock"])
+                    lf_certs = st.multiselect("Certifications", SUPPORTED_CERTS)
+                    lf_valid = st.text_input("Valid until (YYYY-MM-DD, optional)")
+                    lf_sub   = st.form_submit_button("Submit Listing", type="primary", use_container_width=True)
+                if lf_sub:
+                    if not lf_ing:
+                        st.error("Ingredient name is required.")
+                    else:
+                        try:
+                            lst = submit_listing(
+                                supplier_id=_sup_profile.id,
+                                ingredient_name=lf_ing,
+                                price_per_kg=lf_price,
+                                moq_kg=lf_moq,
+                                lead_time_days=int(lf_lead),
+                                availability=lf_avail,
+                                certifications=lf_certs,
+                                valid_until=lf_valid or None,
+                            )
+                            st.success(f"Listing saved for **{lst.ingredient_name}** at ${lst.price_per_kg}/kg.")
+                        except ValueError as _e:
+                            st.error(str(_e))
+
+            # Current listings table
+            _my_listings = get_listings_for_supplier(_sup_profile.id)
+            if not _my_listings:
+                st.info("No listings yet — add one above.")
+            else:
+                st.markdown(f"**Your listings ({len(_my_listings)})**")
+                _ldf = pd.DataFrame([{
+                    "Ingredient":    l.ingredient_name,
+                    "Price ($/kg)":  l.price_per_kg,
+                    "MOQ (kg)":      l.moq_kg,
+                    "Lead (days)":   l.lead_time_days,
+                    "Availability":  l.availability,
+                    "Certifications": ", ".join(l.certifications),
+                    "Valid Until":   l.valid_until or "—",
+                    "ID":            l.id,
+                } for l in _my_listings])
+                st.dataframe(_ldf.drop(columns=["ID"]), use_container_width=True, hide_index=True)
+
+                # Delete a listing
+                _del_id = st.selectbox(
+                    "Delete listing",
+                    options=["— select —"] + [f"{l.ingredient_name} ({l.id})" for l in _my_listings]
+                )
+                if _del_id != "— select —" and st.button("🗑 Delete selected listing", type="secondary"):
+                    _lid = _del_id.split("(")[-1].rstrip(")")
+                    if delete_listing(_sup_profile.id, _lid):
+                        st.success("Listing deleted.")
+                        st.rerun()
+
+    # ── Demand Signals ────────────────────────────────────────────────────────
+    with _supp_tabs[2]:
+        st.markdown("See which of your ingredients are in demand across IntelliForm formulations.")
+        _ifs_key2 = st.text_input("Supplier API key", type="password", key="ifs_key_demand")
+        _sup2 = validate_supplier_key(_ifs_key2) if _ifs_key2 else None
+        if _ifs_key2 and not _sup2:
+            st.error("Invalid or inactive key.")
+        elif _sup2:
+            _signals = get_demand_signals(_sup2.id)
+            if not _signals:
+                st.info("No listings yet — add some in the Manage Listings tab.")
+            else:
+                _sig_df = pd.DataFrame(_signals)
+                _sig_df.columns = [c.replace("_", " ").title() for c in _sig_df.columns]
+                st.dataframe(_sig_df, use_container_width=True, hide_index=True)
+                import plotly.express as px
+                fig_sig = px.bar(
+                    _sig_df.sort_values("Formulation Count", ascending=False),
+                    x="Ingredient", y="Formulation Count",
+                    color="Availability",
+                    color_discrete_map={"in_stock": "#0D9488", "limited": "#D97706", "out_of_stock": "#ef4444"},
+                    title="Ingredient Demand (formulation appearances)",
+                )
+                fig_sig.update_layout(paper_bgcolor="#050E1F", plot_bgcolor="#0a1628",
+                                      font_color="#f1f5f9", xaxis_tickangle=-30)
+                st.plotly_chart(fig_sig, use_container_width=True)
+
+    # ── Market Pricing ────────────────────────────────────────────────────────
+    with _supp_tabs[3]:
+        st.markdown("Compare real supplier pricing against the IntelliForm database for any blend.")
+        _mp_result = st.session_state.get("last_result")
+        if not _mp_result:
+            st.info("Run a formulation first to see market pricing for that blend.", icon="🔍")
+        else:
+            _mp_blend = _mp_result.blend
+            _mp_pricing = get_best_pricing(_mp_blend, ingredients_db)
+            _mp_risk = score_supply_risk(_mp_blend)
+
+            _risk_color = {"low": "#0D9488", "medium": "#D97706", "high": "#ef4444"}
+            _rc = _risk_color.get(_mp_risk.overall_risk, "#94a3b8")
+            st.markdown(
+                f'<div style="background:{_rc}22;border:1px solid {_rc};border-radius:8px;'
+                f'padding:12px 20px;margin-bottom:16px">'
+                f'<span style="color:{_rc};font-weight:600">Overall supply risk: '
+                f'{_mp_risk.overall_risk.upper()}</span> · '
+                f'{_mp_risk.uncovered_count}/{_mp_risk.total_ingredients} ingredients uncovered · '
+                f'{_mp_risk.single_sourced_count} single-sourced'
+                f'</div>', unsafe_allow_html=True
+            )
+
+            _pr_rows = []
+            for pr in _mp_pricing:
+                _ir = next((r for r in _mp_risk.ingredient_risks if r.ingredient == pr.ingredient), None)
+                _pr_rows.append({
+                    "Ingredient":    pr.ingredient,
+                    "% in Blend":    round(pr.pct, 1),
+                    "Best Price $/kg": f"${pr.best_price_per_kg:.2f}" if pr.best_price_per_kg else "—",
+                    "Supplier":      pr.best_supplier or "DB estimate",
+                    "Lead (days)":   pr.lead_time_days or "—",
+                    "MOQ (kg)":      pr.moq_kg or "—",
+                    "# Suppliers":   pr.n_suppliers,
+                    "Risk":          (_ir.risk_level if _ir else "—"),
+                    "Source":        pr.source.replace("_", " "),
+                })
+            st.dataframe(pd.DataFrame(_pr_rows), use_container_width=True, hide_index=True)
+
+            if _mp_risk.geo_concentration:
+                st.markdown("**Geographic concentration** (% of blend covered by each country)")
+                st.bar_chart(pd.Series(_mp_risk.geo_concentration))
+
+            if _mp_risk.weighted_lead_time:
+                st.metric("Weighted avg lead time", f"{_mp_risk.weighted_lead_time:.0f} days")
+
 
 # ── FOOTER ────────────────────────────────────────────────────────────────────
 st.markdown("""

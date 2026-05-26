@@ -17,6 +17,9 @@ from api.models import (
     ALFeedbackRequest, ALFeedbackBatchRequest,
     WebhookRegisterRequest, WebhookResponse,
     APIKeyCreateRequest, APIKeyResponse,
+    SupplierRegisterRequest, SupplierResponse,
+    SupplierListingRequest, SupplierListingResponse,
+    SupplyChainBlendRequest,
 )
 
 class RefineRequest(BaseModel):
@@ -651,6 +654,198 @@ async def admin_revoke_api_key(key_id: str, request: Request):
         return {"status": "revoked", "id": key_id}
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Supplier portal endpoints ─────────────────────────────────────────────────
+
+def _require_supplier_key(request: Request, supplier_id: Optional[str] = None):
+    """
+    Validate X-Supplier-Key header. If supplier_id is given, assert the key belongs to that supplier.
+    Returns the SupplierProfile on success.
+    """
+    from modules.supply_chain import validate_supplier_key
+    raw_key = request.headers.get("X-Supplier-Key", "")
+    if not raw_key:
+        raise HTTPException(status_code=401, detail="Missing X-Supplier-Key header.")
+    supplier = validate_supplier_key(raw_key)
+    if not supplier:
+        raise HTTPException(status_code=401, detail="Invalid or inactive supplier key.")
+    if supplier_id and supplier.id != supplier_id:
+        raise HTTPException(status_code=403, detail="Key does not belong to this supplier.")
+    return supplier
+
+
+def _supplier_to_response(s) -> SupplierResponse:
+    return SupplierResponse(
+        id=s.id, name=s.name, email=s.email, country=s.country,
+        certifications=s.certifications, status=s.status,
+        api_key_prefix=s.api_key_prefix, joined_at=s.joined_at,
+        description=s.description,
+    )
+
+
+@app.post("/api/v1/suppliers/register", response_model=SupplierResponse)
+async def supplier_register(req: SupplierRegisterRequest):
+    """Open endpoint — suppliers self-register (status=pending until admin approves)."""
+    try:
+        from modules.supply_chain import register_supplier
+        profile = register_supplier(
+            name=req.name, email=req.email, country=req.country,
+            certifications=req.certifications, description=req.description,
+        )
+        return _supplier_to_response(profile)
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/suppliers", response_model=list[SupplierResponse])
+async def supplier_list(request: Request, status: Optional[str] = None):
+    """Admin — list all suppliers, optionally filtered by status."""
+    _check_admin_key(request)
+    try:
+        from modules.supply_chain import list_suppliers
+        return [_supplier_to_response(s) for s in list_suppliers(status=status)]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/suppliers/{supplier_id}/approve")
+async def supplier_approve(supplier_id: str, request: Request):
+    """Admin — approve a pending supplier and return their one-time API key."""
+    _check_admin_key(request)
+    try:
+        from modules.supply_chain import approve_supplier
+        profile, raw_key = approve_supplier(supplier_id)
+        if not profile:
+            raise HTTPException(status_code=404, detail=f"Supplier '{supplier_id}' not found.")
+        return {
+            "raw_key": raw_key,  # shown once — supplier must save this
+            "supplier": _supplier_to_response(profile).model_dump(),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/suppliers/{supplier_id}/suspend")
+async def supplier_suspend(supplier_id: str, request: Request):
+    """Admin — suspend an active supplier."""
+    _check_admin_key(request)
+    try:
+        from modules.supply_chain import suspend_supplier
+        found = suspend_supplier(supplier_id)
+        if not found:
+            raise HTTPException(status_code=404, detail=f"Supplier '{supplier_id}' not found.")
+        return {"status": "suspended", "id": supplier_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/suppliers/{supplier_id}/listings", response_model=SupplierListingResponse)
+async def supplier_submit_listing(supplier_id: str, req: SupplierListingRequest, request: Request):
+    """Supplier — create or update a price listing for an ingredient."""
+    _require_supplier_key(request, supplier_id)
+    try:
+        from modules.supply_chain import submit_listing
+        listing = submit_listing(
+            supplier_id=supplier_id,
+            ingredient_name=req.ingredient_name,
+            price_per_kg=req.price_per_kg,
+            currency=req.currency,
+            moq_kg=req.moq_kg,
+            lead_time_days=req.lead_time_days,
+            availability=req.availability,
+            certifications=req.certifications or [],
+            valid_until=req.valid_until,
+        )
+        return SupplierListingResponse(**listing.__dict__)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/suppliers/{supplier_id}/listings", response_model=list[SupplierListingResponse])
+async def supplier_get_listings(supplier_id: str, request: Request):
+    """Supplier or admin — list all ingredient listings for this supplier."""
+    raw_key = request.headers.get("X-Supplier-Key", "")
+    if raw_key:
+        _require_supplier_key(request, supplier_id)
+    else:
+        _check_admin_key(request)
+    try:
+        from modules.supply_chain import get_listings_for_supplier
+        return [SupplierListingResponse(**l.__dict__) for l in get_listings_for_supplier(supplier_id)]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/v1/suppliers/{supplier_id}/listings/{listing_id}")
+async def supplier_delete_listing(supplier_id: str, listing_id: str, request: Request):
+    """Supplier — remove one of their listings."""
+    _require_supplier_key(request, supplier_id)
+    try:
+        from modules.supply_chain import delete_listing
+        found = delete_listing(supplier_id, listing_id)
+        if not found:
+            raise HTTPException(status_code=404, detail="Listing not found.")
+        return {"status": "deleted", "id": listing_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/suppliers/{supplier_id}/demand")
+async def supplier_demand_signals(supplier_id: str, request: Request):
+    """Supplier or admin — demand signal: how many formulations use each listed ingredient."""
+    raw_key = request.headers.get("X-Supplier-Key", "")
+    if raw_key:
+        _require_supplier_key(request, supplier_id)
+    else:
+        _check_admin_key(request)
+    try:
+        from modules.supply_chain import get_demand_signals
+        return {"supplier_id": supplier_id, "signals": get_demand_signals(supplier_id)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/supply-chain/pricing")
+async def supply_chain_pricing(req: SupplyChainBlendRequest):
+    """Return best-price supplier data for each ingredient in a blend."""
+    try:
+        import pandas as pd
+        from modules.supply_chain import get_best_pricing
+        db = pd.read_csv(DB_PATH)
+        results = get_best_pricing({str(k): float(v) for k, v in req.blend.items()}, db)
+        return {"pricing": [r.__dict__ for r in results]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/supply-chain/risk")
+async def supply_chain_risk(req: SupplyChainBlendRequest):
+    """Return supply-chain risk report for a blend."""
+    try:
+        from modules.supply_chain import score_supply_risk
+        report = score_supply_risk({str(k): float(v) for k, v in req.blend.items()})
+        return {
+            "overall_risk":         report.overall_risk,
+            "single_sourced_count": report.single_sourced_count,
+            "uncovered_count":      report.uncovered_count,
+            "geo_concentration":    report.geo_concentration,
+            "weighted_lead_time":   report.weighted_lead_time,
+            "total_ingredients":    report.total_ingredients,
+            "ingredient_risks": [r.__dict__ for r in report.ingredient_risks],
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
