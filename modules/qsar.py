@@ -1090,3 +1090,84 @@ def al_stats() -> dict:
         "ensemble_active": _GBR_ENSEMBLE_CACHE is not None,
         "last_retrain":    (_MODEL_CARD.al_last_retrain if _MODEL_CARD else ""),
     }
+
+
+def submit_feedback_batch(
+    records: List[dict],
+    db: pd.DataFrame,
+) -> dict:
+    """
+    Store multiple lab measurements and retrain once (not once per record).
+
+    Each record dict: {"smiles": str, "target": str, "actual_value": float}
+    Optional keys:    "batch_id": str
+
+    Returns a summary dict with keys: added, errors, total_feedback,
+    retrained, al_round.
+    """
+    global _GBR_CACHE, _GBR_ENSEMBLE_CACHE, _CONFORMAL_CACHE, _MODEL_CARD, _USED_MORDRED
+
+    valid    = {"Biodegradability", "Ecotoxicity", "Performance"}
+    existing = _load_feedback()
+    al_round = (_MODEL_CARD.active_learning_rounds + 1) if _MODEL_CARD else 1
+
+    added:  List[dict] = []
+    errors: List[dict] = []
+
+    for rec in records[:200]:  # cap batch size
+        smiles = str(rec.get("smiles", "")).strip()
+        target = str(rec.get("target", "")).strip()
+        try:
+            value = float(rec.get("actual_value", 0))
+        except (TypeError, ValueError):
+            errors.append({"smiles": smiles, "error": "actual_value must be numeric"})
+            continue
+
+        if not smiles:
+            errors.append({"smiles": smiles, "error": "smiles is required"})
+            continue
+        if target not in valid:
+            errors.append({"smiles": smiles, "error": f"Unknown target '{target}'"})
+            continue
+
+        existing.append(FeedbackRecord(
+            smiles=smiles,
+            target=target,
+            actual_value=value,
+            timestamp=pd.Timestamp.now().isoformat(),
+            al_round=al_round,
+        ))
+        added.append({"smiles": smiles[:40], "target": target, "actual_value": value})
+
+    if not added:
+        return {"added": 0, "errors": errors, "total_feedback": len(existing),
+                "retrained": False, "al_round": al_round}
+
+    _save_feedback(existing)
+
+    retrained = False
+    if SKLEARN_OK:
+        db_aug = _build_augmented_db(db, existing)
+        result = _train_gbr_models(db_aug)
+        if result:
+            _GBR_CACHE, _USED_MORDRED, _, _CONFORMAL_CACHE = result
+            if os.path.exists(GBR_CACHE_PATH):
+                os.remove(GBR_CACHE_PATH)
+        ens = _train_gbr_ensemble(db, existing)
+        if ens:
+            _GBR_ENSEMBLE_CACHE = ens
+        retrained = True
+
+    now = pd.Timestamp.now().isoformat()
+    if _MODEL_CARD:
+        _MODEL_CARD.active_learning_rounds += 1
+        _MODEL_CARD.al_feedback_count       = len(existing)
+        _MODEL_CARD.al_last_retrain         = now
+
+    return {
+        "added":          len(added),
+        "errors":         errors,
+        "total_feedback": len(existing),
+        "retrained":      retrained,
+        "al_round":       al_round,
+    }

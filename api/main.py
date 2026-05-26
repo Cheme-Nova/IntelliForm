@@ -13,7 +13,8 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from api.models import (
     FormulateRequest, ParetoRequest, BayesianRequest,
-    QSARRequest, ReformulateRequest, HealthResponse
+    QSARRequest, ReformulateRequest, HealthResponse,
+    ALFeedbackRequest, ALFeedbackBatchRequest,
 )
 
 class RefineRequest(BaseModel):
@@ -234,18 +235,134 @@ async def optimize_bayesian(req: BayesianRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# ── QSAR lazy-init state ─────────────────────────────────────────────────────
+_qsar_initialized = False
+_qsar_db = None
+
+def _ensure_qsar_initialized():
+    global _qsar_initialized, _qsar_db
+    if not _qsar_initialized:
+        import pandas as pd
+        from modules.qsar import initialize_models
+        _qsar_db = pd.read_csv(DB_PATH)
+        initialize_models(_qsar_db)
+        _qsar_initialized = True
+    return _qsar_db
+
+
+def _check_lims_key(request: Request):
+    """Verify X-Api-Key header against LIMS_API_KEY env var. Open if env var unset."""
+    required = os.getenv("LIMS_API_KEY", "")
+    if not required:
+        return
+    provided = request.headers.get("X-Api-Key", "")
+    if provided != required:
+        raise HTTPException(status_code=401, detail="Invalid or missing X-Api-Key header.")
+
+
 @app.post("/api/v1/predict/qsar")
 async def predict_qsar(req: QSARRequest):
     try:
-        import pandas as pd
-        from modules.qsar import predict_properties, initialize_models, _MODEL_CACHE
-        if _MODEL_CACHE is None:
-            db = pd.read_csv(DB_PATH)
-            initialize_models(db)
+        from modules.qsar import predict_properties
+        _ensure_qsar_initialized()
         predictions = [predict_properties(smiles) for smiles in req.smiles]
         return {
             "predictions": _serialize(predictions),
             "properties": req.properties,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Active Learning / LIMS endpoints ─────────────────────────────────────────
+
+@app.get("/api/v1/al/stats")
+async def al_stats_endpoint(request: Request):
+    """Return active learning model card stats (feedback count, rounds, conformal status)."""
+    _check_lims_key(request)
+    try:
+        from modules.qsar import al_stats
+        _ensure_qsar_initialized()
+        return al_stats()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/al/feedback")
+async def al_feedback_list(request: Request, limit: int = 100):
+    """Return the most recent lab feedback records (newest first)."""
+    _check_lims_key(request)
+    try:
+        from modules.qsar import get_feedback_records
+        _ensure_qsar_initialized()
+        records = get_feedback_records()
+        trimmed = records[-limit:][::-1]
+        return {"records": [r.__dict__ for r in trimmed], "total": len(records)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/al/experiment-queue")
+async def al_experiment_queue(request: Request, top_k: int = 10, vertical: str = "personal_care"):
+    """Return top-k high-uncertainty ingredient candidates for the next lab round."""
+    _check_lims_key(request)
+    try:
+        import pandas as pd
+        from modules.qsar import query_uncertain_candidates
+        from modules.verticals import filter_db_by_vertical
+        db = pd.read_csv(DB_PATH)
+        filtered = filter_db_by_vertical(db, _canonicalize_vertical(vertical))
+        _ensure_qsar_initialized()
+        queue_df = query_uncertain_candidates(filtered, top_k=top_k)
+        if queue_df is None or queue_df.empty:
+            return {"candidates": [], "note": "ensemble not trained — submit feedback first"}
+        return {
+            "candidates": queue_df.to_dict(orient="records"),
+            "vertical": vertical,
+            "top_k": top_k,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/al/feedback")
+async def al_submit_feedback(req: ALFeedbackRequest, request: Request):
+    """Submit a single lab result. Triggers immediate model retrain."""
+    _check_lims_key(request)
+    try:
+        import pandas as pd
+        from modules.qsar import submit_feedback
+        db = _ensure_qsar_initialized()
+        result = submit_feedback(
+            smiles=req.smiles,
+            target=req.target,
+            actual_value=req.actual_value,
+            db=db,
+        )
+        return {
+            "status": "ok",
+            "al_round": result.get("al_round"),
+            "total_feedback": result.get("total_feedback"),
+            "retrained": result.get("retrained", False),
+            "source_system": req.source_system,
+            "batch_id": req.batch_id,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/al/feedback/batch")
+async def al_submit_feedback_batch(req: ALFeedbackBatchRequest, request: Request):
+    """Submit up to 200 lab results in one call. Single retrain after all records are stored."""
+    _check_lims_key(request)
+    try:
+        from modules.qsar import submit_feedback_batch
+        db = _ensure_qsar_initialized()
+        records = [r.model_dump() for r in req.records]
+        result = submit_feedback_batch(records, db)
+        return {
+            **result,
+            "source_system": req.source_system,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
