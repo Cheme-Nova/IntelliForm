@@ -962,6 +962,93 @@ with t_reg:
         if reg.red_flags:
             for f in reg.red_flags: st.error(f)
 
+    # ── GHS SDS Generator ─────────────────────────────────────────────────────
+    st.divider()
+    st.subheader("📄 GHS Safety Data Sheet (16-Section)")
+    _sds_result = st.session_state.get("last_result")
+    if _sds_result is None or not getattr(_sds_result, "success", False):
+        st.info("Formulate a blend to generate a GHS-compliant SDS.", icon="📄")
+    else:
+        _sds_cols = st.columns([3, 1, 1])
+        with _sds_cols[0]:
+            _sds_product_name = st.text_input(
+                "Product name for SDS",
+                value=f"ChemeNova {selected_vertical.replace('_', ' ').title()} Formulation",
+                key="sds_product_name",
+            )
+        with _sds_cols[1]:
+            _sds_version = st.text_input("Version", value="1.0", key="sds_version")
+        with _sds_cols[2]:
+            st.markdown("<br>", unsafe_allow_html=True)
+            _gen_sds = st.button("⚗ Generate SDS", type="primary", use_container_width=True)
+
+        if _gen_sds:
+            with st.spinner("Assembling 16-section GHS SDS…"):
+                try:
+                    from modules.sds_generator import generate_sds, sds_to_pdf, sds_to_json
+                    from modules.stability import predict_stability
+
+                    _stab = predict_stability(_sds_result.blend, ingredients_db)
+                    _sds_doc = generate_sds(
+                        blend=_sds_result.blend,
+                        db=ingredients_db,
+                        product_name=_sds_product_name,
+                        vertical=selected_vertical,
+                        reg_report=st.session_state.get("last_reg"),
+                        qsar_bio_pct=_sds_result.bio_pct,
+                        qsar_etox=getattr(_sds_result, "eco_score", 5.0) or 5.0,
+                        viscosity_est=getattr(_stab, "viscosity_cp", None),
+                        version=_sds_version,
+                    )
+                    st.session_state["last_sds"] = _sds_doc
+
+                    # Summary banner
+                    _sw = _sds_doc.signal_word
+                    _sw_fn = st.success if _sw == "No signal word" else (st.warning if _sw == "Warning" else st.error)
+                    _sw_fn(
+                        f"Signal word: **{_sw}** · "
+                        f"{len(_sds_doc.all_ghs_codes)} GHS code(s): {', '.join(_sds_doc.all_ghs_codes) or 'None'} · "
+                        f"{len(_sds_doc.pictograms)} pictogram(s)"
+                    )
+
+                    _pdf_bytes = sds_to_pdf(_sds_doc)
+                    _json_str  = sds_to_json(_sds_doc)
+
+                    _dl1, _dl2 = st.columns(2)
+                    with _dl1:
+                        st.download_button(
+                            "📥 Download SDS (PDF)",
+                            data=_pdf_bytes,
+                            file_name=f"SDS_{_sds_product_name[:30].replace(' ','_')}_{datetime.now().strftime('%Y%m%d')}.pdf",
+                            mime="application/pdf",
+                            use_container_width=True,
+                        )
+                    with _dl2:
+                        st.download_button(
+                            "📥 Download SDS (JSON)",
+                            data=_json_str,
+                            file_name=f"SDS_{_sds_product_name[:30].replace(' ','_')}_{datetime.now().strftime('%Y%m%d')}.json",
+                            mime="application/json",
+                            use_container_width=True,
+                        )
+
+                    # Composition preview
+                    with st.expander("📋 Section 3 — Composition"):
+                        _comp_rows = [{
+                            "Ingredient": i.name,
+                            "CAS":        i.cas,
+                            "INCI":       i.inci,
+                            "Wt%":        i.wt_pct,
+                            "REACH":      i.reach_status,
+                            "GHS codes":  ", ".join(i.ghs_codes) or "—",
+                            "SVHC":       "⚠ Yes" if i.svhc else "—",
+                            "CMR":        i.cmr or "—",
+                        } for i in _sds_doc.s3_composition]
+                        st.dataframe(pd.DataFrame(_comp_rows), use_container_width=True, hide_index=True)
+
+                except Exception as _sds_err:
+                    st.error(f"SDS generation failed: {_sds_err}")
+
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 5 — PARETO FRONTIER
 # ─────────────────────────────────────────────────────────────────────────────

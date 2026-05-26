@@ -448,6 +448,13 @@ class CarbonPassportRequest(BaseModel):
     batch_kg: float = 500.0
     product_name: str = "IntelliForm Formulation"
 
+class SDSRequest(BaseModel):
+    blend: Dict[str, Any]
+    product_name: str = "IntelliForm Specialty Formulation"
+    vertical: str = "personal_care"
+    version: str = "1.0"
+    format: str = "pdf"   # "pdf" | "json"
+
 @app.post("/api/v1/pharma/deep-dive")
 async def pharma_deep_dive(req: PharmaRequest):
     """Run ICH/BCS pharmaceutical deep-dive analysis on a blend."""
@@ -494,6 +501,33 @@ async def pubchem_enrich(req: PubChemRequest):
             return {}
         blend = {n: 0 for n in req.names[:30]}  # cap at 30 names
         return enrich_blend(blend)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/export/sds")
+async def export_sds(req: SDSRequest):
+    """Generate a GHS 16-section Safety Data Sheet for a formulation blend."""
+    try:
+        import pandas as pd
+        from modules.sds_generator import generate_sds, sds_to_pdf, sds_to_json
+        from fastapi.responses import Response
+        db = pd.read_csv(DB_PATH)
+        sds = generate_sds(
+            blend=req.blend,
+            db=db,
+            product_name=req.product_name,
+            vertical=req.vertical,
+            version=req.version,
+        )
+        if req.format == "json":
+            return {"sds": sds_to_json(sds)}
+        pdf_bytes = sds_to_pdf(sds)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="SDS_{req.product_name[:30]}.pdf"'},
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
