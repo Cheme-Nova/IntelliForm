@@ -10,7 +10,7 @@ Unlike IntelliForm's own QSAR models, OPERA predictions are:
   - Cited in EPA and ECHA regulatory submissions
   - Peer-reviewed (Mansouri et al., J Cheminformatics 2018)
 
-API base: https://api-ccte.epa.gov
+API base: https://comptox.epa.gov/ctx-api
 Free key: search "EPA CCTE API key" on epa.gov to register
 Env var:  COMPTOX_API_KEY  (optional — graceful fallback without it)
 
@@ -45,7 +45,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 # ── Config ─────────────────────────────────────────────────────────────────────
-_BASE_URL   = "https://api-ccte.epa.gov"
+_BASE_URL   = "https://comptox.epa.gov/ctx-api"
 _CACHE_PATH = "/tmp/comptox_cache.json"
 _CACHE_TTL  = 7 * 24 * 3600   # 7 days in seconds
 _TIMEOUT    = 8                # per-request timeout seconds
@@ -154,25 +154,31 @@ def _headers() -> dict:
 
 
 def _search_chemical_by_name(name: str) -> Optional[dict]:
-    """Search CompTox for a chemical by name. Returns first match dict or None."""
-    url = f"{_BASE_URL}/chemical/search/by-name/{requests.utils.quote(name)}"
-    try:
-        resp = requests.get(url, headers=_headers(), timeout=_TIMEOUT)
-        if resp.status_code == 200:
-            data = resp.json()
-            # API returns a list; take the first exact or best match
-            if isinstance(data, list) and data:
-                return data[0]
-            if isinstance(data, dict) and data.get("dtxsid"):
-                return data
-    except Exception as exc:
-        logger.debug(f"[comptox] name search failed for {name!r}: {exc}")
+    """Search CompTox for a chemical by name. Returns first match dict or None.
+    Tries exact name first, then strips qualifiers like '(bio)', then falls back
+    to a contains search.
+    """
+    for candidate in dict.fromkeys([name, _clean_name(name)]):  # dedup while preserving order
+        for endpoint in ("equal", "contains"):
+            url = f"{_BASE_URL}/chemical/search/{endpoint}/{requests.utils.quote(candidate)}"
+            try:
+                resp = requests.get(url, headers=_headers(), timeout=_TIMEOUT)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if isinstance(data, list) and data:
+                        return data[0]
+                    if isinstance(data, dict) and data.get("dtxsid"):
+                        return data
+            except Exception as exc:
+                logger.debug(f"[comptox] search/{endpoint} failed for {candidate!r}: {exc}")
+            if endpoint == "equal":
+                time.sleep(0.1)  # small pause between equal and contains
     return None
 
 
 def _get_chemical_detail(dtxsid: str) -> Optional[dict]:
     """Fetch full chemical detail including OPERA predictions by DTXSID."""
-    url = f"{_BASE_URL}/chemical/detail/by-dtxsid/{dtxsid}"
+    url = f"{_BASE_URL}/chemical/detail/search/by-dtxsid/{dtxsid}"
     try:
         resp = requests.get(url, headers=_headers(), timeout=_TIMEOUT)
         if resp.status_code == 200:
@@ -180,6 +186,12 @@ def _get_chemical_detail(dtxsid: str) -> Optional[dict]:
     except Exception as exc:
         logger.debug(f"[comptox] detail fetch failed for {dtxsid}: {exc}")
     return None
+
+
+def _clean_name(name: str) -> str:
+    """Strip supplier qualifiers like '(bio)', '(NF)', '(USP)' for API lookup."""
+    import re
+    return re.sub(r"\s*\([^)]*\)", "", name).strip()
 
 
 def _batch_search_names(names: List[str]) -> Dict[str, dict]:
