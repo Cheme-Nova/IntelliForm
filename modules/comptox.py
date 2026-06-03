@@ -451,13 +451,47 @@ def screen_blend(blend: dict, vertical: Optional[str] = None) -> BlendCompToxRep
     # Process in batches to respect rate limits
     for i in range(0, len(names), _BATCH_SIZE):
         batch = names[i: i + _BATCH_SIZE]
-        # Try batch first (more efficient)
-        batch_hit = _batch_search_names(batch)
+        # Batch search seeds the mem cache so subsequent lookup_ingredient calls are cache hits
+        batch_hits = _batch_search_names(batch)
+        now = time.time()
+        for name, hit in batch_hits.items():
+            if name not in _MEM_CACHE:
+                dtxsid = hit.get("dtxsid") or hit.get("dtxSid") or hit.get("id")
+                detail = (_get_chemical_detail(dtxsid) or {}) if dtxsid else {}
+                combined = {**hit, **detail}
+                opera = _parse_opera(combined)
+                ready_raw  = opera.get("ready_biodegradable")
+                ready_bool = _safe_bool(ready_raw)
+                biodeg_prob = _safe_float(
+                    combined.get("readyBiodegProb") or
+                    combined.get("biodegradabilityProbability") or
+                    (1.0 if ready_bool is True else (0.0 if ready_bool is False else None))
+                )
+                r = CompToxResult(
+                    name=name,
+                    dtxsid=dtxsid,
+                    cas=combined.get("casrn") or combined.get("cas"),
+                    smiles=combined.get("smiles") or combined.get("qsarSmiles"),
+                    preferred_name=combined.get("preferredName") or combined.get("iupacName") or name,
+                    ready_biodegradable=ready_bool,
+                    biodeg_probability=biodeg_prob,
+                    log_bcf=_safe_float(opera.get("log_bcf")),
+                    log_kow=_safe_float(opera.get("log_kow")),
+                    water_solubility_mg_l=_safe_float(opera.get("water_solubility_mg_l")),
+                    log_koc=_safe_float(opera.get("log_koc")),
+                    atm_half_life_h=_safe_float(opera.get("atm_half_life_h")),
+                    vapor_pressure_mmhg=_safe_float(opera.get("vapor_pressure_mmhg")),
+                    fish_lc50_log_mmol_l=_safe_float(opera.get("fish_lc50")),
+                    daphnia_ec50_log_mmol_l=_safe_float(opera.get("daphnia_ec50")),
+                    svhc_candidate=_check_svhc(combined),
+                    cmr_category=_check_cmr(combined),
+                    ghs_hazard_codes=_extract_ghs_codes(combined),
+                    reach_restricted=bool(combined.get("reachRestricted") or combined.get("reach_restricted")),
+                )
+                _MEM_CACHE[name] = (now, r)
         for name in batch:
-            if name in results:
-                continue
-            r = lookup_ingredient(name)
-            results[name] = r
+            if name not in results:
+                results[name] = lookup_ingredient(name)
 
     # Aggregate metrics (weighted by blend %)
     total_pct = sum(blend.values()) or 100.0

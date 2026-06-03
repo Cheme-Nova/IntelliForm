@@ -302,6 +302,7 @@ from modules.pdf_proposal      import generate_proposal_pdf
 from modules.stability         import (predict_stability, initialize_stability_models,
                                         submit_stability_feedback, stability_model_card)
 from modules.notifications     import send_pilot_booking_confirmation
+from modules.comptox           import screen_blend
 from modules.persistence       import (save_project, load_projects, save_booking,
                                         save_feedback as db_save_feedback,
                                         is_connected, MIGRATION_SQL,
@@ -687,6 +688,7 @@ with t_form:
         stability= predict_stability(result.blend, ingredients_db)
         carbon   = calculate_carbon_credits(result.blend, ingredients_db, batch_kg=batch_size)
         cert     = run_certification_oracle(result.blend, v_db, selected_vertical, result.bio_pct)
+        ctx      = screen_blend(result.blend, selected_vertical)
 
         # Store all
         st.session_state.last_eco      = eco
@@ -695,6 +697,7 @@ with t_form:
         st.session_state.last_stability= stability
         st.session_state.last_carbon   = carbon
         st.session_state.last_cert     = cert
+        st.session_state.last_ctx      = ctx
 
         # Memory network
         try:
@@ -976,6 +979,51 @@ with t_reg:
             for f in reg.amber_flags: st.warning(f)
         if reg.red_flags:
             for f in reg.red_flags: st.error(f)
+
+        # ── EPA CompTox OPERA Screening ───────────────────────────────────────
+        st.divider()
+        st.subheader("🧪 EPA CompTox OPERA Screening")
+        _ctx = st.session_state.get("last_ctx")
+        if _ctx and _ctx.coverage == 0 and not _ctx.ingredients:
+            st.info(_ctx.regulatory_citation, icon="🔑")
+        elif _ctx and _ctx.coverage > 0:
+            _cc1, _cc2, _cc3, _cc4 = st.columns(4)
+            _cc1.metric("Coverage", f"{_ctx.coverage}%")
+            _cc2.metric("Ready Biodeg.", f"{_ctx.ready_biodeg_fraction:.0f}%" if _ctx.ready_biodeg_fraction is not None else "—")
+            _cc3.metric("Avg log BCF", f"{_ctx.avg_log_bcf:.2f}" if _ctx.avg_log_bcf is not None else "—")
+            _cc4.metric("Avg log Kow", f"{_ctx.avg_log_kow:.2f}" if _ctx.avg_log_kow is not None else "—")
+
+            if _ctx.svhc_flags:
+                st.error(f"⚠️ SVHC candidates: {', '.join(_ctx.svhc_flags)}")
+            if _ctx.cmr_flags:
+                st.error(f"🚫 CMR classified: {', '.join(_ctx.cmr_flags)}")
+            if _ctx.reach_restricted_flags:
+                st.warning(f"📋 REACH restricted: {', '.join(_ctx.reach_restricted_flags)}")
+            if not _ctx.svhc_flags and not _ctx.cmr_flags and not _ctx.reach_restricted_flags:
+                st.success("✅ No SVHC, CMR, or REACH restriction flags detected.")
+
+            with st.expander("📊 Per-ingredient OPERA predictions"):
+                import pandas as _pd_ctx
+                _ctx_rows = []
+                for _ing, _r in _ctx.ingredients.items():
+                    if _r.error:
+                        continue
+                    _ctx_rows.append({
+                        "Ingredient":        _ing,
+                        "DTXSID":            _r.dtxsid or "—",
+                        "Ready Biodeg.":     ("✅" if _r.ready_biodegradable else "❌") if _r.ready_biodegradable is not None else "—",
+                        "Biodeg. Prob.":     f"{_r.biodeg_probability:.2f}" if _r.biodeg_probability is not None else "—",
+                        "log BCF":           f"{_r.log_bcf:.2f}" if _r.log_bcf is not None else "—",
+                        "log Kow":           f"{_r.log_kow:.2f}" if _r.log_kow is not None else "—",
+                        "Fish LC50 (log)":   f"{_r.fish_lc50_log_mmol_l:.2f}" if _r.fish_lc50_log_mmol_l is not None else "—",
+                        "Daphnia EC50 (log)":f"{_r.daphnia_ec50_log_mmol_l:.2f}" if _r.daphnia_ec50_log_mmol_l is not None else "—",
+                        "SVHC":              "⚠️ Yes" if _r.svhc_candidate else "✅ No",
+                        "CMR":               _r.cmr_category or "—",
+                        "GHS Codes":         ", ".join(_r.ghs_hazard_codes) if _r.ghs_hazard_codes else "—",
+                    })
+                if _ctx_rows:
+                    st.dataframe(_pd_ctx.DataFrame(_ctx_rows), use_container_width=True, hide_index=True)
+            st.caption(_ctx.regulatory_citation)
 
     # ── GHS SDS Generator ─────────────────────────────────────────────────────
     st.divider()
