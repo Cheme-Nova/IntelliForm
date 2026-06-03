@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 _BASE_URL   = "https://comptox.epa.gov/ctx-api"
-_CACHE_PATH = "/tmp/comptox_cache.json"
+_CACHE_PATH = "/tmp/comptox_cache_v2.json"
 _CACHE_TTL  = 7 * 24 * 3600   # 7 days in seconds
 _TIMEOUT    = 8                # per-request timeout seconds
 _BATCH_SIZE = 10               # max names per batch request
