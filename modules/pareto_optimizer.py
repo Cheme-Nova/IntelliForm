@@ -323,9 +323,20 @@ def run_pareto_optimization(
 ) -> ParetoResult:
     """
     Run multi-objective Pareto optimization.
-    Uses weighted-sum enumeration via PuLP — reliable on all environments.
-    NSGA-III skipped due to memory/timeout constraints on cloud deployments.
+
+    Tries NSGA-III (pymoo) first for a true Pareto frontier. Falls back to
+    weighted-sum enumeration via PuLP if pymoo is unavailable, errors, or
+    finds no feasible solutions.
     """
+    try:
+        nsga3_result = _run_nsga3(db, max_cost, min_bio, min_perf,
+                                   n_gen=n_gen, pop_size=pop_size)
+    except Exception:
+        nsga3_result = None
+
+    if nsga3_result is not None and nsga3_result.success and nsga3_result.frontier:
+        return nsga3_result
+
     return _run_weighted_sum(db, max_cost, min_bio, min_perf)
 
 
