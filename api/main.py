@@ -42,6 +42,20 @@ from modules.verticals import filter_db_by_vertical
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ingredients_db.csv")
 _EXTRA_ORIGINS = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "").split(",") if origin.strip()]
 
+
+def _state_from_dict(state_cls, data):
+    """Reconstruct a BayesianState/MOBOState from a JSON dict round-tripped through
+    the API. Unknown/non-serializable fields (e.g. fitted gp_model/scaler_X) are
+    dropped — those are write-only and get refit on each call."""
+    if data is None:
+        return None
+    if isinstance(data, state_cls):
+        return data
+    import dataclasses
+    field_names = {f.name for f in dataclasses.fields(state_cls)}
+    kwargs = {k: v for k, v in data.items() if k in field_names and not k.endswith("_model") and k != "scaler_X"}
+    return state_cls(**kwargs)
+
 app = FastAPI(title="IntelliForm API", version="2.1.0")
 
 app.add_middleware(
@@ -214,7 +228,7 @@ async def optimize_pareto(req: ParetoRequest):
 @app.post("/api/v1/optimize/bayesian")
 async def optimize_bayesian(req: BayesianRequest):
     try:
-        from modules.bayesian_optimizer import run_bayesian_optimization
+        from modules.bayesian_optimizer import run_bayesian_optimization, BayesianState
         import pandas as pd
         db = pd.read_csv(DB_PATH)
         vertical = _canonicalize_vertical(req.vertical)
@@ -229,10 +243,12 @@ async def optimize_bayesian(req: BayesianRequest):
             max_cost,
             min_bio,
             min_perf,
-            state=req.state,
+            state=_state_from_dict(BayesianState, req.state),
             n_random_init=max(5, req.n_iterations),
             vertical=vertical,
         )
+        state.gp_model = None
+        state.scaler_X = None
         return {
             "result": _serialize(result),
             "state": _serialize(state),
@@ -243,7 +259,7 @@ async def optimize_bayesian(req: BayesianRequest):
 @app.post("/api/v1/optimize/mobo")
 async def optimize_mobo(req: MOBORequest):
     try:
-        from modules.mobo_optimizer import run_mobo_optimization
+        from modules.mobo_optimizer import run_mobo_optimization, MOBOState
         import pandas as pd
         db = pd.read_csv(DB_PATH)
         vertical = _canonicalize_vertical(req.vertical)
@@ -258,7 +274,7 @@ async def optimize_mobo(req: MOBORequest):
             max_cost,
             min_bio,
             min_perf,
-            state=req.state,
+            state=_state_from_dict(MOBOState, req.state),
             n_random_init=max(5, req.n_iterations),
             vertical=vertical,
         )
