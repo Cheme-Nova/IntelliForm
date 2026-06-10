@@ -133,13 +133,25 @@ def _run_nsga3(
     solutions = []
     for i, x in enumerate(res.X):
         x_norm = x / (x.sum() + 1e-12)
+
+        # Keep the dominant ingredients (>0.5%); with large ingredient pools (n > ~100)
+        # NSGA-III spreads mass thinly enough that a 1% cutoff can strip every
+        # component, leaving an empty/unmanufacturable blend. Fall back to the
+        # top contributors if the cutoff removes everything, then renormalize so
+        # the reported blend sums to 100% and cost/bio/perf stay consistent with it.
+        kept = [j for j in range(n) if x_norm[j] > 0.005]
+        if not kept:
+            kept = list(np.argsort(x_norm)[::-1][:8])
+
+        kept_sum = float(x_norm[kept].sum())
         blend = {
-            names[j]: round(float(x_norm[j]) * 100, 1)
-            for j in range(n) if x_norm[j] > 0.01
+            names[j]: round(float(x_norm[j]) / kept_sum * 100, 1)
+            for j in kept
         }
-        c = float(x_norm @ costs)
-        b = float(x_norm @ bios)
-        p = float(x_norm @ perfs)
+        renorm = x_norm[kept] / kept_sum
+        c = float(renorm @ costs[kept])
+        b = float(renorm @ bios[kept])
+        p = float(renorm @ perfs[kept])
         solutions.append(ParetoSolution(
             blend=blend,
             cost_per_kg=round(c, 2),
