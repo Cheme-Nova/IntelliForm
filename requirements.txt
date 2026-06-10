@@ -43,6 +43,14 @@ lightning>=2.0.0
 gauche>=0.1.2
 gpytorch>=1.11.0
 
+# Optimization — multi-objective Bayesian optimization (optional)
+# BoTorch qNEHVI: current standard for expensive, noisy, multi-objective BO.
+# Used by modules/mobo_optimizer.py for the 4-objective (cost, bio%, perf,
+# EcoScore) optimization mode. MIT licence. Builds on gpytorch/torch
+# (already pulled in by chemprop/gauche) — near-zero added cost.
+# Reference: Daulton et al., "qNEHVI", NeurIPS 2021.
+botorch>=0.10.0
+
 # Memory — temporal knowledge graph (optional)
 # Graphiti bi-temporal KG: every event stored as a time-stamped graph node.
 # Enables querying "what negative rules were active in November 2024?"

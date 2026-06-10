@@ -19,6 +19,12 @@ class BayesianRequest(BaseModel):
     n_iterations: int = 5
     state: Optional[Dict[str, Any]] = None
 
+class MOBORequest(BaseModel):
+    vertical: str
+    constraints: Optional[Dict[str, Any]] = {}
+    n_iterations: int = 5
+    state: Optional[Dict[str, Any]] = None
+
 class QSARRequest(BaseModel):
     smiles: List[str]
     properties: Optional[List[str]] = ["biodegradability", "ecotox", "performance"]

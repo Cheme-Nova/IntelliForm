@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from api.models import (
-    FormulateRequest, ParetoRequest, BayesianRequest,
+    FormulateRequest, ParetoRequest, BayesianRequest, MOBORequest,
     QSARRequest, ReformulateRequest, HealthResponse,
     ALFeedbackRequest, ALFeedbackBatchRequest,
     WebhookRegisterRequest, WebhookResponse,
@@ -225,6 +225,35 @@ async def optimize_bayesian(req: BayesianRequest):
             vertical,
         )
         result, state = run_bayesian_optimization(
+            filtered_db,
+            max_cost,
+            min_bio,
+            min_perf,
+            state=req.state,
+            n_random_init=max(5, req.n_iterations),
+            vertical=vertical,
+        )
+        return {
+            "result": _serialize(result),
+            "state": _serialize(state),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/optimize/mobo")
+async def optimize_mobo(req: MOBORequest):
+    try:
+        from modules.mobo_optimizer import run_mobo_optimization
+        import pandas as pd
+        db = pd.read_csv(DB_PATH)
+        vertical = _canonicalize_vertical(req.vertical)
+        filtered_db = filter_db_by_vertical(db, vertical)
+        max_cost, min_bio, min_perf = _merge_constraints(
+            type("Parsed", (), {"max_cost": 999.0, "min_bio": 0.0, "min_perf": 0.0})(),
+            req.constraints,
+            vertical,
+        )
+        result, state = run_mobo_optimization(
             filtered_db,
             max_cost,
             min_bio,

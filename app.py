@@ -282,6 +282,7 @@ from modules.llm_parser        import parse_request
 from modules.optimizer         import run_optimization
 from modules.pareto_optimizer  import run_pareto_optimization, pareto_frontier_dataframe
 from modules.bayesian_optimizer import run_bayesian_optimization, BAYES_OK
+from modules.mobo_optimizer    import run_mobo_optimization, MOBO_OK
 from modules.agents            import run_agent_swarm
 from modules.chem_utils        import draw_mol, enrich_db
 from modules.ecometrics        import compute_ecometrics, ecometrics_radar_data
@@ -364,6 +365,7 @@ def _init_state():
         "last_refo":        None,
         "pharma_result":    None,
         "bayes_state":      None,
+        "mobo_state":       None,
         "model_card":       None,
         "memory_net":       None,
         "projects":         [],
@@ -525,6 +527,8 @@ with _ctrl_cols[2]:
     _opt_options = ["LP (fast)", "Pareto"]
     if BAYES_OK:
         _opt_options.append("Bayesian")
+    if MOBO_OK:
+        _opt_options.append("MOBO")
     _opt_mode = st.radio(
         "⚙️ Optimizer",
         _opt_options,
@@ -533,6 +537,8 @@ with _ctrl_cols[2]:
     )
     if not BAYES_OK:
         st.caption("⚠ Bayesian unavailable — install scikit-optimize")
+    if not MOBO_OK:
+        st.caption("⚠ MOBO unavailable — install botorch")
 
 vprofile = get_profile(selected_vertical)
 if vprofile:
@@ -654,6 +660,24 @@ with t_form:
                                status="Optimal")
             st.info(f"🧪 Bayesian iter {bayes_result.n_observations} · "
                     f"EI={bayes_result.expected_improvement:.4f} · σ={bayes_result.uncertainty:.4f}")
+        elif _opt_mode == "MOBO":
+            with st.spinner("🎯 Multi-objective Bayesian optimization (qNEHVI)…"):
+                mobo_result, new_mobo_state = run_mobo_optimization(
+                    v_db, max_cost=v_cost, min_bio=v_bio, min_perf=v_perf,
+                    state=st.session_state.mobo_state,
+                    max_conc=max_conc/100, vertical=selected_vertical)
+            st.session_state.mobo_state = new_mobo_state
+            if not mobo_result.success:
+                st.error(mobo_result.error_msg)
+                st.stop()
+            from modules.optimizer import OptResult
+            result = OptResult(success=True, blend=mobo_result.blend,
+                               cost_per_kg=mobo_result.cost_per_kg,
+                               bio_pct=mobo_result.bio_pct, perf_score=mobo_result.perf_score,
+                               status="Optimal")
+            st.info(f"🎯 MOBO iter {mobo_result.n_observations} · "
+                    f"{mobo_result.acquisition_function} · "
+                    f"EcoScore={mobo_result.eco_score:.1f} · HV={mobo_result.hypervolume:.2f}")
         else:
             with st.spinner("⚗ LP optimization…"):
                 result = run_optimization(

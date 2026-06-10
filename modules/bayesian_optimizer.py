@@ -259,6 +259,60 @@ def _fit_sklearn_gp(X: np.ndarray, y: np.ndarray) -> Tuple[object, object]:
     return gp, scaler
 
 
+# ── Constraint-feasible candidate sampling ────────────────────────────────────
+
+def sample_feasible_candidates(
+    db: pd.DataFrame,
+    idx: pd.DataFrame,
+    names: List[str],
+    max_cost: float,
+    min_bio: float,
+    min_perf: float,
+    max_conc: float,
+    n: int,
+    cost_relax: float = 1.0,
+    bio_relax: float = 1.0,
+    perf_relax: float = 1.0,
+) -> List[Tuple[Dict[str, float], float, float, float]]:
+    """Sample n random blends, keeping those that satisfy (relaxed) constraints."""
+    out = []
+    for _ in range(n):
+        n_ings   = np.random.randint(2, min(8, len(names) + 1))
+        selected = np.random.choice(names, n_ings, replace=False)
+        weights  = np.random.dirichlet(np.ones(n_ings))
+        weights  = np.minimum(weights, max_conc)
+        weights /= weights.sum()
+        blend    = {ing: round(w * 100, 1) for ing, w in zip(selected, weights)}
+        cost = sum(float(idx.loc[i, "Cost_USD_kg"]) * p / 100
+                   for i, p in blend.items() if i in idx.index)
+        bio  = sum(float(idx.loc[i, "Bio_based_pct"]) * p / 100
+                   for i, p in blend.items() if i in idx.index)
+        perf = sum(float(idx.loc[i, "Performance_Score"]) * p / 100
+                   for i, p in blend.items() if i in idx.index)
+        if (cost <= max_cost * cost_relax and
+                bio  >= min_bio  * bio_relax and
+                perf >= min_perf * perf_relax):
+            out.append((blend, cost, bio, perf))
+    return out
+
+
+def sample_feasible_candidates_with_relaxation(
+    db: pd.DataFrame, idx: pd.DataFrame, names: List[str],
+    max_cost: float, min_bio: float, min_perf: float,
+    max_conc: float, n: int,
+) -> List[Tuple[Dict[str, float], float, float, float]]:
+    """sample_feasible_candidates, progressively relaxing constraints if empty."""
+    candidates = sample_feasible_candidates(db, idx, names, max_cost, min_bio,
+                                             min_perf, max_conc, n)
+    if not candidates:
+        for relax in [(1.1, 0.9, 0.9), (1.2, 0.8, 0.8), (1.4, 0.7, 0.7)]:
+            candidates = sample_feasible_candidates(
+                db, idx, names, max_cost, min_bio, min_perf, max_conc, n, *relax)
+            if candidates:
+                break
+    return candidates
+
+
 # ── Acquisition functions ─────────────────────────────────────────────────────
 
 def _ei(mu: np.ndarray, sigma: np.ndarray, y_best: float,
@@ -328,34 +382,8 @@ def run_bayesian_optimization(
                     if c in db.columns]
 
     # ── Generate constraint-feasible candidates ───────────────────────────────
-    def _sample_candidates(n: int, cost_relax: float = 1.0,
-                           bio_relax: float = 1.0, perf_relax: float = 1.0):
-        out = []
-        for _ in range(n):
-            n_ings   = np.random.randint(2, min(8, len(names) + 1))
-            selected = np.random.choice(names, n_ings, replace=False)
-            weights  = np.random.dirichlet(np.ones(n_ings))
-            weights  = np.minimum(weights, max_conc)
-            weights /= weights.sum()
-            blend    = {ing: round(w * 100, 1) for ing, w in zip(selected, weights)}
-            cost = sum(float(idx.loc[i, "Cost_USD_kg"]) * p / 100
-                       for i, p in blend.items() if i in idx.index)
-            bio  = sum(float(idx.loc[i, "Bio_based_pct"]) * p / 100
-                       for i, p in blend.items() if i in idx.index)
-            perf = sum(float(idx.loc[i, "Performance_Score"]) * p / 100
-                       for i, p in blend.items() if i in idx.index)
-            if (cost <= max_cost * cost_relax and
-                    bio  >= min_bio  * bio_relax and
-                    perf >= min_perf * perf_relax):
-                out.append((blend, cost, bio, perf))
-        return out
-
-    candidates = _sample_candidates(n_candidates)
-    if not candidates:
-        for relax in [(1.1, 0.9, 0.9), (1.2, 0.8, 0.8), (1.4, 0.7, 0.7)]:
-            candidates = _sample_candidates(n_candidates, *relax)
-            if candidates:
-                break
+    candidates = sample_feasible_candidates_with_relaxation(
+        db, idx, names, max_cost, min_bio, min_perf, max_conc, n_candidates)
 
     if not candidates:
         return BayesianResult(
@@ -399,12 +427,11 @@ def run_bayesian_optimization(
     # Pre-compute candidate features
     cand_tabular = np.array([
         _blend_to_features(b, db, feature_cols) for b, *_ in candidates])
-    cand_fps     = np.array([
-        (_blend_to_fingerprint(b, db) if GAUCHE_OK and RDKIT_OK
-         else np.zeros(MORGAN_NBITS, dtype=np.float32))
-        or np.zeros(MORGAN_NBITS, dtype=np.float32)
-        for b, *_ in candidates
-    ])
+    def _candidate_fp(b):
+        fp = _blend_to_fingerprint(b, db) if GAUCHE_OK and RDKIT_OK else None
+        return fp if fp is not None else np.zeros(MORGAN_NBITS, dtype=np.float32)
+
+    cand_fps = np.array([_candidate_fp(b) for b, *_ in candidates])
 
     used_gauche  = False
     best_idx     = 0
