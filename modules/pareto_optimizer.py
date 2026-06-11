@@ -67,6 +67,7 @@ def _run_nsga3(
     try:
         from pymoo.algorithms.moo.nsga3 import NSGA3
         from pymoo.core.problem import Problem
+        from pymoo.core.sampling import Sampling
         from pymoo.optimize import minimize
         from pymoo.util.ref_dirs import get_reference_directions
         from pymoo.termination import get_termination
@@ -110,8 +111,26 @@ def _run_nsga3(
             out["F"] = np.column_stack([f1, f2, f3])
             out["G"] = np.column_stack([g1, g2, g3])
 
+    class SparseSampling(Sampling):
+        """Seed the population with sparse blends (a handful of active
+        ingredients) instead of uniform-random vectors. With large ingredient
+        pools (n > ~150), uniform random vectors normalize to ~1/n weight on
+        every ingredient, putting the whole initial population's cost near
+        the pool-wide mean cost — far outside tight cost constraints and
+        leaving NSGA-III with no feasible individuals to evolve from. Sparse
+        seeding (3-12 active ingredients per individual) starts the search
+        much closer to realistic, manufacturable, constraint-satisfying
+        blends."""
+        def _do(self, problem, n_samples, **kwargs):
+            X = np.zeros((n_samples, problem.n_var))
+            for i in range(n_samples):
+                k = np.random.randint(3, min(12, problem.n_var) + 1)
+                active = np.random.choice(problem.n_var, size=k, replace=False)
+                X[i, active] = np.random.random(k)
+            return X
+
     ref_dirs = get_reference_directions("das-dennis", 3, n_partitions=6)
-    algorithm = NSGA3(pop_size=max(len(ref_dirs), pop_size), ref_dirs=ref_dirs)
+    algorithm = NSGA3(pop_size=max(len(ref_dirs), pop_size), ref_dirs=ref_dirs, sampling=SparseSampling())
     termination = get_termination("n_gen", n_gen)
 
     res = minimize(
@@ -134,14 +153,17 @@ def _run_nsga3(
     for i, x in enumerate(res.X):
         x_norm = x / (x.sum() + 1e-12)
 
-        # Keep the dominant ingredients (>0.5%); with large ingredient pools (n > ~100)
-        # NSGA-III spreads mass thinly enough that a 1% cutoff can strip every
-        # component, leaving an empty/unmanufacturable blend. Fall back to the
-        # top contributors if the cutoff removes everything, then renormalize so
-        # the reported blend sums to 100% and cost/bio/perf stay consistent with it.
-        kept = [j for j in range(n) if x_norm[j] > 0.005]
+        # Keep the dominant ingredients (>0.5%, capped to the top 10 by weight) so
+        # blends stay manufacturable regardless of pool size. With large ingredient
+        # pools (n > ~100) NSGA-III can spread mass across dozens of components that
+        # individually clear 0.5%, so the cap prevents 50+ ingredient "blends". Fall
+        # back to the top 8 contributors if the threshold removes everything, then
+        # renormalize so the reported blend sums to 100% and cost/bio/perf stay
+        # consistent with it.
+        sorted_idx = np.argsort(x_norm)[::-1]
+        kept = [j for j in sorted_idx if x_norm[j] > 0.005][:10]
         if not kept:
-            kept = list(np.argsort(x_norm)[::-1][:8])
+            kept = list(sorted_idx[:8])
 
         kept_sum = float(x_norm[kept].sum())
         blend = {
