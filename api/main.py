@@ -220,7 +220,7 @@ async def optimize_pareto(req: ParetoRequest):
             req.constraints,
             vertical,
         )
-        result = run_pareto_optimization(filtered_db, max_cost, min_bio, min_perf, req.n_solutions)
+        result = run_pareto_optimization(filtered_db, max_cost, min_bio, min_perf)
         return _serialize(result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
