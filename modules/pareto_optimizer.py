@@ -340,16 +340,23 @@ def run_pareto_optimization(
     weighted-sum enumeration via PuLP if pymoo is unavailable, errors, or
     finds no feasible solutions.
     """
+    nsga3_error = None
     try:
         nsga3_result = _run_nsga3(db, max_cost, min_bio, min_perf,
                                    n_gen=n_gen, pop_size=pop_size)
-    except Exception:
+    except Exception as exc:
         nsga3_result = None
+        nsga3_error = f"{type(exc).__name__}: {exc}"
 
     if nsga3_result is not None and nsga3_result.success and nsga3_result.frontier:
         return nsga3_result
 
-    return _run_weighted_sum(db, max_cost, min_bio, min_perf)
+    fallback = _run_weighted_sum(db, max_cost, min_bio, min_perf)
+    if nsga3_error:
+        fallback.error_msg = f"NSGA-III unavailable, used weighted-sum fallback ({nsga3_error})"
+    elif nsga3_result is not None and not nsga3_result.success:
+        fallback.error_msg = f"NSGA-III fallback: {nsga3_result.error_msg}"
+    return fallback
 
 
 def pareto_frontier_dataframe(result: ParetoResult) -> pd.DataFrame:
