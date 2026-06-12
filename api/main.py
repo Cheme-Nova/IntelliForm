@@ -13,7 +13,8 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from api.models import (
     FormulateRequest, ParetoRequest, BayesianRequest,
-    QSARRequest, ReformulateRequest, HealthResponse
+    QSARRequest, ReformulateRequest, HealthResponse,
+    DigitalTwinRequest, SDLProtocolRequest, SDLIngestRequest,
 )
 
 class RefineRequest(BaseModel):
@@ -105,7 +106,8 @@ def health():
         "modules": [
             "optimizer", "pareto_optimizer", "bayesian_optimizer", "ecometrics",
             "qsar", "regulatory", "vertical_regulatory", "stability",
-            "carbon_credits", "certification_oracle", "agents", "llm_parser"
+            "carbon_credits", "certification_oracle", "agents", "llm_parser",
+            "digital_twin", "sdl_integration"
         ]
     }
 
@@ -411,6 +413,67 @@ async def reformulate(req: ReformulateRequest):
             db,
             normalized_failure,
             default_test_data.get(normalized_failure, {}),
+        )
+        return _serialize(result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/digital-twin/simulate")
+async def digital_twin_simulate(req: DigitalTwinRequest):
+    """Simulate the manufacturing process (timeline, energy/CO2, yield, scale-up risks)."""
+    try:
+        import pandas as pd
+        from modules.digital_twin import simulate_manufacturing, compare_scales
+        db = pd.read_csv(DB_PATH)
+        if req.compare_scales:
+            result = compare_scales(
+                req.blend, db,
+                manufacturing_process=req.manufacturing_process,
+                manufacturing_route=req.manufacturing_route,
+                vertical=req.vertical, grid_region=req.grid_region,
+            )
+        else:
+            result = simulate_manufacturing(
+                req.blend, db,
+                batch_kg=req.batch_kg,
+                manufacturing_process=req.manufacturing_process,
+                manufacturing_route=req.manufacturing_route,
+                vertical=req.vertical, grid_region=req.grid_region,
+            )
+        return _serialize(result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/sdl/protocol")
+async def sdl_protocol(req: SDLProtocolRequest):
+    """Generate a self-driving-lab experiment protocol for a formulation blend."""
+    try:
+        import pandas as pd
+        from modules.sdl_integration import generate_sdl_protocol
+        db = pd.read_csv(DB_PATH)
+        result = generate_sdl_protocol(
+            req.blend, db,
+            batch_scale_g=req.batch_scale_g,
+            platform=req.platform,
+            target_specs=req.target_specs,
+        )
+        return _serialize(result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/sdl/ingest")
+async def sdl_ingest(req: SDLIngestRequest):
+    """Ingest SDL/pilot-batch measurement results and propose the next blend via closed-loop reformulation."""
+    try:
+        import pandas as pd
+        from modules.sdl_integration import ingest_sdl_results
+        db = pd.read_csv(DB_PATH)
+        result = ingest_sdl_results(
+            req.blend, db, req.measured, req.target_specs,
+            vertical=req.vertical, iteration=req.iteration, batch_id=req.batch_id,
         )
         return _serialize(result)
     except Exception as e:

@@ -22,6 +22,8 @@
 * **Multi-Objective Optimization:** Balance assay purity (e.g., target 98–99% $CaCl_2·2H_2O$), cost, and sustainability metrics.
 * **Regulatory Intelligence:** Integrated QSAR modeling and regulatory screening (v0.9+).
 * **Agentic Reliability:** Local JSON normalization and contradiction filtering to ensure "pilot-ready" outputs.
+* **Manufacturing Digital Twin (v1.6):** Simulate the process timeline, energy/CO2, yield, and scale-up risks for a formulation from lab → bench → pilot → production batch sizes.
+* **Self-Driving Lab (SDL) Integration (v1.6):** Generate liquid-handling protocols (Opentrons OT-2 / generic) for automated lab hardware, then ingest measured results to auto-detect spec failures and propose the next blend via Closed-Loop Reformulation Intelligence™.
 
 ---
 

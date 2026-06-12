@@ -33,6 +33,7 @@ v2.1 Changelog (reconciliation build):
 
 import os
 import json
+from dataclasses import asdict
 import re
 from datetime import datetime
 
@@ -295,6 +296,8 @@ from modules.carbon_passport   import generate_carbon_passport, passport_to_json
 from modules.carbon_credits    import calculate_carbon_credits
 from modules.reformulation_intelligence import (
     run_reformulation_intelligence, FAILURE_TYPES, ReformulationReport)
+from modules.digital_twin      import simulate_manufacturing, compare_scales
+from modules.sdl_integration   import generate_sdl_protocol, ingest_sdl_results, SUPPORTED_PLATFORMS
 from modules.memory_network    import get_memory_network, FormulationMemoryNetwork
 from modules.pdf_proposal      import generate_proposal_pdf
 from modules.stability         import predict_stability
@@ -352,6 +355,10 @@ def _init_state():
         "last_cert":        None,
         "last_passport":    None,
         "last_refo":        None,
+        "last_twin":        None,
+        "last_twin_compare": None,
+        "last_sdl_protocol": None,
+        "sdl_loop_history": [],
         "pharma_result":    None,
         "bayes_state":      None,
         "model_card":       None,
@@ -538,6 +545,7 @@ _base_tabs = [
     "🧪 Stability",
     "🌍 Carbon",
     "🔁 Reformulation",
+    "🏭 Digital Twin",
     "🧠 Memory",
     "📄 Proposal",
     "📊 History",
@@ -546,9 +554,9 @@ _base_tabs = [
 _show_pharma = (selected_vertical == "pharmaceutical")
 if _show_pharma:
     _all_tabs = _base_tabs + ["💊 Pharma"]
-    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_mem, t_prop, t_hist, t_pro, t_pharma = st.tabs(_all_tabs)
+    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_twin, t_mem, t_prop, t_hist, t_pro, t_pharma = st.tabs(_all_tabs)
 else:
-    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_mem, t_prop, t_hist, t_pro = st.tabs(_base_tabs)
+    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_twin, t_mem, t_prop, t_hist, t_pro = st.tabs(_base_tabs)
     t_pharma = None
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1250,7 +1258,174 @@ with t_refo:
             st.info(f"📚 **Learning Note:** {refo.learning_note}")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TAB 10 — MEMORY NETWORK
+# TAB 10 — DIGITAL TWIN & SELF-DRIVING LAB
+# ─────────────────────────────────────────────────────────────────────────────
+with t_twin:
+    st.subheader("🏭 Manufacturing Digital Twin & Self-Driving Lab™")
+    st.caption("Simulate scale-up from lab to production, then generate closed-loop "
+               "experiment protocols for self-driving / automated lab hardware.")
+
+    result_twin = st.session_state.last_result
+    if not result_twin:
+        st.info("Run a formulation first.", icon="🏭")
+    else:
+        twin_tab1, twin_tab2 = st.tabs(["🏭 Digital Twin", "🤖 Self-Driving Lab"])
+
+        # ── Digital Twin ──────────────────────────────────────────────────
+        with twin_tab1:
+            tw1, tw2, tw3 = st.columns(3)
+            with tw1:
+                twin_batch_kg = st.number_input("Batch size (kg)", value=float(batch_size), min_value=0.1)
+            with tw2:
+                twin_process = st.selectbox(
+                    "Manufacturing process (optional override)",
+                    ["(auto)", "blending", "emulsification", "granulation",
+                     "direct_compression", "spray_drying", "extraction", "fermentation"],
+                    key="twin_process")
+            with tw3:
+                twin_grid = st.selectbox("Grid region", ["US", "EU", "UK", "China", "India", "Global"], key="twin_grid")
+
+            tw_compare = st.checkbox("Compare across scales (lab → production)", value=False)
+
+            if st.button("🔬 Run Digital Twin Simulation", type="primary", use_container_width=True):
+                v_db_t = filter_db_by_vertical(ingredients_db, selected_vertical)
+                proc_arg = None if twin_process == "(auto)" else twin_process
+                if tw_compare:
+                    st.session_state.last_twin_compare = compare_scales(
+                        result_twin.blend, v_db_t,
+                        manufacturing_process=proc_arg,
+                        manufacturing_route=result_twin.manufacturing_route,
+                        vertical=selected_vertical, grid_region=twin_grid)
+                    st.session_state.last_twin = None
+                else:
+                    st.session_state.last_twin = simulate_manufacturing(
+                        result_twin.blend, v_db_t,
+                        batch_kg=twin_batch_kg,
+                        manufacturing_process=proc_arg,
+                        manufacturing_route=result_twin.manufacturing_route,
+                        vertical=selected_vertical, grid_region=twin_grid)
+                    st.session_state.last_twin_compare = None
+
+            twin = st.session_state.last_twin
+            if twin:
+                st.markdown(
+                    f"**Process:** {twin.manufacturing_process.replace('_', ' ').title()} · "
+                    f"**Scale tier:** {twin.scale_label} · **Vessel:** {twin.recommended_vessel}")
+                tm1, tm2, tm3, tm4, tm5 = st.columns(5)
+                tm1.metric("Cycle Time", f"{twin.total_cycle_time_hr:.1f} h")
+                tm2.metric("Batches/Day", f"{twin.batches_per_day:.1f}")
+                tm3.metric("Energy/Batch", f"{twin.energy_kwh_per_batch:,.1f} kWh")
+                tm4.metric("Yield", f"{twin.yield_pct:.1f}%")
+                tm5.metric("CO2/kg", f"{twin.co2_kg_per_kg:.4f}")
+
+                st.markdown("#### Process Step Timeline")
+                for step in twin.process_steps:
+                    ccp_badge = " · 🔴 CCP" if step.critical_control_point else ""
+                    st.markdown(f"**{step.order}. {step.name}** — {step.duration_min} min @ {step.temperature_C}°C{ccp_badge}")
+                    st.caption(step.notes)
+
+                if twin.scale_up_risks:
+                    st.markdown("#### ⚠️ Scale-Up Risk Factors")
+                    risk_colors = {"Low": "#0D9488", "Medium": "#D97706", "High": "#ef4444"}
+                    for risk in twin.scale_up_risks:
+                        rc = risk_colors.get(risk.risk_level, "#64748b")
+                        st.markdown(
+                            f'<div style="background:{rc}22;border-left:3px solid {rc};'
+                            f'border-radius:0 8px 8px 0;padding:10px 14px;margin:6px 0">'
+                            f'<strong style="color:{rc}">{risk.factor} ({risk.risk_level})</strong><br>'
+                            f'{risk.mitigation}</div>', unsafe_allow_html=True)
+                else:
+                    st.success("No elevated scale-up risk factors identified at this batch size.")
+
+                st.caption(f"ℹ️ {twin.notes}")
+
+            twin_cmp = st.session_state.last_twin_compare
+            if twin_cmp:
+                st.markdown("#### Scale Comparison: Lab → Production")
+                rows = [{
+                    "Scale": r.scale_label, "Batch (kg)": r.batch_kg,
+                    "Cycle Time (h)": r.total_cycle_time_hr,
+                    "Batches/Day": r.batches_per_day,
+                    "Yield %": r.yield_pct,
+                    "CO2/kg": r.co2_kg_per_kg,
+                    "Risk Factors": len(r.scale_up_risks),
+                } for r in twin_cmp.tiers]
+                st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+                st.info(twin_cmp.summary)
+
+        # ── Self-Driving Lab ─────────────────────────────────────────────
+        with twin_tab2:
+            st.markdown("##### 🧪 Generate SDL Experiment Protocol")
+            st.caption("Converts the current formulation into a liquid-handling protocol "
+                       "for an autonomous/automated lab (Opentrons OT-2 or generic).")
+
+            sdl1, sdl2, sdl3, sdl4 = st.columns(4)
+            with sdl1:
+                sdl_scale_g = st.number_input("Batch scale (g)", value=10.0, min_value=0.1)
+            with sdl2:
+                sdl_platform = st.selectbox("Platform", SUPPORTED_PLATFORMS)
+            with sdl3:
+                sdl_ph_min = st.number_input("Target pH min", value=5.0, step=0.1)
+            with sdl4:
+                sdl_ph_max = st.number_input("Target pH max", value=6.5, step=0.1)
+
+            target_specs_sdl = {"target_ph_min": sdl_ph_min, "target_ph_max": sdl_ph_max}
+
+            if st.button("🤖 Generate SDL Protocol", use_container_width=True):
+                v_db_s = filter_db_by_vertical(ingredients_db, selected_vertical)
+                st.session_state.last_sdl_protocol = generate_sdl_protocol(
+                    result_twin.blend, v_db_s, batch_scale_g=sdl_scale_g,
+                    platform=sdl_platform, target_specs=target_specs_sdl)
+
+            proto = st.session_state.last_sdl_protocol
+            if proto:
+                st.success(f"Protocol `{proto.protocol_id}` · ~{proto.estimated_runtime_min} min runtime")
+                proto_rows = [{
+                    "Ingredient": t.ingredient, "Mass (g)": t.target_mass_g,
+                    "Volume (µL)": t.target_volume_uL, "Density (g/mL)": t.density_g_mL,
+                } for t in proto.transfers]
+                st.dataframe(pd.DataFrame(proto_rows), use_container_width=True, hide_index=True)
+                st.markdown(f"**Measurements requested:** {', '.join(proto.measurement_requests)}")
+                if proto.opentrons_snippet:
+                    with st.expander("🐍 Opentrons OT-2 Protocol (Python)"):
+                        st.code(proto.opentrons_snippet, language="python")
+                st.download_button(
+                    "📥 Download Protocol JSON",
+                    data=json.dumps(asdict(proto), indent=2, default=str),
+                    file_name=f"{proto.protocol_id}.json", mime="application/json")
+
+            st.divider()
+            st.markdown("##### 🔁 Ingest SDL Result — Closed-Loop Reformulation")
+            st.caption("Enter measured pH from your SDL/pilot run — IntelliForm flags any "
+                       "spec failure and proposes the next blend to test automatically.")
+            measured_ph = st.number_input("Measured pH", value=7.0, step=0.1, key="sdl_measured_ph")
+
+            if st.button("🔬 Ingest Result", use_container_width=True):
+                v_db_s = filter_db_by_vertical(ingredients_db, selected_vertical)
+                loop_result = ingest_sdl_results(
+                    result_twin.blend, v_db_s,
+                    measured={"measured_ph": measured_ph},
+                    target_specs=target_specs_sdl,
+                    vertical=selected_vertical,
+                    iteration=len(st.session_state.sdl_loop_history) + 1)
+                st.session_state.sdl_loop_history.append(loop_result)
+
+            status_emoji = {"pass": "✅", "reformulate": "🔁", "needs_review": "⚠️"}
+            for lr in reversed(st.session_state.sdl_loop_history):
+                title = f"{status_emoji.get(lr.status, '•')} Iteration {lr.iteration}: {lr.status.upper()}"
+                if lr.failure_label:
+                    title += f" — {lr.failure_label}"
+                with st.expander(title, expanded=(lr is st.session_state.sdl_loop_history[-1])):
+                    st.write(lr.notes)
+                    if lr.status == "reformulate" and lr.next_blend:
+                        st.markdown("**Suggested next blend:**")
+                        st.json(lr.next_blend)
+            if st.session_state.sdl_loop_history:
+                if st.button("🗑️ Clear Loop History"):
+                    st.session_state.sdl_loop_history = []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TAB 11 — MEMORY NETWORK
 # ─────────────────────────────────────────────────────────────────────────────
 with t_mem:
     st.subheader("🧠 Formulation Memory Network™")

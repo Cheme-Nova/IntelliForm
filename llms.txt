@@ -21,6 +21,8 @@ IntelliForm is an industrial-strength agentic platform for designing sustainable
 - **Green Chemistry:** Focuses on bio-based ingredients and carbon footprint reduction (EcoMetrics™).
 - **Safe-by-Design:** Automated regulatory flagging at the concept stage.
 - **Manufacturing Ready:** Outputs calibrated for ChemRich NJ pilot batching.
+- **Digital Twin Manufacturing:** Rule-based process-step timeline, energy/CO2, yield, and scale-up risk simulation across lab → bench → pilot → production scales (`modules/digital_twin.py`).
+- **Self-Driving Lab (SDL) Ready:** Generates Opentrons OT-2 / generic liquid-handling protocols and closes the loop — measured results auto-trigger Closed-Loop Reformulation Intelligence™ (`modules/sdl_integration.py`).
 
 ## Repository Structure
 - `/modules`: Core engines (QSAR, Pareto, Regulatory, EcoMetrics).
