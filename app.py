@@ -283,10 +283,13 @@ from modules.llm_parser        import parse_request
 from modules.optimizer         import run_optimization
 from modules.pareto_optimizer  import run_pareto_optimization, pareto_frontier_dataframe
 from modules.bayesian_optimizer import run_bayesian_optimization, BAYES_OK
+from modules.mobo_optimizer    import run_mobo_optimization, MOBO_OK
 from modules.agents            import run_agent_swarm
 from modules.chem_utils        import draw_mol, enrich_db
 from modules.ecometrics        import compute_ecometrics, ecometrics_radar_data
-from modules.qsar              import initialize_models, predict_properties, submit_feedback
+from modules.qsar              import (initialize_models, predict_properties, submit_feedback,
+                                        query_uncertain_candidates, al_stats, get_feedback_records)
+from modules.shap_explainer    import explain_blend, SHAP_OK as SHAP_AVAILABLE
 from modules.regulatory        import get_blend_report, regulatory_table_df
 from modules.vertical_regulatory import generate_vertical_regulatory_report
 from modules.verticals         import (VERTICAL_OPTIONS, get_profile,
@@ -300,11 +303,14 @@ from modules.digital_twin      import simulate_manufacturing, compare_scales
 from modules.sdl_integration   import generate_sdl_protocol, ingest_sdl_results, SUPPORTED_PLATFORMS
 from modules.memory_network    import get_memory_network, FormulationMemoryNetwork
 from modules.pdf_proposal      import generate_proposal_pdf
-from modules.stability         import predict_stability
+from modules.stability         import (predict_stability, initialize_stability_models,
+                                        submit_stability_feedback, stability_model_card)
 from modules.notifications     import send_pilot_booking_confirmation
+from modules.comptox           import screen_blend
 from modules.persistence       import (save_project, load_projects, save_booking,
                                         save_feedback as db_save_feedback,
-                                        is_connected, MIGRATION_SQL)
+                                        is_connected, MIGRATION_SQL,
+                                        load_project_lineage)
 from modules.pharma            import (run_pharma_deep_dive, BCS_STRATEGIES,
                                         DOSAGE_FORMS, REGULATORY_PATHWAYS,
                                         ICH_STABILITY_ZONES)
@@ -341,6 +347,11 @@ def load_models(n: int, db_hash: str):
     db = load_db()
     return initialize_models(db)
 
+@st.cache_resource
+def load_stability_models(n: int, db_hash: str):
+    db = load_db()
+    return initialize_stability_models(db)
+
 # ── SESSION STATE ─────────────────────────────────────────────────────────────
 def _init_state():
     defaults = {
@@ -361,11 +372,13 @@ def _init_state():
         "sdl_loop_history": [],
         "pharma_result":    None,
         "bayes_state":      None,
+        "mobo_state":       None,
         "model_card":       None,
         "memory_net":       None,
         "projects":         [],
         "blend_history":    [],
         "pilot_sent":       False,
+        "last_project_id":  None,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -380,6 +393,8 @@ _db_hash = str(len(ingredients_db)) + str(
 
 if st.session_state.model_card is None:
     st.session_state.model_card = load_models(len(ingredients_db), _db_hash)
+
+load_stability_models(len(ingredients_db), _db_hash)  # primes cache; no return value needed
 
 if st.session_state.memory_net is None:
     st.session_state.memory_net = get_memory_network()
@@ -519,6 +534,8 @@ with _ctrl_cols[2]:
     _opt_options = ["LP (fast)", "Pareto"]
     if BAYES_OK:
         _opt_options.append("Bayesian")
+    if MOBO_OK:
+        _opt_options.append("MOBO")
     _opt_mode = st.radio(
         "⚙️ Optimizer",
         _opt_options,
@@ -527,6 +544,8 @@ with _ctrl_cols[2]:
     )
     if not BAYES_OK:
         st.caption("⚠ Bayesian unavailable — install scikit-optimize")
+    if not MOBO_OK:
+        st.caption("⚠ MOBO unavailable — install botorch")
 
 vprofile = get_profile(selected_vertical)
 if vprofile:
@@ -550,13 +569,14 @@ _base_tabs = [
     "📄 Proposal",
     "📊 History",
     "⚡ Pro",
+    "🏭 Suppliers",
 ]
 _show_pharma = (selected_vertical == "pharmaceutical")
 if _show_pharma:
-    _all_tabs = _base_tabs + ["💊 Pharma"]
-    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_twin, t_mem, t_prop, t_hist, t_pro, t_pharma = st.tabs(_all_tabs)
+    _all_tabs = _base_tabs[:-1] + ["💊 Pharma", "🏭 Suppliers"]
+    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_twin, t_mem, t_prop, t_hist, t_pro, t_pharma, t_supp = st.tabs(_all_tabs)
 else:
-    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_twin, t_mem, t_prop, t_hist, t_pro = st.tabs(_base_tabs)
+    t_form, t_cert, t_eco, t_reg, t_pareto, t_qsar, t_stab, t_carbon, t_refo, t_twin, t_mem, t_prop, t_hist, t_pro, t_supp = st.tabs(_base_tabs)
     t_pharma = None
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -648,6 +668,24 @@ with t_form:
                                status="Optimal")
             st.info(f"🧪 Bayesian iter {bayes_result.n_observations} · "
                     f"EI={bayes_result.expected_improvement:.4f} · σ={bayes_result.uncertainty:.4f}")
+        elif _opt_mode == "MOBO":
+            with st.spinner("🎯 Multi-objective Bayesian optimization (qNEHVI)…"):
+                mobo_result, new_mobo_state = run_mobo_optimization(
+                    v_db, max_cost=v_cost, min_bio=v_bio, min_perf=v_perf,
+                    state=st.session_state.mobo_state,
+                    max_conc=max_conc/100, vertical=selected_vertical)
+            st.session_state.mobo_state = new_mobo_state
+            if not mobo_result.success:
+                st.error(mobo_result.error_msg)
+                st.stop()
+            from modules.optimizer import OptResult
+            result = OptResult(success=True, blend=mobo_result.blend,
+                               cost_per_kg=mobo_result.cost_per_kg,
+                               bio_pct=mobo_result.bio_pct, perf_score=mobo_result.perf_score,
+                               status="Optimal")
+            st.info(f"🎯 MOBO iter {mobo_result.n_observations} · "
+                    f"{mobo_result.acquisition_function} · "
+                    f"EcoScore={mobo_result.eco_score:.1f} · HV={mobo_result.hypervolume:.2f}")
         else:
             with st.spinner("⚗ LP optimization…"):
                 result = run_optimization(
@@ -667,7 +705,12 @@ with t_form:
 
         # Agent swarm
         with st.spinner("🤖 Agent swarm…"):
-            for comment in run_agent_swarm(result, parsed):
+            for comment in run_agent_swarm(
+                result, parsed,
+                db=ingredients_db,
+                memory_net=memory,
+                vertical=selected_vertical,
+            ):
                 st.info(comment)
 
         # Compute downstream
@@ -677,6 +720,7 @@ with t_form:
         stability= predict_stability(result.blend, ingredients_db)
         carbon   = calculate_carbon_credits(result.blend, ingredients_db, batch_kg=batch_size)
         cert     = run_certification_oracle(result.blend, v_db, selected_vertical, result.bio_pct)
+        ctx      = screen_blend(result.blend, selected_vertical)
 
         # Store all
         st.session_state.last_eco      = eco
@@ -685,6 +729,7 @@ with t_form:
         st.session_state.last_stability= stability
         st.session_state.last_carbon   = carbon
         st.session_state.last_cert     = cert
+        st.session_state.last_ctx      = ctx
 
         # Memory network
         try:
@@ -739,11 +784,17 @@ with t_form:
                         f"**{row.get('Function','—')}** · ${row['Cost_USD_kg']}/kg · "
                         f"{row['Bio_based_pct']}% bio · Stock {row['Stock_kg']} kg")
                     qp = predict_properties(row["SMILES"])
+                    _ci95 = ""
+                    if qp.intervals:
+                        _b95 = qp.intervals.get("Biodegradability", {}).get("95")
+                        if _b95:
+                            _ci95 = f" · Bio 95% CI [{_b95[0]:.0f}–{_b95[1]:.0f}%]"
                     st.caption(
                         f"🔬 QSAR: Bio {qp.biodegradability:.0f}% · "
                         f"Ecotox {qp.ecotoxicity:.1f}/10 · "
                         f"Perf {qp.performance:.0f} · "
-                        f"{'ML' if qp.used_ml else 'rules'} · {qp.confidence} confidence")
+                        f"{'ML' if qp.used_ml else 'rules'} · {qp.confidence} confidence"
+                        f"{_ci95}")
                 with ci:
                     img = draw_mol(row["SMILES"])
                     if img:
@@ -789,7 +840,11 @@ with t_form:
             "optimizer":   _opt_mode.lower(),
         }
         st.session_state.projects.append(project)
-        save_project(project, get_session_id())
+        _saved_id = save_project(
+            project, get_session_id(),
+            parent_id=st.session_state.get("last_project_id"),
+        )
+        st.session_state["last_project_id"] = _saved_id
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 2 — CERTIFY (CertificationOracle™)
@@ -957,6 +1012,138 @@ with t_reg:
         if reg.red_flags:
             for f in reg.red_flags: st.error(f)
 
+        # ── EPA CompTox OPERA Screening ───────────────────────────────────────
+        st.divider()
+        st.subheader("🧪 EPA CompTox OPERA Screening")
+        _ctx = st.session_state.get("last_ctx")
+        if _ctx and _ctx.coverage == 0 and not _ctx.ingredients:
+            st.info(_ctx.regulatory_citation, icon="🔑")
+        elif _ctx and _ctx.coverage > 0:
+            _cc1, _cc2, _cc3, _cc4 = st.columns(4)
+            _cc1.metric("Coverage", f"{_ctx.coverage}%")
+            _cc2.metric("Ready Biodeg.", f"{_ctx.ready_biodeg_fraction:.0f}%" if _ctx.ready_biodeg_fraction is not None else "—")
+            _cc3.metric("Avg log BCF", f"{_ctx.avg_log_bcf:.2f}" if _ctx.avg_log_bcf is not None else "—")
+            _cc4.metric("Avg log Kow", f"{_ctx.avg_log_kow:.2f}" if _ctx.avg_log_kow is not None else "—")
+
+            if _ctx.svhc_flags:
+                st.error(f"⚠️ SVHC candidates: {', '.join(_ctx.svhc_flags)}")
+            if _ctx.cmr_flags:
+                st.error(f"🚫 CMR classified: {', '.join(_ctx.cmr_flags)}")
+            if _ctx.reach_restricted_flags:
+                st.warning(f"📋 REACH restricted: {', '.join(_ctx.reach_restricted_flags)}")
+            if not _ctx.svhc_flags and not _ctx.cmr_flags and not _ctx.reach_restricted_flags:
+                st.success("✅ No SVHC, CMR, or REACH restriction flags detected.")
+
+            with st.expander("📊 Per-ingredient OPERA predictions"):
+                import pandas as _pd_ctx
+                _ctx_rows = []
+                for _ing, _r in _ctx.ingredients.items():
+                    if _r.error:
+                        continue
+                    _ctx_rows.append({
+                        "Ingredient":        _ing,
+                        "DTXSID":            _r.dtxsid or "—",
+                        "Ready Biodeg.":     ("✅" if _r.ready_biodegradable else "❌") if _r.ready_biodegradable is not None else "—",
+                        "Biodeg. Prob.":     f"{_r.biodeg_probability:.2f}" if _r.biodeg_probability is not None else "—",
+                        "log BCF":           f"{_r.log_bcf:.2f}" if _r.log_bcf is not None else "—",
+                        "log Kow":           f"{_r.log_kow:.2f}" if _r.log_kow is not None else "—",
+                        "Fish LC50 (log)":   f"{_r.fish_lc50_log_mmol_l:.2f}" if _r.fish_lc50_log_mmol_l is not None else "—",
+                        "Daphnia EC50 (log)":f"{_r.daphnia_ec50_log_mmol_l:.2f}" if _r.daphnia_ec50_log_mmol_l is not None else "—",
+                        "SVHC":              "⚠️ Yes" if _r.svhc_candidate else "✅ No",
+                        "CMR":               _r.cmr_category or "—",
+                        "GHS Codes":         ", ".join(_r.ghs_hazard_codes) if _r.ghs_hazard_codes else "—",
+                    })
+                if _ctx_rows:
+                    st.dataframe(_pd_ctx.DataFrame(_ctx_rows), use_container_width=True, hide_index=True)
+            st.caption(_ctx.regulatory_citation)
+
+    # ── GHS SDS Generator ─────────────────────────────────────────────────────
+    st.divider()
+    st.subheader("📄 GHS Safety Data Sheet (16-Section)")
+    _sds_result = st.session_state.get("last_result")
+    if _sds_result is None or not getattr(_sds_result, "success", False):
+        st.info("Formulate a blend to generate a GHS-compliant SDS.", icon="📄")
+    else:
+        _sds_cols = st.columns([3, 1, 1])
+        with _sds_cols[0]:
+            _sds_product_name = st.text_input(
+                "Product name for SDS",
+                value=f"ChemeNova {selected_vertical.replace('_', ' ').title()} Formulation",
+                key="sds_product_name",
+            )
+        with _sds_cols[1]:
+            _sds_version = st.text_input("Version", value="1.0", key="sds_version")
+        with _sds_cols[2]:
+            st.markdown("<br>", unsafe_allow_html=True)
+            _gen_sds = st.button("⚗ Generate SDS", type="primary", use_container_width=True)
+
+        if _gen_sds:
+            with st.spinner("Assembling 16-section GHS SDS…"):
+                try:
+                    from modules.sds_generator import generate_sds, sds_to_pdf, sds_to_json
+                    from modules.stability import predict_stability
+
+                    _stab = predict_stability(_sds_result.blend, ingredients_db)
+                    _sds_doc = generate_sds(
+                        blend=_sds_result.blend,
+                        db=ingredients_db,
+                        product_name=_sds_product_name,
+                        vertical=selected_vertical,
+                        reg_report=st.session_state.get("last_reg"),
+                        qsar_bio_pct=_sds_result.bio_pct,
+                        qsar_etox=getattr(_sds_result, "eco_score", 5.0) or 5.0,
+                        viscosity_est=getattr(_stab, "viscosity_cp", None),
+                        version=_sds_version,
+                    )
+                    st.session_state["last_sds"] = _sds_doc
+
+                    # Summary banner
+                    _sw = _sds_doc.signal_word
+                    _sw_fn = st.success if _sw == "No signal word" else (st.warning if _sw == "Warning" else st.error)
+                    _sw_fn(
+                        f"Signal word: **{_sw}** · "
+                        f"{len(_sds_doc.all_ghs_codes)} GHS code(s): {', '.join(_sds_doc.all_ghs_codes) or 'None'} · "
+                        f"{len(_sds_doc.pictograms)} pictogram(s)"
+                    )
+
+                    _pdf_bytes = sds_to_pdf(_sds_doc)
+                    _json_str  = sds_to_json(_sds_doc)
+
+                    _dl1, _dl2 = st.columns(2)
+                    with _dl1:
+                        st.download_button(
+                            "📥 Download SDS (PDF)",
+                            data=_pdf_bytes,
+                            file_name=f"SDS_{_sds_product_name[:30].replace(' ','_')}_{datetime.now().strftime('%Y%m%d')}.pdf",
+                            mime="application/pdf",
+                            use_container_width=True,
+                        )
+                    with _dl2:
+                        st.download_button(
+                            "📥 Download SDS (JSON)",
+                            data=_json_str,
+                            file_name=f"SDS_{_sds_product_name[:30].replace(' ','_')}_{datetime.now().strftime('%Y%m%d')}.json",
+                            mime="application/json",
+                            use_container_width=True,
+                        )
+
+                    # Composition preview
+                    with st.expander("📋 Section 3 — Composition"):
+                        _comp_rows = [{
+                            "Ingredient": i.name,
+                            "CAS":        i.cas,
+                            "INCI":       i.inci,
+                            "Wt%":        i.wt_pct,
+                            "REACH":      i.reach_status,
+                            "GHS codes":  ", ".join(i.ghs_codes) or "—",
+                            "SVHC":       "⚠ Yes" if i.svhc else "—",
+                            "CMR":        i.cmr or "—",
+                        } for i in _sds_doc.s3_composition]
+                        st.dataframe(pd.DataFrame(_comp_rows), use_container_width=True, hide_index=True)
+
+                except Exception as _sds_err:
+                    st.error(f"SDS generation failed: {_sds_err}")
+
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 5 — PARETO FRONTIER
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1008,19 +1195,35 @@ with t_pareto:
                            "IntelliForm_Pareto.csv", "text/csv")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TAB 6 — QSAR MODEL CARD
+# TAB 6 — QSAR MODEL CARD + ACTIVE LEARNING
 # ─────────────────────────────────────────────────────────────────────────────
 with t_qsar:
-    st.subheader("🔬 QSAR Engine + Model Card")
+    st.subheader("🔬 QSAR Engine + Active Learning")
     st.caption("Makani S.S., ChemRxiv 2026 · DOI: 10.26434/chemrxiv.15000857 · NJIT Showcase 2025 · UIC Indigo 2025")
 
     mc2 = st.session_state.model_card
+
+    # ── Model Card ────────────────────────────────────────────────────────────
     if mc2:
-        qi1, qi2, qi3, qi4 = st.columns(4)
-        qi1.metric("N Ingredients", mc2.n_training)
+        _al = al_stats()
+        qi1, qi2, qi3, qi4, qi5, qi6 = st.columns(6)
+        qi1.metric("Ingredients",   mc2.n_training)
         qi2.metric("DB Hash",       mc2.training_hash[:8] if mc2.training_hash else "—")
-        qi3.metric("sklearn",       mc2.sklearn_version[:8] if mc2.sklearn_version else "—")
-        qi4.metric("AL Rounds",     mc2.active_learning_rounds)
+        qi3.metric("Active Tier",   getattr(mc2, "active_tier", "gbr_morgan").replace("_", " ").upper()[:12])
+        qi4.metric("AL Rounds",     _al["al_rounds"])
+        qi5.metric("Validated Pts", _al["total_feedback"])
+        qi6.metric("Ensemble",      "✓ Active" if _al["ensemble_active"] else "○ Building")
+        _conf_ok  = getattr(mc2, "conformal_active", False)
+        _conf_cal = getattr(mc2, "conformal_n_cal", 0)
+        if _conf_ok:
+            st.success(
+                f"✓ Conformal prediction active — 80/90/95% coverage intervals calibrated "
+                f"on {_conf_cal} held-out molecules (ICP guarantee)",
+                icon="📐",
+            )
+        else:
+            st.info("Conformal bands will activate after GBR training completes.", icon="📐")
+
         st.divider()
         for target, bench in mc2.benchmarks.items():
             with st.expander(f"**{target}** — R²={bench['cv_r2']} · RMSE={bench['cv_rmse']}", expanded=True):
@@ -1028,49 +1231,311 @@ with t_qsar:
                 bc1.metric("5-fold R²",  bench["cv_r2"])
                 bc2.metric("CV RMSE",    f"{bench['cv_rmse']}")
                 bc3.metric("Unit",       bench["unit"][:12] if bench.get("unit") else "—")
-                bc4.metric("Algorithm",  "GBR")
-                st.caption(f"**Model**: {bench['model']} · **Descriptors**: {bench['descriptor']}")
+                bc4.metric("Algorithm",  bench.get("model","GBR")[:18])
+                st.caption(f"**Descriptors**: {bench['descriptor']}")
 
+    # ── SHAP Blend Attribution ────────────────────────────────────────────────
     st.divider()
-    st.subheader("🔮 Live SMILES Prediction")
-    test_smi = st.text_input("SMILES", value="CCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O")
-    if st.button("Predict", type="primary"):
-        qp = predict_properties(test_smi)
-        qc1, qc2, qc3 = st.columns(3)
-        qc1.metric("Biodegradability", f"{qp.biodegradability:.1f}%")
-        qc2.metric("Ecotoxicity",      f"{qp.ecotoxicity:.1f}/10")
-        qc3.metric("Performance",      f"{qp.performance:.1f}/100")
-        st.caption(f"{'ML model' if qp.used_ml else 'Rule-based'} · Confidence: {qp.confidence}")
-        for w in qp.warnings: st.warning(w)
+    st.subheader("🔍 Blend Attribution")
+    _attr_result = st.session_state.get("last_result")
+    if _attr_result is None or not getattr(_attr_result, "success", False):
+        st.info("Formulate a blend first — attribution will appear here.", icon="🔍")
+    else:
+        if not SHAP_AVAILABLE:
+            st.warning(
+                "SHAP not installed — showing weighted-delta attribution. "
+                "Run `pip install shap` for full TreeExplainer feature attribution.",
+                icon="⚠",
+            )
+        with st.spinner("Computing ingredient attribution…"):
+            _attr = explain_blend(_attr_result.blend, ingredients_db)
 
+        st.caption(
+            f"Method: **{_attr.method.replace('_', ' ').title()}** — "
+            f"blend averages: Bio {_attr.blend_bio}% · Etox {_attr.blend_etox}/10 · Perf {_attr.blend_perf}/100. "
+            "Bars show each ingredient's pct-weighted deviation from those averages (green = above, red = below)."
+        )
+
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+
+        ings       = [a.ingredient[:22] for a in _attr.ingredients]
+        bio_vals   = [a.bio_contribution  for a in _attr.ingredients]
+        etox_vals  = [a.etox_contribution for a in _attr.ingredients]
+        perf_vals  = [a.perf_contribution for a in _attr.ingredients]
+
+        def _bar_colors(vals):
+            return ["#10b981" if v >= 0 else "#ef4444" for v in vals]
+
+        fig = make_subplots(
+            rows=1, cols=3,
+            subplot_titles=["Biodegradability (% pts)", "Ecotoxicity (unit)", "Performance (pts)"],
+            shared_yaxes=True,
+        )
+        fig.add_trace(go.Bar(
+            x=bio_vals, y=ings, orientation="h",
+            marker_color=_bar_colors(bio_vals), showlegend=False,
+            hovertemplate="%{y}: %{x:+.2f}%<extra></extra>",
+        ), row=1, col=1)
+        fig.add_trace(go.Bar(
+            x=etox_vals, y=ings, orientation="h",
+            marker_color=_bar_colors(etox_vals), showlegend=False,
+            hovertemplate="%{y}: %{x:+.3f}<extra></extra>",
+        ), row=1, col=2)
+        fig.add_trace(go.Bar(
+            x=perf_vals, y=ings, orientation="h",
+            marker_color=_bar_colors(perf_vals), showlegend=False,
+            hovertemplate="%{y}: %{x:+.2f} pts<extra></extra>",
+        ), row=1, col=3)
+
+        n_ings = max(len(ings), 1)
+        fig.update_layout(
+            height=max(240, 44 * n_ings),
+            margin=dict(l=0, r=0, t=36, b=0),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#cbd5e1"),
+        )
+        for i in range(1, 4):
+            fig.update_xaxes(zeroline=True, zerolinecolor="#475569", row=1, col=i)
+            fig.update_yaxes(autorange="reversed", row=1, col=i)
+        st.plotly_chart(fig, use_container_width=True)
+
+        # Per-ingredient SHAP feature breakdown
+        if _attr.shap_available:
+            with st.expander("🧬 Top driving features per ingredient (SHAP)"):
+                for a in _attr.ingredients:
+                    st.markdown(f"**{a.ingredient}** ({a.pct:.1f}%)")
+                    _fc1, _fc2, _fc3 = st.columns(3)
+                    with _fc1:
+                        st.caption("**Bio top features**")
+                        for fname, fval in a.bio_top_features:
+                            arrow = "▲" if fval > 0 else "▼"
+                            st.caption(f"{arrow} `{fname}` {fval:+.3f}")
+                    with _fc2:
+                        st.caption("**Etox top features**")
+                        for fname, fval in a.etox_top_features:
+                            arrow = "▲" if fval > 0 else "▼"
+                            st.caption(f"{arrow} `{fname}` {fval:+.3f}")
+                    with _fc3:
+                        st.caption("**Perf top features**")
+                        for fname, fval in a.perf_top_features:
+                            arrow = "▲" if fval > 0 else "▼"
+                            st.caption(f"{arrow} `{fname}` {fval:+.3f}")
+                    st.divider()
+
+    # ── Experiment Queue ──────────────────────────────────────────────────────
     st.divider()
-    st.subheader("📬 Active Learning — Submit Validated Data")
-    al_smi = st.text_input("SMILES (validated compound)", key="al_smi")
-    al_tgt = st.selectbox("Property", ["Biodegradability","Ecotoxicity","Performance"])
-    al_val = st.number_input("Measured value", 0.0, 100.0, 90.0)
-    if st.button("Submit Feedback"):
-        if al_smi:
-            qp2  = predict_properties(al_smi)
-            pred = {"Biodegradability": qp2.biodegradability,
-                    "Ecotoxicity": qp2.ecotoxicity,
-                    "Performance": qp2.performance}[al_tgt]
-            db_save_feedback(get_session_id(), al_smi, al_tgt, pred, al_val)
-            st.success(submit_feedback(al_smi, al_tgt, al_val, ingredients_db))
+    st.subheader("🎯 Experiment Queue")
+    st.caption(
+        "Ingredients ranked by model uncertainty — the ensemble of 5 GBR models disagrees most "
+        "on these. Running lab tests on the top rows will compress uncertainty the fastest.")
+
+    _eq_col1, _eq_col2 = st.columns([3, 1])
+    with _eq_col2:
+        _eq_k = st.number_input("Show top N", min_value=3, max_value=30, value=10, key="eq_k")
+
+    _al2 = al_stats()
+    if not _al2["ensemble_active"]:
+        st.info(
+            "Uncertainty ensemble is not yet trained. Submit at least one feedback point "
+            "or wait for `initialize_models()` to finish building the ensemble.",
+            icon="⚗",
+        )
+    else:
+        with st.spinner("Ranking ingredients by uncertainty…"):
+            _eq_df = query_uncertain_candidates(ingredients_db, top_k=int(_eq_k))
+
+        if _eq_df.empty:
+            st.info("No SMILES available in the ingredient DB — cannot compute uncertainty.", icon="⚗")
+        else:
+            # Colour-code uncertainty columns: higher = warmer
+            def _uncertainty_style(s):
+                normed = (s - s.min()) / (s.max() - s.min() + 1e-9)
+                return [
+                    f"background-color: rgba(217,{int(119*(1-v))},6,{0.1+v*0.5:.2f}); color:#f1f5f9"
+                    for v in normed
+                ]
+
+            styled = (
+                _eq_df.style
+                .apply(_uncertainty_style, subset=["uncertainty_bio", "uncertainty_etox",
+                                                    "uncertainty_perf", "mean_uncertainty"])
+                .format({
+                    "uncertainty_bio":  "{:.2f}",
+                    "uncertainty_etox": "{:.3f}",
+                    "uncertainty_perf": "{:.2f}",
+                    "mean_uncertainty": "{:.4f}",
+                })
+            )
+            st.dataframe(styled, use_container_width=True, hide_index=True)
+            st.caption(
+                "**uncertainty_bio** = σ of 5 ensemble predictions for biodegradability (%). "
+                "**mean_uncertainty** = normalised average across all three endpoints. "
+                "Copy a SMILES from the top row to the Submit Feedback form below after running the test.")
+
+            st.download_button(
+                "📥 Export Experiment Queue CSV",
+                _eq_df.to_csv(index=False),
+                f"IntelliForm_ExperimentQueue_{datetime.now().strftime('%Y%m%d')}.csv",
+                "text/csv",
+            )
+
+    # ── Submit Feedback ───────────────────────────────────────────────────────
+    st.divider()
+    st.subheader("📬 Submit Lab Result")
+    st.caption("Enter a confirmed measurement to retrain the model and update the experiment queue.")
+
+    _fb_cols = st.columns([3, 2, 2, 2])
+    with _fb_cols[0]:
+        al_smi = st.text_input("SMILES", placeholder="Paste from Experiment Queue above", key="al_smi")
+    with _fb_cols[1]:
+        al_tgt = st.selectbox("Property", ["Biodegradability", "Ecotoxicity", "Performance"])
+    with _fb_cols[2]:
+        _val_ranges = {"Biodegradability": (0.0, 100.0, 90.0),
+                       "Ecotoxicity":      (1.0,  10.0,  7.0),
+                       "Performance":      (0.0, 100.0, 75.0)}
+        _vmin, _vmax, _vdef = _val_ranges[al_tgt]
+        al_val = st.number_input("Measured value", _vmin, _vmax, _vdef, key="al_val")
+    with _fb_cols[3]:
+        st.markdown("<br>", unsafe_allow_html=True)
+        _submit_fb = st.button("⚗ Submit & Retrain", type="primary", use_container_width=True)
+
+    if _submit_fb:
+        if not al_smi:
+            st.warning("Paste a SMILES string first.")
+        else:
+            with st.spinner("Retraining GBR + uncertainty ensemble…"):
+                qp2  = predict_properties(al_smi)
+                pred = {"Biodegradability": qp2.biodegradability,
+                        "Ecotoxicity":      qp2.ecotoxicity,
+                        "Performance":      qp2.performance}[al_tgt]
+                db_save_feedback(get_session_id(), al_smi, al_tgt, pred, al_val)
+                _msg = submit_feedback(al_smi, al_tgt, al_val, ingredients_db)
+            st.success(_msg)
+            st.rerun()
+
+    # ── Feedback History ──────────────────────────────────────────────────────
+    _fb_records = get_feedback_records()
+    if _fb_records:
+        st.divider()
+        st.subheader(f"📋 Feedback History — {len(_fb_records)} validated point(s)")
+        _fb_rows = [{
+            "Round":   r.al_round,
+            "Target":  r.target,
+            "Value":   round(r.actual_value, 3),
+            "SMILES":  r.smiles[:40] + ("…" if len(r.smiles) > 40 else ""),
+            "Date":    r.timestamp[:10],
+        } for r in reversed(_fb_records)]
+        st.dataframe(pd.DataFrame(_fb_rows), use_container_width=True, hide_index=True)
+
+        _by = _al2["by_target"]
+        fb1, fb2, fb3 = st.columns(3)
+        fb1.metric("Biodegradability", _by["Biodegradability"])
+        fb2.metric("Ecotoxicity",      _by["Ecotoxicity"])
+        fb3.metric("Performance",      _by["Performance"])
+
+        if _al2["last_retrain"]:
+            st.caption(f"Last retrain: {_al2['last_retrain'][:19]}")
+
+        if _al2["total_feedback"] >= 20:
+            st.info(
+                f"✅ {_al2['total_feedback']} validated points accumulated. "
+                "Consider retraining the Chemprop D-MPNN tier for maximum accuracy.",
+                icon="🧠",
+            )
+            if st.button("🧠 Retrain Chemprop D-MPNN (runs offline, ~5 min CPU)",
+                         use_container_width=True, key="retrain_chemprop"):
+                from modules.qsar import train_chemprop_models
+                with st.spinner("Training Chemprop D-MPNN — this may take several minutes…"):
+                    ok = train_chemprop_models(ingredients_db, epochs=40)
+                if ok:
+                    st.success("✅ Chemprop checkpoints updated. Reload the app to activate tier-1 inference.")
+                else:
+                    st.error("Chemprop training failed — ensure `chemprop>=2.0.0` and `lightning>=2.0.0` are installed.")
+
+    # ── Live SMILES Prediction ────────────────────────────────────────────────
+    st.divider()
+    with st.expander("🔮 Live SMILES Prediction (dev tool)"):
+        test_smi = st.text_input("SMILES", value="CCCCCCCCCCCCOC1OC(CO)C(O)C(O)C1O", key="test_smi")
+        if st.button("Predict", type="primary", key="predict_btn"):
+            qp = predict_properties(test_smi)
+            qc1, qc2, qc3 = st.columns(3)
+            qc1.metric("Biodegradability", f"{qp.biodegradability:.1f}%")
+            qc2.metric("Ecotoxicity",      f"{qp.ecotoxicity:.1f}/10")
+            qc3.metric("Performance",      f"{qp.performance:.1f}/100")
+            st.caption(
+                f"{'Chemprop D-MPNN' if qp.used_chemprop else 'Mordred GBR' if qp.used_mordred else 'Morgan GBR' if qp.used_ml else 'Rule-based'} "
+                f"· Confidence: {qp.confidence}")
+            if qp.intervals:
+                _iv = qp.intervals
+                st.markdown("**Conformal prediction intervals (ICP guarantee):**")
+                iv1, iv2, iv3 = st.columns(3)
+                for col, target, unit in [(iv1, "Biodegradability", "%"),
+                                           (iv2, "Ecotoxicity",      "/10"),
+                                           (iv3, "Performance",      "/100")]:
+                    t95 = _iv.get(target, {}).get("95", None)
+                    t90 = _iv.get(target, {}).get("90", None)
+                    t80 = _iv.get(target, {}).get("80", None)
+                    with col:
+                        st.markdown(f"**{target}**")
+                        if t95: st.caption(f"95%: [{t95[0]}{unit}, {t95[1]}{unit}]")
+                        if t90: st.caption(f"90%: [{t90[0]}{unit}, {t90[1]}{unit}]")
+                        if t80: st.caption(f"80%: [{t80[0]}{unit}, {t80[1]}{unit}]")
+            for w in qp.warnings:
+                st.warning(w)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 7 — STABILITY & VISCOSITY
 # ─────────────────────────────────────────────────────────────────────────────
 with t_stab:
     st.subheader("🧪 Stability & Viscosity Prediction")
+
+    # ── ML model card ─────────────────────────────────────────────────────────
+    _smc = stability_model_card()
+    if _smc:
+        _sm1, _sm2, _sm3, _sm4, _sm5 = st.columns(5)
+        _sm1.metric("Training pts",  _smc.n_training)
+        _sm2.metric("Synth samples", _smc.synth_samples)
+        _sm3.metric("Lab feedback",  _smc.n_feedback)
+        _sm4.metric("AL rounds",     _smc.al_rounds)
+        _sm5.metric("Tier", "GBR+ICP" if _smc.conformal_active else "Rule-based")
+        if _smc.conformal_active:
+            st.success(
+                f"✓ ML active — conformal prediction on {_smc.conformal_n_cal} calibration samples "
+                f"· ensemble {'active' if _smc.ensemble_active else 'building'}",
+                icon="📐",
+            )
+        else:
+            st.info("ML models building — rule-based predictions shown until training completes.", icon="📐")
+        st.divider()
+
     stab = st.session_state.last_stability
     if not stab:
         st.info("Run a formulation first.", icon="🧪")
     else:
+        _ml_badge = " *(ML)*" if getattr(stab, "ml_active", False) else " *(rule-based)*"
         s1, s2, s3, s4 = st.columns(4)
         s1.metric("Shelf Life",  stab.shelf_life_range)
         s2.metric("Viscosity",   stab.viscosity_range[:15] if stab.viscosity_range else "—")
         s3.metric("pH Range",    f"{stab.ph_min:.1f} – {stab.ph_max:.1f}")
-        s4.metric("Stability",   stab.overall_rating[:15] if stab.overall_rating else "—")
+        s4.metric("Stability",   stab.overall_rating[:15] + ("★" if getattr(stab, "ml_active", False) else ""))
+        st.caption(f"Confidence: **{stab.confidence}**{_ml_badge}")
+
+        # ICP intervals
+        if getattr(stab, "intervals", None):
+            st.divider()
+            st.subheader("📐 Conformal Prediction Intervals")
+            _iv = stab.intervals
+            _ic1, _ic2 = st.columns(2)
+            for col, target, unit in [(_ic1, "Viscosity", " cP"), (_ic2, "ShelfLife", " mo")]:
+                with col:
+                    st.markdown(f"**{target}**")
+                    for lv_str, label in [("95","95%"), ("90","90%"), ("80","80%")]:
+                        band = _iv.get(target, {}).get(lv_str)
+                        if band:
+                            st.caption(f"{label}: [{band[0]:,.0f}{unit} — {band[1]:,.0f}{unit}]")
+
         st.divider()
         sr1, sr2 = st.columns(2)
         with sr1:
@@ -1082,6 +1547,35 @@ with t_stab:
         st.divider()
         st.subheader("Packaging Recommendation")
         st.info(stab.recommended_packaging)
+
+        # ── Submit lab measurement ────────────────────────────────────────────
+        st.divider()
+        st.subheader("📬 Submit Lab Measurement")
+        st.caption("Enter a confirmed lab result to retrain the stability ML model.")
+        _fb_stab_cols = st.columns([2, 2, 2, 1])
+        with _fb_stab_cols[0]:
+            _stab_target = st.selectbox("Property", ["Viscosity", "ShelfLife"],
+                                        format_func=lambda x: "Viscosity (cP)" if x == "Viscosity" else "Shelf Life (months)",
+                                        key="stab_fb_target")
+        with _fb_stab_cols[1]:
+            _stab_ranges = {"Viscosity": (1.0, 50000.0, float(stab.viscosity_cp)),
+                            "ShelfLife": (1.0, 60.0, float(stab.shelf_life_months))}
+            _sv_min, _sv_max, _sv_def = _stab_ranges[_stab_target]
+            _stab_val = st.number_input("Measured value", _sv_min, _sv_max, _sv_def, key="stab_fb_val")
+        with _fb_stab_cols[2]:
+            st.markdown("<br>", unsafe_allow_html=True)
+            _submit_stab = st.button("⚗ Submit & Retrain", type="primary",
+                                     use_container_width=True, key="stab_fb_submit")
+        if _submit_stab:
+            _stab_blend = st.session_state.last_result.blend if st.session_state.last_result else {}
+            if not _stab_blend:
+                st.warning("No active formulation to associate this measurement with.")
+            else:
+                with st.spinner("Retraining stability models…"):
+                    _stab_msg = submit_stability_feedback(
+                        _stab_blend, _stab_target, _stab_val, ingredients_db)
+                st.success(_stab_msg)
+                st.rerun()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TAB 8 — CARBON (Passport + CBAM + Credits)
@@ -1594,6 +2088,46 @@ with t_hist:
             st.download_button("📥 Download Comparison CSV", comp_df.to_csv(index=False),
                                "IntelliForm_Comparison.csv", "text/csv")
 
+        # ── Formulation Lineage ───────────────────────────────────────────────
+        _cur_pid = st.session_state.get("last_project_id")
+        if _cur_pid:
+            st.divider()
+            st.subheader("🔗 Formulation Lineage")
+            st.caption("Ancestry chain from the original formulation to the current one.")
+            try:
+                _lineage = load_project_lineage(_cur_pid)
+            except Exception:
+                _lineage = []
+            if len(_lineage) <= 1:
+                st.info("This is a root formulation — no parent exists yet. "
+                        "Re-formulate to create a child.", icon="🔗")
+            else:
+                for _li, _lp in enumerate(_lineage):
+                    _blend_l = _lp.get("blend") or {}
+                    _label   = f"**Gen {_li}** — {_lp.get('application','?').replace('_',' ').title()} · " \
+                               f"${_lp.get('cost_per_kg','?')}/kg · Bio {_lp.get('bio_pct','?')}% · " \
+                               f"Perf {_lp.get('perf_score','?')}/100"
+                    with st.expander(_label, expanded=(_li == len(_lineage)-1)):
+                        st.json(_blend_l)
+                # Diff between last two generations
+                if len(_lineage) >= 2:
+                    _prev = _lineage[-2].get("blend") or {}
+                    _curr = _lineage[-1].get("blend") or {}
+                    _all  = sorted(set(list(_prev.keys()) + list(_curr.keys())))
+                    _diffs = [
+                        {
+                            "Ingredient": ing,
+                            "Gen N-1 %":  round(_prev.get(ing, 0), 2),
+                            "Gen N %":    round(_curr.get(ing, 0), 2),
+                            "Δ %":        round(_curr.get(ing, 0) - _prev.get(ing, 0), 2),
+                        }
+                        for ing in _all
+                        if abs(_curr.get(ing, 0) - _prev.get(ing, 0)) > 0.01
+                    ]
+                    if _diffs:
+                        st.markdown("**Changes Gen N-1 → Gen N**")
+                        st.dataframe(pd.DataFrame(_diffs), use_container_width=True)
+
     if not is_connected():
         st.divider()
         with st.expander("🗄 Set Up Supabase — View migration SQL"):
@@ -1845,6 +2379,193 @@ if t_pharma:
                         })
                     if sz_rows:
                         st.dataframe(pd.DataFrame(sz_rows), use_container_width=True, hide_index=True)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TAB — SUPPLIER PORTAL
+# ─────────────────────────────────────────────────────────────────────────────
+with t_supp:
+    st.subheader("🏭 Supplier Portal")
+    st.caption("List your ingredients on IntelliForm — get in front of every formulation run.")
+
+    from modules.supply_chain import (
+        register_supplier, validate_supplier_key,
+        get_listings_for_supplier, submit_listing,
+        delete_listing, get_demand_signals, SUPPORTED_CERTS,
+        score_supply_risk, get_best_pricing,
+    )
+
+    _supp_tabs = st.tabs(["📋 Register", "📦 Manage Listings", "📈 Demand Signals", "🔍 Market Pricing"])
+
+    # ── Register ──────────────────────────────────────────────────────────────
+    with _supp_tabs[0]:
+        st.markdown(
+            "Join the IntelliForm supplier network. Once registered, "
+            "ChemeNova will review your application and send your API key by email."
+        )
+        with st.form("supplier_register_form", clear_on_submit=True):
+            sr_name  = st.text_input("Company name *")
+            sr_email = st.text_input("Contact email *")
+            sr_country = st.text_input("Country *", placeholder="e.g. United States")
+            sr_certs = st.multiselect("Certifications", SUPPORTED_CERTS)
+            sr_desc  = st.text_area("Brief company / product description", height=80)
+            sr_sub   = st.form_submit_button("Apply to Join", type="primary", use_container_width=True)
+        if sr_sub:
+            if not sr_name or not sr_email or not sr_country:
+                st.error("Company name, email, and country are required.")
+            else:
+                try:
+                    profile = register_supplier(sr_name, sr_email, sr_country, sr_certs, sr_desc)
+                    st.success(
+                        f"Application submitted! Your supplier ID is **{profile.id}**. "
+                        "ChemeNova will email your API key once approved (usually within 1 business day)."
+                    )
+                except ValueError as _e:
+                    st.warning(str(_e))
+
+    # ── Manage Listings ───────────────────────────────────────────────────────
+    with _supp_tabs[1]:
+        st.markdown("Enter your **Supplier API key** (starts with `ifs_`) to manage your ingredient listings.")
+        _ifs_key = st.text_input("Supplier API key", type="password", key="ifs_key_input")
+        _sup_profile = validate_supplier_key(_ifs_key) if _ifs_key else None
+        if _ifs_key and not _sup_profile:
+            st.error("Invalid or inactive key.")
+        elif _sup_profile:
+            st.success(f"Authenticated as **{_sup_profile.name}** ({_sup_profile.country})")
+
+            # Add / update listing
+            with st.expander("➕ Add / Update Listing", expanded=True):
+                with st.form("listing_form"):
+                    lf_ing   = st.text_input("Ingredient name (must match IntelliForm DB)")
+                    lfc1, lfc2 = st.columns(2)
+                    lf_price = lfc1.number_input("Price (USD/kg)", min_value=0.01, value=5.0, step=0.01)
+                    lf_moq   = lfc2.number_input("MOQ (kg)", min_value=0.1, value=25.0, step=1.0)
+                    lfc3, lfc4 = st.columns(2)
+                    lf_lead  = lfc3.number_input("Lead time (days)", min_value=1, value=14, step=1)
+                    lf_avail = lfc4.selectbox("Availability", ["in_stock", "limited", "out_of_stock"])
+                    lf_certs = st.multiselect("Certifications", SUPPORTED_CERTS)
+                    lf_valid = st.text_input("Valid until (YYYY-MM-DD, optional)")
+                    lf_sub   = st.form_submit_button("Submit Listing", type="primary", use_container_width=True)
+                if lf_sub:
+                    if not lf_ing:
+                        st.error("Ingredient name is required.")
+                    else:
+                        try:
+                            lst = submit_listing(
+                                supplier_id=_sup_profile.id,
+                                ingredient_name=lf_ing,
+                                price_per_kg=lf_price,
+                                moq_kg=lf_moq,
+                                lead_time_days=int(lf_lead),
+                                availability=lf_avail,
+                                certifications=lf_certs,
+                                valid_until=lf_valid or None,
+                            )
+                            st.success(f"Listing saved for **{lst.ingredient_name}** at ${lst.price_per_kg}/kg.")
+                        except ValueError as _e:
+                            st.error(str(_e))
+
+            # Current listings table
+            _my_listings = get_listings_for_supplier(_sup_profile.id)
+            if not _my_listings:
+                st.info("No listings yet — add one above.")
+            else:
+                st.markdown(f"**Your listings ({len(_my_listings)})**")
+                _ldf = pd.DataFrame([{
+                    "Ingredient":    l.ingredient_name,
+                    "Price ($/kg)":  l.price_per_kg,
+                    "MOQ (kg)":      l.moq_kg,
+                    "Lead (days)":   l.lead_time_days,
+                    "Availability":  l.availability,
+                    "Certifications": ", ".join(l.certifications),
+                    "Valid Until":   l.valid_until or "—",
+                    "ID":            l.id,
+                } for l in _my_listings])
+                st.dataframe(_ldf.drop(columns=["ID"]), use_container_width=True, hide_index=True)
+
+                # Delete a listing
+                _del_id = st.selectbox(
+                    "Delete listing",
+                    options=["— select —"] + [f"{l.ingredient_name} ({l.id})" for l in _my_listings]
+                )
+                if _del_id != "— select —" and st.button("🗑 Delete selected listing", type="secondary"):
+                    _lid = _del_id.split("(")[-1].rstrip(")")
+                    if delete_listing(_sup_profile.id, _lid):
+                        st.success("Listing deleted.")
+                        st.rerun()
+
+    # ── Demand Signals ────────────────────────────────────────────────────────
+    with _supp_tabs[2]:
+        st.markdown("See which of your ingredients are in demand across IntelliForm formulations.")
+        _ifs_key2 = st.text_input("Supplier API key", type="password", key="ifs_key_demand")
+        _sup2 = validate_supplier_key(_ifs_key2) if _ifs_key2 else None
+        if _ifs_key2 and not _sup2:
+            st.error("Invalid or inactive key.")
+        elif _sup2:
+            _signals = get_demand_signals(_sup2.id)
+            if not _signals:
+                st.info("No listings yet — add some in the Manage Listings tab.")
+            else:
+                _sig_df = pd.DataFrame(_signals)
+                _sig_df.columns = [c.replace("_", " ").title() for c in _sig_df.columns]
+                st.dataframe(_sig_df, use_container_width=True, hide_index=True)
+                import plotly.express as px
+                fig_sig = px.bar(
+                    _sig_df.sort_values("Formulation Count", ascending=False),
+                    x="Ingredient", y="Formulation Count",
+                    color="Availability",
+                    color_discrete_map={"in_stock": "#0D9488", "limited": "#D97706", "out_of_stock": "#ef4444"},
+                    title="Ingredient Demand (formulation appearances)",
+                )
+                fig_sig.update_layout(paper_bgcolor="#050E1F", plot_bgcolor="#0a1628",
+                                      font_color="#f1f5f9", xaxis_tickangle=-30)
+                st.plotly_chart(fig_sig, use_container_width=True)
+
+    # ── Market Pricing ────────────────────────────────────────────────────────
+    with _supp_tabs[3]:
+        st.markdown("Compare real supplier pricing against the IntelliForm database for any blend.")
+        _mp_result = st.session_state.get("last_result")
+        if not _mp_result:
+            st.info("Run a formulation first to see market pricing for that blend.", icon="🔍")
+        else:
+            _mp_blend = _mp_result.blend
+            _mp_pricing = get_best_pricing(_mp_blend, ingredients_db)
+            _mp_risk = score_supply_risk(_mp_blend)
+
+            _risk_color = {"low": "#0D9488", "medium": "#D97706", "high": "#ef4444"}
+            _rc = _risk_color.get(_mp_risk.overall_risk, "#94a3b8")
+            st.markdown(
+                f'<div style="background:{_rc}22;border:1px solid {_rc};border-radius:8px;'
+                f'padding:12px 20px;margin-bottom:16px">'
+                f'<span style="color:{_rc};font-weight:600">Overall supply risk: '
+                f'{_mp_risk.overall_risk.upper()}</span> · '
+                f'{_mp_risk.uncovered_count}/{_mp_risk.total_ingredients} ingredients uncovered · '
+                f'{_mp_risk.single_sourced_count} single-sourced'
+                f'</div>', unsafe_allow_html=True
+            )
+
+            _pr_rows = []
+            for pr in _mp_pricing:
+                _ir = next((r for r in _mp_risk.ingredient_risks if r.ingredient == pr.ingredient), None)
+                _pr_rows.append({
+                    "Ingredient":    pr.ingredient,
+                    "% in Blend":    round(pr.pct, 1),
+                    "Best Price $/kg": f"${pr.best_price_per_kg:.2f}" if pr.best_price_per_kg else "—",
+                    "Supplier":      pr.best_supplier or "DB estimate",
+                    "Lead (days)":   pr.lead_time_days or "—",
+                    "MOQ (kg)":      pr.moq_kg or "—",
+                    "# Suppliers":   pr.n_suppliers,
+                    "Risk":          (_ir.risk_level if _ir else "—"),
+                    "Source":        pr.source.replace("_", " "),
+                })
+            st.dataframe(pd.DataFrame(_pr_rows), use_container_width=True, hide_index=True)
+
+            if _mp_risk.geo_concentration:
+                st.markdown("**Geographic concentration** (% of blend covered by each country)")
+                st.bar_chart(pd.Series(_mp_risk.geo_concentration))
+
+            if _mp_risk.weighted_lead_time:
+                st.metric("Weighted avg lead time", f"{_mp_risk.weighted_lead_time:.0f} days")
+
 
 # ── FOOTER ────────────────────────────────────────────────────────────────────
 st.markdown("""

@@ -97,6 +97,23 @@ export const api = {
   pubchemEnrich: (names) => client.post('/api/v1/pubchem/enrich', { names }),
   pharmaDeepDive: (data) => client.post('/api/v1/pharma/deep-dive', data),
   carbonPassport: (data) => client.post('/api/v1/export/carbon-passport', data),
+
+  // Supply chain & market
+  supplyChainPricing: (blend) => client.post('/api/v1/supply-chain/pricing', { blend }),
+  supplyChainRisk:    (blend) => client.post('/api/v1/supply-chain/risk',    { blend }),
+
+  // SDS generator
+  exportSDS: (data) => client.post('/api/v1/export/sds', data),
+
+  // Supplier portal (X-Supplier-Key auth passed per-call)
+  supplierRegister:      (data)                     => client.post('/api/v1/suppliers/register', data),
+  supplierListings:      (id, key)                  => client.get(`/api/v1/suppliers/${id}/listings`,        { headers: { 'X-Supplier-Key': key } }),
+  supplierSubmitListing: (id, key, data)            => client.post(`/api/v1/suppliers/${id}/listings`,        data, { headers: { 'X-Supplier-Key': key } }),
+  supplierDeleteListing: (id, key, listingId)       => client.delete(`/api/v1/suppliers/${id}/listings/${listingId}`, { headers: { 'X-Supplier-Key': key } }),
+  supplierDemand:        (id, key)                  => client.get(`/api/v1/suppliers/${id}/demand`,          { headers: { 'X-Supplier-Key': key } }),
+
+  // Active learning stats
+  alStats: (apiKey) => client.get('/api/v1/al/stats', { headers: apiKey ? { 'X-Api-Key': apiKey } : {} }),
 }
 
 export default client

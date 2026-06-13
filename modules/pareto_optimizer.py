@@ -67,6 +67,7 @@ def _run_nsga3(
     try:
         from pymoo.algorithms.moo.nsga3 import NSGA3
         from pymoo.core.problem import Problem
+        from pymoo.core.sampling import Sampling
         from pymoo.optimize import minimize
         from pymoo.util.ref_dirs import get_reference_directions
         from pymoo.termination import get_termination
@@ -110,8 +111,26 @@ def _run_nsga3(
             out["F"] = np.column_stack([f1, f2, f3])
             out["G"] = np.column_stack([g1, g2, g3])
 
+    class SparseSampling(Sampling):
+        """Seed the population with sparse blends (a handful of active
+        ingredients) instead of uniform-random vectors. With large ingredient
+        pools (n > ~150), uniform random vectors normalize to ~1/n weight on
+        every ingredient, putting the whole initial population's cost near
+        the pool-wide mean cost — far outside tight cost constraints and
+        leaving NSGA-III with no feasible individuals to evolve from. Sparse
+        seeding (3-12 active ingredients per individual) starts the search
+        much closer to realistic, manufacturable, constraint-satisfying
+        blends."""
+        def _do(self, problem, n_samples, **kwargs):
+            X = np.zeros((n_samples, problem.n_var))
+            for i in range(n_samples):
+                k = np.random.randint(3, min(12, problem.n_var) + 1)
+                active = np.random.choice(problem.n_var, size=k, replace=False)
+                X[i, active] = np.random.random(k)
+            return X
+
     ref_dirs = get_reference_directions("das-dennis", 3, n_partitions=6)
-    algorithm = NSGA3(pop_size=max(len(ref_dirs), pop_size), ref_dirs=ref_dirs)
+    algorithm = NSGA3(pop_size=max(len(ref_dirs), pop_size), ref_dirs=ref_dirs, sampling=SparseSampling())
     termination = get_termination("n_gen", n_gen)
 
     res = minimize(
@@ -133,13 +152,28 @@ def _run_nsga3(
     solutions = []
     for i, x in enumerate(res.X):
         x_norm = x / (x.sum() + 1e-12)
+
+        # Keep the dominant ingredients (>0.5%, capped to the top 10 by weight) so
+        # blends stay manufacturable regardless of pool size. With large ingredient
+        # pools (n > ~100) NSGA-III can spread mass across dozens of components that
+        # individually clear 0.5%, so the cap prevents 50+ ingredient "blends". Fall
+        # back to the top 8 contributors if the threshold removes everything, then
+        # renormalize so the reported blend sums to 100% and cost/bio/perf stay
+        # consistent with it.
+        sorted_idx = np.argsort(x_norm)[::-1]
+        kept = [j for j in sorted_idx if x_norm[j] > 0.005][:10]
+        if not kept:
+            kept = list(sorted_idx[:8])
+
+        kept_sum = float(x_norm[kept].sum())
         blend = {
-            names[j]: round(float(x_norm[j]) * 100, 1)
-            for j in range(n) if x_norm[j] > 0.01
+            names[j]: round(float(x_norm[j]) / kept_sum * 100, 1)
+            for j in kept
         }
-        c = float(x_norm @ costs)
-        b = float(x_norm @ bios)
-        p = float(x_norm @ perfs)
+        renorm = x_norm[kept] / kept_sum
+        c = float(renorm @ costs[kept])
+        b = float(renorm @ bios[kept])
+        p = float(renorm @ perfs[kept])
         solutions.append(ParetoSolution(
             blend=blend,
             cost_per_kg=round(c, 2),
@@ -323,10 +357,28 @@ def run_pareto_optimization(
 ) -> ParetoResult:
     """
     Run multi-objective Pareto optimization.
-    Uses weighted-sum enumeration via PuLP — reliable on all environments.
-    NSGA-III skipped due to memory/timeout constraints on cloud deployments.
+
+    Tries NSGA-III (pymoo) first for a true Pareto frontier. Falls back to
+    weighted-sum enumeration via PuLP if pymoo is unavailable, errors, or
+    finds no feasible solutions.
     """
-    return _run_weighted_sum(db, max_cost, min_bio, min_perf)
+    nsga3_error = None
+    try:
+        nsga3_result = _run_nsga3(db, max_cost, min_bio, min_perf,
+                                   n_gen=n_gen, pop_size=pop_size)
+    except Exception as exc:
+        nsga3_result = None
+        nsga3_error = f"{type(exc).__name__}: {exc}"
+
+    if nsga3_result is not None and nsga3_result.success and nsga3_result.frontier:
+        return nsga3_result
+
+    fallback = _run_weighted_sum(db, max_cost, min_bio, min_perf)
+    if nsga3_error:
+        fallback.error_msg = f"NSGA-III unavailable, used weighted-sum fallback ({nsga3_error})"
+    elif nsga3_result is not None and not nsga3_result.success:
+        fallback.error_msg = f"NSGA-III fallback: {nsga3_result.error_msg}"
+    return fallback
 
 
 def pareto_frontier_dataframe(result: ParetoResult) -> pd.DataFrame:

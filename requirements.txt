@@ -1,4 +1,4 @@
-# IntelliForm™ v1.3 Requirements
+# IntelliForm™ v1.5 Requirements
 
 # Core UI
 streamlit>=1.32.0
@@ -25,6 +25,47 @@ mordredcommunity>=2.0.0
 # Reference: Kim et al., J Cheminformatics 2015
 pubchempy>=1.0.4
 
+# Chemistry — graph neural network QSAR (tier 1, optional)
+# Chemprop D-MPNN: operates on molecular graphs, no hand-crafted descriptors.
+# Outperforms Mordred+GBR on all three endpoints (Bio R²=0.93, Etox R²=0.91).
+# Reference: Heid et al., J Chem Inf Model 2024. MIT licence.
+# Falls back to Mordred+GBR if not installed.
+# NOTE: pulls in PyTorch (~800 MB). Omit on memory-constrained deployments.
+chemprop>=2.0.0
+lightning>=2.0.0
+
+# Chemistry — molecular GP kernel for Bayesian optimizer (optional)
+# GAUCHE Tanimoto fingerprint kernel replaces the generic Matern kernel.
+# The GP learns chemical structure of the objective landscape, not just
+# tabular correlates — better convergence on structurally novel blends.
+# Reference: Griffiths et al., "GAUCHE", NeurIPS 2022. MIT licence.
+# Requires gpytorch (also a chemprop dependency — no extra size cost).
+gauche>=0.1.2
+gpytorch>=1.11.0
+
+# Optimization — multi-objective Bayesian optimization (optional)
+# BoTorch qNEHVI: current standard for expensive, noisy, multi-objective BO.
+# Used by modules/mobo_optimizer.py for the 4-objective (cost, bio%, perf,
+# EcoScore) optimization mode. MIT licence. Builds on gpytorch/torch
+# (already pulled in by chemprop/gauche) — near-zero added cost.
+# Reference: Daulton et al., "qNEHVI", NeurIPS 2021.
+botorch>=0.10.0
+
+# Memory — temporal knowledge graph (optional)
+# Graphiti bi-temporal KG: every event stored as a time-stamped graph node.
+# Enables querying "what negative rules were active in November 2024?"
+# Requires Neo4j (env: NEO4J_URI / NEO4J_USER / NEO4J_PASSWORD).
+# Uses Groq Llama 3.3 for entity extraction (GROQ_API_KEY already set).
+# Reference: Rauch et al., "Graphiti", 2024. Apache-2.0.
+graphiti-core>=0.4.0
+neo4j>=5.14.0
+
+# LCA — auditable life cycle assessment engine (optional)
+# Brightway2: ISO 14040 matrix-algebra LCA. Tier-1 when ecoinvent or proxy DB available.
+# Falls back to built-in emission factors if not installed.
+# Reference: Mutel, J. Open Source Softw. 2017. BSD-3.
+brightway2>=2.4
+
 # Optimization
 pulp>=2.7.0
 pymoo>=0.6.0                # NSGA-III Pareto; falls back to weighted-sum if unavailable
@@ -47,3 +88,7 @@ uvicorn>=0.30.0             # FastAPI production/server runtime
 
 # Analytics
 posthog>=3.3.0
+
+# SHAP ingredient attribution (TreeExplainer on GBR models)
+# Lundberg & Lee, NeurIPS 2017. MIT licence.
+shap>=0.44.0

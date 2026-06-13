@@ -15,6 +15,7 @@ from modules.comptox import screen_blend as comptox_screen_blend
 from modules.ecometrics import compute_ecometrics
 from modules.interaction_checker import check_interactions
 from modules.llm_parser import parse_request
+from modules.mobo_optimizer import run_mobo_optimization
 from modules.optimizer import OptResult, run_optimization
 from modules.pareto_optimizer import run_pareto_optimization
 from modules.regulatory import get_blend_report
@@ -208,6 +209,7 @@ class IntelliFormController:
         optimization_mode = str(opt_mode or "auto").lower()
         pareto = None
         bayesian = None
+        mobo = None
 
         emit("optimize", f"Running {optimization_mode} optimization ({len(filtered_db)} ingredient candidates)...")
 
@@ -243,6 +245,30 @@ class IntelliFormController:
                 result = _failed_opt_result(
                     bayesian.error_msg or "Bayesian optimization failed.",
                     "bayesian",
+                    resolved_vertical,
+                )
+        elif optimization_mode == "mobo":
+            mobo, _ = run_mobo_optimization(
+                filtered_db,
+                max_cost,
+                min_bio,
+                min_perf,
+                vertical=resolved_vertical,
+            )
+            if mobo.success:
+                result = OptResult(
+                    success=True,
+                    blend=mobo.blend,
+                    cost_per_kg=mobo.cost_per_kg,
+                    bio_pct=mobo.bio_pct,
+                    perf_score=mobo.perf_score,
+                    status="mobo",
+                    vertical=resolved_vertical,
+                )
+            else:
+                result = _failed_opt_result(
+                    mobo.error_msg or "Multi-objective Bayesian optimization failed.",
+                    "mobo",
                     resolved_vertical,
                 )
         else:
@@ -316,6 +342,7 @@ class IntelliFormController:
             "agents": agents,
             "pareto": _serialize(pareto),
             "bayesian": _serialize(bayesian),
+            "mobo": _serialize(mobo),
             "meta": {
                 "requested_vertical": requested_vertical,
                 "inferred_vertical": inferred_vertical,

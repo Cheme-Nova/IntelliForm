@@ -24,6 +24,7 @@ Supabase schema (run migrations/001_create_tables.sql to set up):
     parser          text
     relaxed         boolean
     nl_input        text
+    parent_id       uuid  REFERENCES intelliform_projects(id)
 
   Table: intelliform_feedback
     id              uuid  PRIMARY KEY DEFAULT uuid_generate_v4()
@@ -48,6 +49,7 @@ Supabase schema (run migrations/001_create_tables.sql to set up):
 """
 import os
 import json
+import uuid
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
@@ -89,12 +91,19 @@ def is_connected() -> bool:
 
 # ── Project storage ───────────────────────────────────────────────────────────
 
-def save_project(project: Dict, session_id: str, user_email: str = "") -> bool:
+def save_project(
+    project: Dict,
+    session_id: str,
+    user_email: str = "",
+    parent_id: Optional[str] = None,
+) -> Optional[str]:
     """
     Persist a formulation project.
-    Returns True on success, False on error (never raises).
+    Returns the project UUID on success, None on error (never raises).
     """
+    project_id = str(uuid.uuid4())
     record = {
+        "id":          project_id,
         "session_id":  session_id,
         "user_email":  user_email,
         "created_at":  datetime.utcnow().isoformat(),
@@ -109,19 +118,20 @@ def save_project(project: Dict, session_id: str, user_email: str = "") -> bool:
         "parser":      project.get("parser", "regex"),
         "relaxed":     project.get("relaxed", False),
         "nl_input":    project.get("input", ""),
+        "parent_id":   parent_id,
     }
 
     client = _get_client()
     if client:
         try:
             client.table("intelliform_projects").insert(record).execute()
-            return True
+            return project_id
         except Exception as e:
             print(f"[persistence] Supabase save failed: {e}")
 
     # Fallback to memory
     _MEMORY_STORE["projects"].append(record)
-    return False  # indicates memory fallback
+    return project_id
 
 
 def load_projects_for_user(user_email: str, limit: int = 50) -> List[Dict]:
@@ -232,6 +242,55 @@ def load_all_projects(limit: int = 200) -> List[Dict]:
     return list(reversed(_MEMORY_STORE["projects"]))[:limit]
 
 
+def load_project_lineage(project_id: str) -> List[Dict]:
+    """
+    Return the ancestry chain for a project, from root to the given project_id.
+    Each element is a project record dict. Empty list if not found.
+    """
+    def _find(pid: str, store: List[Dict]) -> Optional[Dict]:
+        return next((p for p in store if p.get("id") == pid), None)
+
+    client = _get_client()
+    if client:
+        try:
+            chain = []
+            current_id: Optional[str] = project_id
+            seen = set()
+            while current_id and current_id not in seen:
+                seen.add(current_id)
+                resp = (
+                    client.table("intelliform_projects")
+                    .select("*")
+                    .eq("id", current_id)
+                    .limit(1)
+                    .execute()
+                )
+                row = (resp.data or [None])[0]
+                if not row:
+                    break
+                chain.append(row)
+                current_id = row.get("parent_id")
+            chain.reverse()
+            return chain
+        except Exception as e:
+            print(f"[persistence] load_project_lineage failed: {e}")
+
+    # Memory fallback
+    store = _MEMORY_STORE["projects"]
+    chain = []
+    current_id: Optional[str] = project_id
+    seen: set = set()
+    while current_id and current_id not in seen:
+        seen.add(current_id)
+        row = _find(current_id, store)
+        if not row:
+            break
+        chain.append(row)
+        current_id = row.get("parent_id")
+    chain.reverse()
+    return chain
+
+
 # ── Active learning feedback ──────────────────────────────────────────────────
 
 def save_feedback(session_id: str, smiles: str, target: str,
@@ -321,8 +380,13 @@ CREATE TABLE IF NOT EXISTS intelliform_projects (
     optimizer   TEXT,
     parser      TEXT,
     relaxed     BOOLEAN,
-    nl_input    TEXT
+    nl_input    TEXT,
+    parent_id   UUID REFERENCES intelliform_projects(id)
 );
+
+-- Add parent_id to existing tables (idempotent)
+ALTER TABLE intelliform_projects
+    ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES intelliform_projects(id);
 
 CREATE TABLE IF NOT EXISTS intelliform_feedback (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
