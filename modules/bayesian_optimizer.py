@@ -172,75 +172,78 @@ def _composite_objective(blend: Dict[str, float], db: pd.DataFrame,
 
 
 # ── GAUCHE GP (tier 1) ────────────────────────────────────────────────────────
+# These rely on gpytorch/gauche, which are only imported successfully when
+# GAUCHE_OK is True. Define them conditionally so a missing optional
+# dependency doesn't break module import (sklearn tier 2 still works).
+if GAUCHE_OK:
+    class _TanimotoGP(ExactGP):
+        """Exact GP with GAUCHE Tanimoto fingerprint kernel."""
+        def __init__(self, train_x, train_y, likelihood):
+            super().__init__(train_x, train_y, likelihood)
+            self.mean_module  = ConstantMean()
+            self.covar_module = ScaleKernel(TanimotoKernel())
 
-class _TanimotoGP(ExactGP):
-    """Exact GP with GAUCHE Tanimoto fingerprint kernel."""
-    def __init__(self, train_x, train_y, likelihood):
-        super().__init__(train_x, train_y, likelihood)
-        self.mean_module  = ConstantMean()
-        self.covar_module = ScaleKernel(TanimotoKernel())
-
-    def forward(self, x):
-        return MultivariateNormal(self.mean_module(x), self.covar_module(x))
-
-
-def _fit_gauche_gp(
-    X_fps: np.ndarray,
-    y: np.ndarray,
-    n_iter: int = 100,
-    lr: float = 0.05,
-) -> Tuple[object, object]:
-    """
-    Fit a GAUCHE TanimotoKernel GP on blend fingerprints.
-    Returns (model, likelihood) — both in eval mode.
-    """
-    train_x = torch.tensor(X_fps, dtype=torch.float32)
-    train_y = torch.tensor(y,     dtype=torch.float32)
-
-    # Normalise targets to zero mean / unit variance for GP stability
-    y_mean = train_y.mean()
-    y_std  = train_y.std().clamp(min=1e-6)
-    train_y_norm = (train_y - y_mean) / y_std
-
-    likelihood = GaussianLikelihood()
-    model      = _TanimotoGP(train_x, train_y_norm, likelihood)
-
-    model.train()
-    likelihood.train()
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    mll       = ExactMarginalLogLikelihood(likelihood, model)
-
-    for _ in range(n_iter):
-        optimizer.zero_grad()
-        output = model(train_x)
-        loss   = -mll(output, train_y_norm)
-        loss.backward()
-        optimizer.step()
-
-    model.eval()
-    likelihood.eval()
-
-    # Attach normalisation constants so acquisition can un-normalise
-    model._y_mean = y_mean
-    model._y_std  = y_std
-    return model, likelihood
+        def forward(self, x):
+            return MultivariateNormal(self.mean_module(x), self.covar_module(x))
 
 
-def _gauche_predict(
-    X_cand: np.ndarray,
-    model,
-    likelihood,
-) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    GP posterior mean and std on candidate fingerprints.
-    Returns arrays in original (un-normalised) scale.
-    """
-    test_x = torch.tensor(X_cand, dtype=torch.float32)
-    with torch.no_grad(), gpytorch.settings.fast_pred_var():
-        pred = likelihood(model(test_x))
-    mu  = (pred.mean  * model._y_std + model._y_mean).numpy()
-    std = (pred.stddev * model._y_std).numpy()
-    return mu, std
+    def _fit_gauche_gp(
+        X_fps: np.ndarray,
+        y: np.ndarray,
+        n_iter: int = 100,
+        lr: float = 0.05,
+    ) -> Tuple[object, object]:
+        """
+        Fit a GAUCHE TanimotoKernel GP on blend fingerprints.
+        Returns (model, likelihood) — both in eval mode.
+        """
+        train_x = torch.tensor(X_fps, dtype=torch.float32)
+        train_y = torch.tensor(y,     dtype=torch.float32)
+
+        # Normalise targets to zero mean / unit variance for GP stability
+        y_mean = train_y.mean()
+        y_std  = train_y.std().clamp(min=1e-6)
+        train_y_norm = (train_y - y_mean) / y_std
+
+        likelihood = GaussianLikelihood()
+        model      = _TanimotoGP(train_x, train_y_norm, likelihood)
+
+        model.train()
+        likelihood.train()
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        mll       = ExactMarginalLogLikelihood(likelihood, model)
+
+        for _ in range(n_iter):
+            optimizer.zero_grad()
+            output = model(train_x)
+            loss   = -mll(output, train_y_norm)
+            loss.backward()
+            optimizer.step()
+
+        model.eval()
+        likelihood.eval()
+
+        # Attach normalisation constants so acquisition can un-normalise
+        model._y_mean = y_mean
+        model._y_std  = y_std
+        return model, likelihood
+
+
+    def _gauche_predict(
+        X_cand: np.ndarray,
+        model,
+        likelihood,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        GP posterior mean and std on candidate fingerprints.
+        Returns arrays in original (un-normalised) scale.
+        """
+        test_x = torch.tensor(X_cand, dtype=torch.float32)
+        with torch.no_grad(), gpytorch.settings.fast_pred_var():
+            pred = likelihood(model(test_x))
+        mu  = (pred.mean  * model._y_std + model._y_mean).numpy()
+        std = (pred.stddev * model._y_std).numpy()
+        return mu, std
 
 
 # ── sklearn GP (tier 2 fallback) ─────────────────────────────────────────────

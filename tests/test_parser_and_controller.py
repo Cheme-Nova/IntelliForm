@@ -114,12 +114,14 @@ def test_controller_uses_parsed_constraints_and_filters_vertical(monkeypatch):
     assert captured["vertical"] == "fabric_laundry"
     assert captured["ingredients"] == ["A", "B"]
     assert captured["max_cost"] == 3.5
-    assert captured["min_bio"] >= 92.0
+    # fabric_laundry has a feasibility cap of 83% bio-based (see
+    # modules/verticals.py _BIO_CAP), so the parsed 92% target is clamped.
+    assert captured["min_bio"] == 83.0
     assert captured["min_perf"] >= 84.0
     assert response["meta"]["resolved_vertical"] == "fabric_laundry"
 
 
-def test_controller_marks_constraint_violations_and_skips_reports(monkeypatch):
+def test_controller_marks_constraint_violations_as_best_effort_and_runs_reports(monkeypatch):
     import api.controller as controller_module
     from modules.llm_parser import ParseResult
     from modules.optimizer import OptResult
@@ -170,15 +172,22 @@ def test_controller_marks_constraint_violations_and_skips_reports(monkeypatch):
         ),
     )
 
-    def should_not_run(*args, **kwargs):
-        raise AssertionError("downstream report should not run for invalid results")
+    calls = {"eco": 0, "cert": 0}
 
-    monkeypatch.setattr(controller_module, "compute_ecometrics", should_not_run)
-    monkeypatch.setattr(controller_module, "get_blend_report", should_not_run)
-    monkeypatch.setattr(controller_module, "generate_vertical_regulatory_report", should_not_run)
-    monkeypatch.setattr(controller_module, "predict_stability", should_not_run)
-    monkeypatch.setattr(controller_module, "calculate_carbon_credits", should_not_run)
-    monkeypatch.setattr(controller_module, "run_certification_oracle", should_not_run)
+    def track_eco(*args, **kwargs):
+        calls["eco"] += 1
+        return None
+
+    def track_cert(*args, **kwargs):
+        calls["cert"] += 1
+        return None
+
+    monkeypatch.setattr(controller_module, "compute_ecometrics", track_eco)
+    monkeypatch.setattr(controller_module, "get_blend_report", lambda *args, **kwargs: None)
+    monkeypatch.setattr(controller_module, "generate_vertical_regulatory_report", lambda *args, **kwargs: None)
+    monkeypatch.setattr(controller_module, "predict_stability", lambda *args, **kwargs: None)
+    monkeypatch.setattr(controller_module, "calculate_carbon_credits", lambda *args, **kwargs: None)
+    monkeypatch.setattr(controller_module, "run_certification_oracle", track_cert)
     monkeypatch.setattr(controller_module, "run_agent_swarm", lambda result, parsed: [])
 
     response = controller_module.controller.run(
@@ -189,11 +198,14 @@ def test_controller_marks_constraint_violations_and_skips_reports(monkeypatch):
         constraints={},
     )
 
-    assert response["result"]["success"] is False
-    assert response["result"]["status"] == "ConstraintViolation"
-    assert "bio-based 71.0% below 85.0%" in response["result"]["error_msg"]
-    assert response["eco"] is None
-    assert response["cert"] is None
+    # A blend was found, so the controller returns it as "BestEffort" with
+    # warnings rather than a hard ConstraintViolation failure — and still
+    # runs the downstream proof-stack reports (eco/cert/etc).
+    assert response["result"]["success"] is True
+    assert response["result"]["status"] == "BestEffort"
+    assert any("bio-based" in w for w in response["result"]["warnings"])
+    assert calls["eco"] == 1
+    assert calls["cert"] == 1
 
 
 def test_controller_skips_reports_for_infeasible_result(monkeypatch):
